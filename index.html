@@ -60,18 +60,22 @@
             }
             5% {
                 opacity: 1;
+                transform: translateX(calc(-45vw)) translateY(5px) rotate(20deg);
             }
             20% {
-                transform: translateX(calc(-30vw)) translateY(-15px) rotate(72deg);
+                transform: translateX(calc(-30vw)) translateY(-10px) rotate(50deg);
             }
-            40% {
-                transform: translateX(calc(-15vw)) translateY(10px) rotate(144deg);
+            35% {
+                transform: translateX(calc(-20vw)) translateY(8px) rotate(80deg);
             }
-            60% {
-                transform: translateX(calc(-5vw)) translateY(-12px) rotate(216deg);
+            50% {
+                transform: translateX(calc(-10vw)) translateY(-8px) rotate(110deg);
+            }
+            65% {
+                transform: translateX(calc(-5vw)) translateY(6px) rotate(140deg);
             }
             80% {
-                transform: translateX(calc(0vw)) translateY(8px) rotate(288deg);
+                transform: translateX(calc(0vw)) translateY(-5px) rotate(170deg);
             }
             100% {
                 transform: translateX(0) translateY(0) rotate(180deg);
@@ -133,21 +137,21 @@
         }
         
         .peach-left span {
-            transform: translateX(25px);
+            transform: translateX(25px) rotate(180deg);
         }
         
         .peach-right span {
-            transform: translateX(-25px);
+            transform: translateX(-25px) rotate(180deg);
         }
         
         @keyframes splitLeft {
-            0% { transform: translateX(0) rotate(0deg); }
-            100% { transform: translateX(-30px) rotate(-15deg); }
+            0% { transform: translateX(0) rotate(180deg); }
+            100% { transform: translateX(-30px) rotate(165deg); }
         }
         
         @keyframes splitRight {
-            0% { transform: translateX(0) rotate(0deg); }
-            100% { transform: translateX(30px) rotate(15deg); }
+            0% { transform: translateX(0) rotate(180deg); }
+            100% { transform: translateX(30px) rotate(195deg); }
         }
         
         /* 刀のエフェクト */

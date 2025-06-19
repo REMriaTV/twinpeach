@@ -28,7 +28,7 @@
             background: #000;
             z-index: 1000;
             cursor: default;
-            overflow: hidden;
+            overflow: visible;
         }
         
         .opening.clickable {
@@ -721,6 +721,8 @@
         }
         
         // 初期設定と開始
+        console.log('Starting animation...');
+        console.log('wholePeach element:', wholePeach);
         startPeachAnimation();
         
         opening.addEventListener('click', () => {

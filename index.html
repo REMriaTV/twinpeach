@@ -123,10 +123,13 @@
         
         @keyframes peachPickup {
             0% {
-                transform: translateY(-50%);
+                transform: translateY(0) scale(1) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-30px) scale(1.2) rotate(5deg);
             }
             100% {
-                transform: translateY(-50%) translateY(-30px) scale(1.1);
+                transform: translateY(-20px) scale(1.15) rotate(0deg);
             }
         }
         
@@ -136,10 +139,10 @@
         
         @keyframes peachFloat {
             0%, 100% {
-                transform: translate(-50%, -50%) translateY(0) scale(1.1);
+                transform: translateY(-20px) scale(1.15) rotate(0deg);
             }
             50% {
-                transform: translate(-50%, -50%) translateY(-10px) scale(1.1);
+                transform: translateY(-30px) scale(1.15) rotate(-5deg);
             }
         }
         
@@ -740,34 +743,29 @@
                 // 1回目のクリック：桃を拾う
                 // 現在の位置を取得
                 const currentRect = wholePeach.getBoundingClientRect();
-                const computedStyle = window.getComputedStyle(wholePeach);
+                const currentTransform = window.getComputedStyle(wholePeach).transform;
                 
                 // アニメーションを停止
                 wholePeach.classList.remove('flowing');
                 wholePeach.style.animation = 'none';
                 
-                // 現在の実際の位置を設定（瞬間移動を防ぐ）
+                // 現在の実際の位置を設定
                 wholePeach.style.left = currentRect.left + 'px';
                 wholePeach.style.top = currentRect.top + 'px';
                 wholePeach.style.transform = 'none';
                 
-                // 少し待ってから中央へ移動
-                setTimeout(() => {
-                    wholePeach.style.transition = 'all 0.5s ease-out';
-                    wholePeach.style.left = '50%';
-                    wholePeach.style.top = '50%';
-                    wholePeach.style.transform = 'translate(-50%, -50%)';
+                // その場で浮かび上がる
+                requestAnimationFrame(() => {
+                    wholePeach.style.transition = 'transform 0.5s ease-out';
+                    wholePeach.classList.add('picked-up');
                     
                     setTimeout(() => {
-                        wholePeach.classList.add('picked-up');
-                        setTimeout(() => {
-                            wholePeach.classList.remove('picked-up');
-                            wholePeach.classList.add('floating');
-                            // クリックヒントを更新
-                            opening.style.setProperty('--hint-text', '"クリックして桃を切る"');
-                        }, 500);
+                        wholePeach.classList.remove('picked-up');
+                        wholePeach.classList.add('floating');
+                        // クリックヒントを更新
+                        opening.style.setProperty('--hint-text', '"クリックして桃を切る"');
                     }, 500);
-                }, 50);
+                });
             } else if (clickCount === 2) {
                 // 2回目のクリック：桃を切る
                 opening.classList.remove('clickable');

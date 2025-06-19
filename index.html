@@ -770,27 +770,28 @@
                 
                 // 2.5秒後にメインコンテンツへ遷移
                 setTimeout(() => {
-                // モバイルの場合は煙エフェクトを簡略化
-                if (window.innerWidth <= 768) {
-                    smoke.innerHTML = '<div class="whiteout"></div>';
-                }
-                opening.style.display = 'none';
-                mainContent.classList.add('show');
-                document.body.style.overflow = 'auto';
-                document.body.style.backgroundColor = '#fff';
-                
-                // モバイルの場合は動画を停止して遅延読み込み
-                if (window.innerWidth <= 768) {
-                    const video = document.querySelector('.noroshi-video');
-                    if (video) {
-                        video.pause();
-                        video.removeAttribute('autoplay');
-                        setTimeout(() => {
-                            video.setAttribute('preload', 'none');
-                        }, 100);
+                    // モバイルの場合は煙エフェクトを簡略化
+                    if (window.innerWidth <= 768) {
+                        smoke.innerHTML = '<div class="whiteout"></div>';
                     }
-                }
-            }, 2500);
+                    opening.style.display = 'none';
+                    mainContent.classList.add('show');
+                    document.body.style.overflow = 'auto';
+                    document.body.style.backgroundColor = '#fff';
+                    
+                    // モバイルの場合は動画を停止して遅延読み込み
+                    if (window.innerWidth <= 768) {
+                        const video = document.querySelector('.noroshi-video');
+                        if (video) {
+                            video.pause();
+                            video.removeAttribute('autoplay');
+                            setTimeout(() => {
+                                video.setAttribute('preload', 'none');
+                            }, 100);
+                        }
+                    }
+                }, 2500);
+            }
         });
         
         // スクロールによるダークトーン効果

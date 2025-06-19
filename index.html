@@ -741,21 +741,13 @@
             
             if (clickCount === 1) {
                 // 1回目のクリック：桃を拾う
-                // 現在の位置を取得
-                const currentRect = wholePeach.getBoundingClientRect();
-                const currentTransform = window.getComputedStyle(wholePeach).transform;
+                // アニメーションを停止し、その場で固定
+                wholePeach.style.animationPlayState = 'paused';
                 
-                // アニメーションを停止
-                wholePeach.classList.remove('flowing');
-                wholePeach.style.animation = 'none';
-                
-                // 現在の実際の位置を設定
-                wholePeach.style.left = currentRect.left + 'px';
-                wholePeach.style.top = currentRect.top + 'px';
-                wholePeach.style.transform = 'none';
-                
-                // その場で浮かび上がる
-                requestAnimationFrame(() => {
+                // 少し待ってからアニメーションを適用
+                setTimeout(() => {
+                    wholePeach.classList.remove('flowing');
+                    wholePeach.style.animation = 'none';
                     wholePeach.style.transition = 'transform 0.5s ease-out';
                     wholePeach.classList.add('picked-up');
                     
@@ -765,7 +757,7 @@
                         // クリックヒントを更新
                         opening.style.setProperty('--hint-text', '"クリックして桃を切る"');
                     }, 500);
-                });
+                }, 50);
             } else if (clickCount === 2) {
                 // 2回目のクリック：桃を切る
                 opening.classList.remove('clickable');

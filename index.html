@@ -25,7 +25,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(to bottom, #000 0%, #001a33 50%, #003366 100%);
+            background: #000;
             z-index: 1000;
             cursor: default;
             overflow: hidden;
@@ -35,41 +35,6 @@
             cursor: pointer;
         }
         
-        /* 水面の波紋 */
-        .water-surface {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 50%;
-            background: linear-gradient(to bottom, 
-                rgba(0, 50, 100, 0.3) 0%, 
-                rgba(0, 30, 60, 0.6) 50%, 
-                rgba(0, 20, 40, 0.8) 100%);
-            opacity: 0.5;
-        }
-        
-        .water-surface::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 200%;
-            height: 100%;
-            background: repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 10px,
-                rgba(255, 255, 255, 0.05) 10px,
-                rgba(255, 255, 255, 0.05) 20px
-            );
-            animation: waterFlow 10s linear infinite;
-        }
-        
-        @keyframes waterFlow {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(50%); }
-        }
         
         
         .peach-container {
@@ -442,7 +407,6 @@
 <body>
     <!-- オープニングアニメーション -->
     <div class="opening" id="opening">
-        <div class="water-surface"></div>
         <div class="peach-container">
             <div class="peach" id="wholePeach">🍑</div>
             <div class="peach-halves" id="peachHalves">

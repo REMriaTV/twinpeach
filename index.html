@@ -47,10 +47,19 @@
         }
         
         .peach {
-            font-size: 100px;
+            width: 100px;
+            height: 100px;
             z-index: 2;
             position: absolute;
             animation: peachDonburako 6s ease-out forwards;
+        }
+        
+        .peach img {
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
         }
         
         @keyframes peachDonburako {
@@ -131,16 +140,20 @@
             animation: splitRight 1s ease-out forwards;
         }
         
-        .peach-left span, .peach-right span {
+        .peach-left img, .peach-right img {
             display: block;
-            font-size: 100px;
+            width: 100px;
+            height: 100px;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
         }
         
-        .peach-left span {
+        .peach-left img {
             transform: translateX(50%) rotate(180deg);
         }
         
-        .peach-right span {
+        .peach-right img {
             transform: translateX(-50%) rotate(180deg);
         }
         
@@ -385,13 +398,15 @@
     <!-- オープニングアニメーション -->
     <div class="opening" id="opening">
         <div class="peach-container">
-            <div class="peach" id="wholePeach">🍑</div>
+            <div class="peach" id="wholePeach">
+                <img src="assets/peach.png" alt="Peach">
+            </div>
             <div class="peach-halves" id="peachHalves">
                 <div class="peach-left">
-                    <span>🍑</span>
+                    <img src="assets/peach.png" alt="Peach left">
                 </div>
                 <div class="peach-right">
-                    <span>🍑</span>
+                    <img src="assets/peach.png" alt="Peach right">
                 </div>
             </div>
             <div class="sword-slash" id="swordSlash"></div>

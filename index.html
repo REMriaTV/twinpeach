@@ -350,12 +350,13 @@
         
         /* メインコンテンツ */
         .main-content {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+            min-height: 200vh;
             display: none;
+            position: relative;
+            overflow-x: hidden;
         }
         
         .main-content.show {
@@ -379,13 +380,118 @@
             text-align: center;
             margin-bottom: 30px;
             font-size: 2.5em;
+            opacity: 0;
+            animation: fadeInText 2s ease-out 0.5s forwards;
+        }
+        
+        @keyframes fadeInText {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 100px 30px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* 白い煙の背景 */
+        .smoke-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        
+        .smoke-layer {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0) 0%, rgba(240,240,240,0.5) 40%, rgba(220,220,220,0.8) 100%);
+            animation: floatSmoke 20s ease-in-out infinite;
+        }
+        
+        .smoke-layer:nth-child(1) {
+            top: -50%;
+            left: -50%;
+            animation-duration: 25s;
+        }
+        
+        .smoke-layer:nth-child(2) {
+            top: -80%;
+            left: -30%;
+            animation-duration: 30s;
+            animation-delay: -5s;
+        }
+        
+        @keyframes floatSmoke {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -30px) scale(1.1); }
+            66% { transform: translate(-30px, 20px) scale(0.9); }
+        }
+        
+        /* 狼煙のアニメーション */
+        .noroshi-container {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        
+        .noroshi {
+            width: 60px;
+            height: 200px;
+            background: linear-gradient(to top, #333 0%, #555 50%, #777 100%);
+            position: relative;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .noroshi-smoke {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 300px;
+        }
+        
+        .noroshi-smoke::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 100px;
+            background: radial-gradient(ellipse at bottom, rgba(200,200,200,0.8) 0%, transparent 70%);
+            animation: riseSmoke 3s ease-out infinite;
+        }
+        
+        @keyframes riseSmoke {
+            0% {
+                transform: translateX(-50%) translateY(0) scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateX(-50%) translateY(-200px) scale(3);
+                opacity: 0;
+            }
         }
         
         .subtitle {
@@ -393,12 +499,25 @@
             color: #666;
             font-style: italic;
             margin-bottom: 30px;
+            opacity: 0;
+            animation: fadeInText 2s ease-out 1s forwards;
         }
         
         .intro {
             text-align: center;
             line-height: 1.8;
         }
+        
+        .intro p {
+            opacity: 0;
+            animation: fadeInText 2s ease-out forwards;
+        }
+        
+        .intro p:nth-child(1) { animation-delay: 1.5s; }
+        .intro p:nth-child(2) { animation-delay: 2s; }
+        .intro p:nth-child(3) { animation-delay: 2.5s; }
+        .intro p:nth-child(5) { animation-delay: 3s; }
+        .intro p:nth-child(6) { animation-delay: 3.5s; }
     </style>
 </head>
 <body>
@@ -428,6 +547,12 @@
     
     <!-- メインコンテンツ -->
     <div class="main-content" id="mainContent">
+        <!-- 白い煙の背景 -->
+        <div class="smoke-background">
+            <div class="smoke-layer"></div>
+            <div class="smoke-layer"></div>
+        </div>
+        
         <div class="container">
             <h1>TWIN PEACH</h1>
             <p class="subtitle">一つの桃から生まれた、二つの運命</p>
@@ -439,6 +564,13 @@
                 <br>
                 <p>これは、英雄の影でくすぶり続けた</p>
                 <p>「誰でもない自分」が歩き始める物語。</p>
+            </div>
+        </div>
+        
+        <!-- 狼煙 -->
+        <div class="noroshi-container">
+            <div class="noroshi">
+                <div class="noroshi-smoke"></div>
             </div>
         </div>
     </div>
@@ -479,8 +611,26 @@
                 opening.style.display = 'none';
                 mainContent.classList.add('show');
                 document.body.style.overflow = 'auto';
-                document.body.style.backgroundColor = '#f5f5f5';
+                document.body.style.backgroundColor = '#fff';
             }, 2500);
+        });
+        
+        // スクロールによるダークトーン効果
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = scrollY / maxScroll;
+            
+            // 背景色を白から黒へグラデーション
+            const darkness = Math.min(scrollPercent * 255, 200);
+            const bgColor = 255 - darkness;
+            document.body.style.backgroundColor = `rgb(${bgColor}, ${bgColor}, ${bgColor})`;
+            
+            // テキストの色も調整
+            if (scrollPercent > 0.5) {
+                document.querySelector('.container').style.color = '#fff';
+                document.querySelector('h1').style.color = '#ff9999';
+            }
         });
     </script>
 </body>

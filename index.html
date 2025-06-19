@@ -744,6 +744,12 @@
                 // flowingアニメーションを一時停止
                 wholePeach.style.animationPlayState = 'paused';
                 
+                // 現在の位置を取得
+                const rect = wholePeach.getBoundingClientRect();
+                const currentX = rect.left + rect.width / 2;
+                const centerX = window.innerWidth / 2;
+                const moveDistance = centerX - currentX;
+                
                 // transitionを設定して浮かび上がるアニメーションを準備
                 wholePeach.style.transition = 'transform 0.5s ease-out';
                 
@@ -752,8 +758,14 @@
                 wholePeach.style.transform = currentTransform + ' translateY(-30px) scale(1.2)';
                 
                 setTimeout(() => {
-                    // ゆらゆら浮遊アニメーションに切り替え
+                    // 浮遊状態を維持
                     wholePeach.style.transform = currentTransform + ' translateY(-20px) scale(1.15)';
+                    
+                    // 少し待ってから中央へ移動開始
+                    setTimeout(() => {
+                        wholePeach.style.transition = 'transform 1.5s ease-in-out';
+                        wholePeach.style.transform = currentTransform + ` translateX(${moveDistance}px) translateY(-20px) scale(1.15)`;
+                    }, 300);
                     
                     // クリックヒントを更新
                     opening.style.setProperty('--hint-text', '"クリックして桃を切る"');

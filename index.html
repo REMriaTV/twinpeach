@@ -53,14 +53,6 @@
         
         
         
-        .peach-container {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
         
         .peach {
             width: 100px;
@@ -709,7 +701,10 @@
         // アニメーション開始
         function startPeachAnimation() {
             wholePeach.style.display = 'block';
-            wholePeach.classList.remove('picked-up', 'floating');
+            wholePeach.style.left = '-150px';
+            wholePeach.style.top = '50%';
+            wholePeach.style.transform = 'translateY(-50%)';
+            wholePeach.classList.remove('picked-up', 'floating', 'flowing');
             // 少し遅延してからアニメーション開始
             setTimeout(() => {
                 wholePeach.classList.add('flowing');
@@ -717,6 +712,8 @@
             }, 100);
         }
         
+        // 初期設定と開始
+        wholePeach.innerHTML = '<img src="assets/peach.png" alt="Peach">';
         startPeachAnimation();
         
         opening.addEventListener('click', () => {

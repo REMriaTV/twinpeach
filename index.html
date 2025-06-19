@@ -36,7 +36,7 @@
         }
         
         .opening.clickable::after {
-            content: 'クリックして桃を拾う';
+            content: var(--hint-text, 'クリックして桃を拾う');
             position: absolute;
             bottom: 20%;
             left: 50%;
@@ -67,7 +67,6 @@
             height: 100px;
             z-index: 2;
             position: absolute;
-            animation: peachDonburako 6s ease-out forwards;
         }
         
         .peach img {
@@ -78,34 +77,37 @@
             image-rendering: crisp-edges;
         }
         
-        @keyframes peachDonburako {
+        @keyframes peachFlow {
             0% {
-                transform: translateX(calc(-50vw - 100px)) translateY(0) rotate(0deg);
-                opacity: 0;
-            }
-            5% {
-                opacity: 1;
-                transform: translateX(calc(-45vw)) translateY(5px) rotate(36deg);
-            }
-            20% {
-                transform: translateX(calc(-30vw)) translateY(-10px) rotate(108deg);
-            }
-            35% {
-                transform: translateX(calc(-20vw)) translateY(8px) rotate(180deg);
-            }
-            50% {
-                transform: translateX(calc(-10vw)) translateY(-8px) rotate(252deg);
-            }
-            65% {
-                transform: translateX(calc(-5vw)) translateY(6px) rotate(324deg);
-            }
-            80% {
-                transform: translateX(calc(0vw)) translateY(-5px) rotate(396deg);
+                transform: translateX(calc(-50vw - 100px)) rotate(0deg);
             }
             100% {
-                transform: translateX(calc(50vw + 100px)) translateY(0) rotate(720deg);
-                opacity: 0;
+                transform: translateX(calc(50vw + 100px)) rotate(720deg);
             }
+        }
+        
+        @keyframes peachBobbing {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            25% {
+                transform: translateY(-10px);
+            }
+            75% {
+                transform: translateY(10px);
+            }
+        }
+        
+        .peach.flowing {
+            animation: peachFlow 15s linear forwards;
+        }
+        
+        .peach.flowing::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            animation: peachBobbing 2s ease-in-out infinite;
         }
         
         .peach.picked-up {
@@ -678,9 +680,11 @@
                 peachPassed = true;
                 setTimeout(() => {
                     // 新しい桃を流す
-                    wholePeach.style.animation = 'none';
+                    wholePeach.classList.remove('flowing', 'picked-up', 'floating');
+                    wholePeach.style.display = 'block';
+                    peachHalves.style.display = 'none';
                     setTimeout(() => {
-                        wholePeach.style.animation = 'peachDonburako 10s linear forwards';
+                        startPeachAnimation();
                         peachPassed = false;
                         clickCount = 0;
                     }, 100);
@@ -693,8 +697,13 @@
         }
         
         // アニメーション開始
-        wholePeach.style.animation = 'peachDonburako 10s linear forwards';
-        checkPeachPosition();
+        function startPeachAnimation() {
+            wholePeach.classList.add('flowing');
+            wholePeach.innerHTML = '<img src="assets/peach.png" alt="Peach" style="animation: peachBobbing 2s ease-in-out infinite;">';
+            checkPeachPosition();
+        }
+        
+        startPeachAnimation();
         
         opening.addEventListener('click', () => {
             if (!opening.classList.contains('clickable')) return;
@@ -703,12 +712,24 @@
             
             if (clickCount === 1) {
                 // 1回目のクリック：桃を拾う
-                wholePeach.style.animationPlayState = 'paused';
-                wholePeach.classList.add('picked-up');
+                wholePeach.classList.remove('flowing');
+                wholePeach.style.animation = 'none';
+                const rect = wholePeach.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2 - window.innerWidth / 2;
+                wholePeach.style.transform = `translateX(${centerX}px)`;
+                
                 setTimeout(() => {
-                    wholePeach.classList.remove('picked-up');
-                    wholePeach.classList.add('floating');
-                }, 500);
+                    wholePeach.classList.add('picked-up');
+                    setTimeout(() => {
+                        wholePeach.classList.remove('picked-up');
+                        wholePeach.classList.add('floating');
+                        // クリックヒントを更新
+                        const hint = document.querySelector('.opening.clickable::after');
+                        if (hint) {
+                            opening.style.setProperty('--hint-text', '"クリックして桃を切る"');
+                        }
+                    }, 500);
+                }, 100);
             } else if (clickCount === 2) {
                 // 2回目のクリック：桃を切る
                 opening.classList.remove('clickable');

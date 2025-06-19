@@ -265,11 +265,38 @@
             }
         }
         
+        @keyframes whiteoutExplosionMobile {
+            0% {
+                width: 10px;
+                height: 10px;
+                opacity: 0;
+            }
+            100% {
+                width: 150vw;
+                height: 150vh;
+                opacity: 1;
+            }
+        }
+        
         .smoke {
             position: absolute;
             border-radius: 50%;
             filter: blur(40px);
             mix-blend-mode: screen;
+            will-change: transform, opacity;
+        }
+        
+        /* モバイル対応 */
+        @media (max-width: 768px) {
+            .smoke {
+                filter: blur(20px);
+            }
+            .smoke1, .smoke2, .smoke3 {
+                display: none;
+            }
+            .whiteout {
+                animation: whiteoutExplosionMobile 1s ease-out forwards;
+            }
         }
         
         /* 複数の煙粒子 - より激しく */
@@ -472,6 +499,12 @@
             background: #000;
         }
         
+        @media (max-width: 768px) {
+            .noroshi-container {
+                display: none;
+            }
+        }
+        
         .noroshi-video {
             width: 100%;
             height: 100%;
@@ -604,10 +637,22 @@
             
             // 2.5秒後にメインコンテンツへ遷移
             setTimeout(() => {
+                // モバイルの場合は煙エフェクトを簡略化
+                if (window.innerWidth <= 768) {
+                    smoke.innerHTML = '<div class="whiteout"></div>';
+                }
                 opening.style.display = 'none';
                 mainContent.classList.add('show');
                 document.body.style.overflow = 'auto';
                 document.body.style.backgroundColor = '#fff';
+                
+                // モバイルの場合は動画を遅延読み込み
+                if (window.innerWidth <= 768) {
+                    const video = document.querySelector('.noroshi-video');
+                    if (video) {
+                        video.remove();
+                    }
+                }
             }, 2500);
         });
         

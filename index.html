@@ -741,35 +741,45 @@
             
             if (clickCount === 1) {
                 // 1回目のクリック：桃を拾う
-                // flowingアニメーションを一時停止
-                wholePeach.style.animationPlayState = 'paused';
+                peachPassed = true; // 流れを停止
                 
-                // 現在の位置を取得
+                // 現在の位置を取得して固定
                 const rect = wholePeach.getBoundingClientRect();
-                const currentX = rect.left + rect.width / 2;
-                const centerX = window.innerWidth / 2;
-                const moveDistance = centerX - currentX;
+                const openingRect = opening.getBoundingClientRect();
                 
-                // transitionを設定して浮かび上がるアニメーションを準備
-                wholePeach.style.transition = 'transform 0.5s ease-out';
+                // flowingクラスを削除してアニメーションをリセット
+                wholePeach.classList.remove('flowing');
                 
-                // 元の位置から少し上に浮かび上がる
-                const currentTransform = window.getComputedStyle(wholePeach).transform;
-                wholePeach.style.transform = currentTransform + ' translateY(-30px) scale(1.2)';
+                // 位置を絶対座標で設定
+                wholePeach.style.position = 'absolute';
+                wholePeach.style.left = (rect.left - openingRect.left) + 'px';
+                wholePeach.style.top = (rect.top - openingRect.top) + 'px';
+                wholePeach.style.transform = 'none';
+                wholePeach.style.animation = 'none';
+                wholePeach.style.transition = 'none';
                 
+                // 少し待ってから浮かび上がるアニメーション
                 setTimeout(() => {
-                    // 浮遊状態を維持
-                    wholePeach.style.transform = currentTransform + ' translateY(-20px) scale(1.15)';
+                    wholePeach.style.transition = 'transform 0.5s ease-out';
+                    wholePeach.style.transform = 'translateY(-30px) scale(1.2)';
                     
-                    // 少し待ってから中央へ移動開始
+                    // 浮かび上がり完了後、中央への移動を開始
                     setTimeout(() => {
-                        wholePeach.style.transition = 'transform 1.5s ease-in-out';
-                        wholePeach.style.transform = currentTransform + ` translateX(${moveDistance}px) translateY(-20px) scale(1.15)`;
-                    }, 300);
-                    
-                    // クリックヒントを更新
-                    opening.style.setProperty('--hint-text', '"クリックして桃を切る"');
-                }, 500);
+                        // 画面の中央へ移動（opening要素の中央）
+                        wholePeach.style.transition = 'all 1s ease-in-out';
+                        wholePeach.style.left = '50%';
+                        wholePeach.style.top = '50%';
+                        wholePeach.style.transform = 'translate(-50%, -50%) scale(1.15)';
+                        
+                        // クリックヒントを更新
+                        opening.style.setProperty('--hint-text', '"クリックして桃を切る"');
+                        
+                        // 移動完了後にクリック可能にする
+                        setTimeout(() => {
+                            opening.classList.add('clickable');
+                        }, 1000);
+                    }, 500);
+                }, 100);
             } else if (clickCount === 2) {
                 // 2回目のクリック：桃を切る
                 opening.classList.remove('clickable');

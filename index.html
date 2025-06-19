@@ -742,30 +742,32 @@
             if (clickCount === 1) {
                 // 1回目のクリック：桃を拾う
                 peachPassed = true; // 流れを停止
+                opening.classList.remove('clickable'); // 一時的にクリック無効
                 
-                // 現在の位置を取得して固定
-                const rect = wholePeach.getBoundingClientRect();
-                const openingRect = opening.getBoundingClientRect();
+                // 現在の計算された位置を取得
+                const computed = window.getComputedStyle(wholePeach);
+                const matrix = new DOMMatrix(computed.transform);
+                const currentX = parseFloat(computed.left);
+                const currentY = parseFloat(computed.top);
                 
-                // flowingクラスを削除してアニメーションをリセット
+                // flowingクラスを削除してアニメーションを停止
                 wholePeach.classList.remove('flowing');
                 
-                // 位置を絶対座標で設定
-                wholePeach.style.position = 'absolute';
-                wholePeach.style.left = (rect.left - openingRect.left) + 'px';
-                wholePeach.style.top = (rect.top - openingRect.top) + 'px';
-                wholePeach.style.transform = 'none';
+                // アニメーションをリセットして現在位置に固定
                 wholePeach.style.animation = 'none';
                 wholePeach.style.transition = 'none';
+                wholePeach.style.left = currentX + 'px';
+                wholePeach.style.top = currentY + 'px';
+                wholePeach.style.transform = `translateY(${matrix.m42}px)`;
                 
                 // 少し待ってから浮かび上がるアニメーション
                 setTimeout(() => {
                     wholePeach.style.transition = 'transform 0.5s ease-out';
-                    wholePeach.style.transform = 'translateY(-30px) scale(1.2)';
+                    wholePeach.style.transform = `translateY(${matrix.m42 - 30}px) scale(1.2)`;
                     
                     // 浮かび上がり完了後、中央への移動を開始
                     setTimeout(() => {
-                        // 画面の中央へ移動（opening要素の中央）
+                        // 画面の中央へ移動
                         wholePeach.style.transition = 'all 1s ease-in-out';
                         wholePeach.style.left = '50%';
                         wholePeach.style.top = '50%';
@@ -779,7 +781,7 @@
                             opening.classList.add('clickable');
                         }, 1000);
                     }, 500);
-                }, 100);
+                }, 50);
             } else if (clickCount === 2) {
                 // 2回目のクリック：桃を切る
                 opening.classList.remove('clickable');

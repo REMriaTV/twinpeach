@@ -297,6 +297,9 @@
             .whiteout {
                 animation: whiteoutExplosionMobile 1s ease-out forwards;
             }
+            .main-content {
+                min-height: 350vh;
+            }
         }
         
         /* 複数の煙粒子 - より激しく */
@@ -501,7 +504,11 @@
         
         @media (max-width: 768px) {
             .noroshi-container {
-                display: none;
+                height: 50vh;
+                top: 250vh;
+            }
+            .noroshi-video {
+                opacity: 0.6;
             }
         }
         
@@ -597,7 +604,7 @@
         <!-- 狼煙 -->
         <div class="noroshi-container">
             <div class="video-fade-overlay"></div>
-            <video class="noroshi-video" autoplay loop muted playsinline>
+            <video class="noroshi-video" loop muted playsinline preload="metadata">
                 <source src="assets/magical-fire.mov" type="video/quicktime">
                 <source src="assets/magical-fire.mp4" type="video/mp4">
             </video>
@@ -648,10 +655,13 @@
                 
                 // モバイルの場合は動画を遅延読み込み
                 if (window.innerWidth <= 768) {
-                    const video = document.querySelector('.noroshi-video');
-                    if (video) {
-                        video.remove();
-                    }
+                    setTimeout(() => {
+                        const video = document.querySelector('.noroshi-video');
+                        if (video) {
+                            video.setAttribute('preload', 'none');
+                            video.play().catch(e => console.log('Video autoplay prevented:', e));
+                        }
+                    }, 3000);
                 }
             }, 2500);
         });
@@ -669,6 +679,14 @@
             // ページ下部でbodyを黒に
             if (scrollPercent > 0.5) {
                 document.body.style.backgroundColor = '#000';
+            }
+            
+            // モバイルで動画エリアに到達したら再生開始
+            if (window.innerWidth <= 768 && scrollPercent > 0.6) {
+                const video = document.querySelector('.noroshi-video');
+                if (video && video.paused) {
+                    video.play().catch(e => console.log('Video play failed:', e));
+                }
             }
         });
     </script>

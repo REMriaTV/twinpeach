@@ -150,13 +150,13 @@
         }
         
         .peach-left img {
-            transform: translateX(50%);
-            clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+            position: absolute;
+            right: 0;
         }
         
         .peach-right img {
-            transform: translateX(-50%);
-            clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+            position: absolute;
+            left: 0;
         }
         
         @keyframes splitLeft {
@@ -405,10 +405,10 @@
             </div>
             <div class="peach-halves" id="peachHalves">
                 <div class="peach-left">
-                    <img src="assets/peach.png" alt="Peach left">
+                    <img src="assets/peach-left.png" alt="Peach left">
                 </div>
                 <div class="peach-right">
-                    <img src="assets/peach.png" alt="Peach right">
+                    <img src="assets/peach-right.png" alt="Peach right">
                 </div>
             </div>
             <div class="sword-slash" id="swordSlash"></div>

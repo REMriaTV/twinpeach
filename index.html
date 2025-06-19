@@ -50,7 +50,7 @@
             font-size: 100px;
             z-index: 2;
             position: absolute;
-            animation: peachDonburako 4s ease-out forwards;
+            animation: peachDonburako 6s ease-out forwards;
         }
         
         @keyframes peachDonburako {
@@ -61,14 +61,17 @@
             5% {
                 opacity: 1;
             }
-            25% {
-                transform: translateX(calc(-25vw)) translateY(-15px) rotate(90deg);
+            20% {
+                transform: translateX(calc(-30vw)) translateY(-15px) rotate(72deg);
             }
-            50% {
-                transform: translateX(0) translateY(5px) rotate(180deg);
+            40% {
+                transform: translateX(calc(-15vw)) translateY(10px) rotate(144deg);
             }
-            75% {
-                transform: translateX(calc(25vw)) translateY(-10px) rotate(270deg);
+            60% {
+                transform: translateX(calc(-5vw)) translateY(-12px) rotate(216deg);
+            }
+            80% {
+                transform: translateX(calc(0vw)) translateY(8px) rotate(288deg);
             }
             100% {
                 transform: translateX(0) translateY(0) rotate(360deg);
@@ -76,7 +79,7 @@
         }
         
         .peach.floating {
-            animation: peachDonburako 4s ease-out forwards, bobbing 3s ease-in-out 4s infinite;
+            animation: peachDonburako 6s ease-out forwards, bobbing 3s ease-in-out 6s infinite;
         }
         
         @keyframes bobbing {
@@ -453,11 +456,11 @@
         const smoke = document.getElementById('smoke');
         const mainContent = document.getElementById('mainContent');
         
-        // 4秒後にクリック可能に
+        // 6秒後にクリック可能に
         setTimeout(() => {
             opening.classList.add('clickable');
             wholePeach.classList.add('floating');
-        }, 4000);
+        }, 6000);
         
         opening.addEventListener('click', () => {
             if (!opening.classList.contains('clickable')) return;

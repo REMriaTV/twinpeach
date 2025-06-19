@@ -434,121 +434,55 @@
             margin: 0;
             padding: 0;
             background: 
-                /* ノイズテクスチャ効果 */
-                repeating-radial-gradient(
-                    circle at 20% 80%,
-                    transparent 0,
-                    transparent 2px,
-                    rgba(255, 255, 255, 0.03) 2px,
-                    rgba(255, 255, 255, 0.03) 4px
-                ),
-                repeating-radial-gradient(
-                    circle at 80% 20%,
-                    transparent 0,
-                    transparent 2px,
-                    rgba(0, 0, 0, 0.03) 2px,
-                    rgba(0, 0, 0, 0.03) 4px
-                ),
-                /* 煙の拡散効果 */
+                /* 軽量な煙効果 */
                 radial-gradient(
-                    ellipse at center 30%,
-                    rgba(255, 255, 255, 0.2) 0%,
-                    transparent 50%
+                    ellipse at center 25%,
+                    rgba(255, 255, 255, 0.15) 0%,
+                    transparent 40%
                 ),
-                radial-gradient(
-                    ellipse at center 60%,
-                    rgba(0, 0, 0, 0.3) 0%,
-                    transparent 60%
-                ),
-                /* メイングラデーション（イージング的な変化） */
+                /* メイングラデーション（段階を減らしてパフォーマンス向上） */
                 linear-gradient(to bottom, 
                     #ffffff 0%,
                     #ffffff 5%,
-                    #fefefe 6%,
-                    #fdfdfd 7%,
-                    #fcfcfc 8%,
-                    #fafafa 9%,
                     #f8f8f8 10%,
-                    #f5f5f5 11%,
-                    #f2f2f2 12%,
-                    #efefef 13%,
-                    #ececec 14%,
-                    #e8e8e8 15%,
-                    #e4e4e4 16%,
-                    #e0e0e0 17%,
-                    #dbdbdb 18%,
-                    #d6d6d6 19%,
-                    #d0d0d0 20%,
-                    #c9c9c9 21%,
-                    #c2c2c2 22%,
-                    #bababa 23%,
-                    #b2b2b2 24%,
-                    #aaaaaa 25%,
-                    #a0a0a0 26%,
-                    #969696 27%,
-                    #8c8c8c 28%,
-                    #828282 29%,
-                    #787878 30%,
-                    #6e6e6e 31%,
-                    #646464 32%,
-                    #5a5a5a 33%,
-                    #505050 34%,
-                    #464646 35%,
-                    #3c3c3c 36%,
-                    #333333 37%,
-                    #2a2a2a 38%,
-                    #222222 39%,
-                    #1a1a1a 40%,
-                    #141414 41%,
-                    #0e0e0e 42%,
-                    #090909 43%,
-                    #050505 44%,
-                    #020202 45%,
-                    #000000 46%,
+                    #efefef 15%,
+                    #e0e0e0 20%,
+                    #c8c8c8 25%,
+                    #b0b0b0 30%,
+                    #909090 35%,
+                    #707070 40%,
+                    #505050 45%,
+                    #303030 50%,
+                    #1a1a1a 55%,
+                    #0a0a0a 60%,
+                    #000000 65%,
                     #000000 100%);
             min-height: 300vh;
             display: none;
             position: relative;
             overflow-x: hidden;
+            /* パフォーマンス最適化 */
+            will-change: scroll-position;
+            backface-visibility: hidden;
+            transform: translateZ(0);
         }
         
-        /* 煙のアニメーション効果 */
+        /* 煙効果を静的な疑似要素で表現（アニメーションなし） */
         .main-content::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            bottom: 0;
+            height: 70%;
             background: 
                 radial-gradient(
-                    ellipse at 30% 20%,
-                    rgba(255, 255, 255, 0.1) 0%,
-                    transparent 40%
-                ),
-                radial-gradient(
-                    ellipse at 70% 40%,
-                    rgba(200, 200, 200, 0.08) 0%,
+                    ellipse at 40% 30%,
+                    rgba(255, 255, 255, 0.08) 0%,
                     transparent 50%
-                ),
-                radial-gradient(
-                    ellipse at 50% 60%,
-                    rgba(100, 100, 100, 0.1) 0%,
-                    transparent 60%
                 );
-            animation: smokeFlow 20s ease-in-out infinite;
             pointer-events: none;
-        }
-        
-        @keyframes smokeFlow {
-            0%, 100% {
-                transform: translateY(0) scale(1);
-                opacity: 0.6;
-            }
-            50% {
-                transform: translateY(-20px) scale(1.05);
-                opacity: 0.8;
-            }
+            /* アニメーションを削除してパフォーマンス向上 */
         }
         
         .main-content.show {

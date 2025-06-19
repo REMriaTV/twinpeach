@@ -738,29 +738,36 @@
             
             if (clickCount === 1) {
                 // 1回目のクリック：桃を拾う
+                // 現在の位置を取得
+                const currentRect = wholePeach.getBoundingClientRect();
+                const computedStyle = window.getComputedStyle(wholePeach);
+                
+                // アニメーションを停止
                 wholePeach.classList.remove('flowing');
                 wholePeach.style.animation = 'none';
                 
-                // 現在位置を保存
-                const currentRect = wholePeach.getBoundingClientRect();
-                const currentLeft = currentRect.left + currentRect.width / 2;
-                const currentTop = currentRect.top + currentRect.height / 2;
+                // 現在の実際の位置を設定（瞬間移動を防ぐ）
+                wholePeach.style.left = currentRect.left + 'px';
+                wholePeach.style.top = currentRect.top + 'px';
+                wholePeach.style.transform = 'none';
                 
-                // 中央に移動
-                wholePeach.style.transition = 'all 0.5s ease-out';
-                wholePeach.style.left = '50%';
-                wholePeach.style.top = '50%';
-                wholePeach.style.transform = 'translate(-50%, -50%)';
-                
+                // 少し待ってから中央へ移動
                 setTimeout(() => {
-                    wholePeach.classList.add('picked-up');
+                    wholePeach.style.transition = 'all 0.5s ease-out';
+                    wholePeach.style.left = '50%';
+                    wholePeach.style.top = '50%';
+                    wholePeach.style.transform = 'translate(-50%, -50%)';
+                    
                     setTimeout(() => {
-                        wholePeach.classList.remove('picked-up');
-                        wholePeach.classList.add('floating');
-                        // クリックヒントを更新
-                        opening.style.setProperty('--hint-text', '"クリックして桃を切る"');
+                        wholePeach.classList.add('picked-up');
+                        setTimeout(() => {
+                            wholePeach.classList.remove('picked-up');
+                            wholePeach.classList.add('floating');
+                            // クリックヒントを更新
+                            opening.style.setProperty('--hint-text', '"クリックして桃を切る"');
+                        }, 500);
                     }, 500);
-                }, 500);
+                }, 50);
             } else if (clickCount === 2) {
                 // 2回目のクリック：桃を切る
                 opening.classList.remove('clickable');

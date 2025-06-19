@@ -507,19 +507,25 @@
             margin-bottom: 30px;
             font-size: 2.5em;
             opacity: 0;
-            animation: fadeInText 2s ease-out 0.5s forwards;
+            animation: fadeInText 3s ease-out 1s forwards;
             position: relative;
             z-index: 2;
         }
         
         @keyframes fadeInText {
-            from {
+            0% {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
+                filter: blur(10px);
             }
-            to {
+            50% {
+                opacity: 0.5;
+                filter: blur(3px);
+            }
+            100% {
                 opacity: 1;
                 transform: translateY(0);
+                filter: blur(0);
             }
         }
         
@@ -623,14 +629,14 @@
             font-style: italic;
             margin-bottom: 30px;
             opacity: 0;
-            animation: fadeInText 2s ease-out 1s forwards;
+            animation: fadeInText 3.5s ease-out 2s forwards;
             position: relative;
             z-index: 2;
         }
         
         .intro {
             text-align: center;
-            line-height: 1.8;
+            line-height: 2.2;
             color: #666;
             position: relative;
             z-index: 2;
@@ -638,16 +644,39 @@
         
         .intro p {
             opacity: 0;
-            animation: fadeInText 2s ease-out forwards;
+            animation: fadeInTextSlow 4s ease-out forwards;
             position: relative;
             z-index: 2;
+            font-size: 1.05em;
+            letter-spacing: 0.05em;
         }
         
-        .intro p:nth-child(1) { animation-delay: 1.5s; }
-        .intro p:nth-child(2) { animation-delay: 2s; }
-        .intro p:nth-child(3) { animation-delay: 2.5s; }
-        .intro p:nth-child(5) { animation-delay: 3s; }
-        .intro p:nth-child(6) { animation-delay: 3.5s; }
+        @keyframes fadeInTextSlow {
+            0% {
+                opacity: 0;
+                transform: translateY(40px);
+                filter: blur(15px);
+            }
+            30% {
+                opacity: 0.3;
+                filter: blur(8px);
+            }
+            60% {
+                opacity: 0.7;
+                filter: blur(3px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+        
+        .intro p:nth-child(1) { animation-delay: 3s; }
+        .intro p:nth-child(2) { animation-delay: 4s; }
+        .intro p:nth-child(3) { animation-delay: 5s; }
+        .intro p:nth-child(5) { animation-delay: 6.5s; }
+        .intro p:nth-child(6) { animation-delay: 7.5s; }
     </style>
 </head>
 <body>

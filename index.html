@@ -205,9 +205,10 @@
             transform: translate(-50%, -50%);
             width: 10px;
             height: 10px;
-            background: white;
+            background: radial-gradient(circle, rgba(240,240,240,1) 0%, rgba(220,220,220,0.9) 50%, rgba(200,200,200,0.8) 100%);
             border-radius: 50%;
             opacity: 0;
+            filter: blur(5px);
             animation: whiteoutExplosion 1.5s ease-out forwards;
         }
         
@@ -216,23 +217,27 @@
                 width: 10px;
                 height: 10px;
                 opacity: 0;
+                filter: blur(5px);
             }
             20% {
                 width: 200px;
                 height: 200px;
                 opacity: 1;
+                filter: blur(10px);
             }
             100% {
                 width: 300vw;
                 height: 300vh;
                 opacity: 1;
+                filter: blur(15px);
             }
         }
         
         .smoke {
             position: absolute;
             border-radius: 50%;
-            filter: blur(20px);
+            filter: blur(40px);
+            mix-blend-mode: screen;
         }
         
         /* 複数の煙粒子 - より激しく */
@@ -242,7 +247,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 30%, transparent 60%);
+            background: radial-gradient(circle, rgba(200,200,200,1) 0%, rgba(180,180,180,0.8) 30%, rgba(150,150,150,0.5) 50%, transparent 70%);
             animation: smokeBurst1 1s ease-out forwards;
         }
         
@@ -252,7 +257,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 40%, transparent 70%);
+            background: radial-gradient(circle, rgba(220,220,220,0.9) 0%, rgba(190,190,190,0.7) 40%, rgba(160,160,160,0.4) 60%, transparent 80%);
             animation: smokeBurst2 1.2s ease-out 0.1s forwards;
         }
         
@@ -262,7 +267,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.5) 35%, transparent 65%);
+            background: radial-gradient(circle, rgba(210,210,210,0.8) 0%, rgba(185,185,185,0.6) 35%, rgba(155,155,155,0.3) 55%, transparent 75%);
             animation: smokeBurst3 1.3s ease-out 0.2s forwards;
         }
         

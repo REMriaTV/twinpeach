@@ -67,7 +67,7 @@
             height: 100px;
             z-index: 2;
             position: absolute;
-            left: -150px;
+            left: calc(-50vw - 150px);
             top: 50%;
             transform: translateY(-50%);
         }
@@ -82,10 +82,10 @@
         
         @keyframes peachFlow {
             0% {
-                left: -150px;
+                left: calc(-50vw - 150px);
             }
             100% {
-                left: calc(100% + 150px);
+                left: calc(50vw + 150px);
             }
         }
         
@@ -676,7 +676,11 @@
             const screenWidth = window.innerWidth;
             
             // 桃が画面中央付近にいる時だけクリック可能
-            if (peachRect.left > screenWidth * 0.3 && peachRect.left < screenWidth * 0.7 && !peachPassed) {
+            const peachCenter = peachRect.left + peachRect.width / 2;
+            const screenCenter = screenWidth / 2;
+            const tolerance = 100; // 中央から100pxの範囲
+            
+            if (Math.abs(peachCenter - screenCenter) < tolerance && !peachPassed) {
                 opening.classList.add('clickable');
             } else {
                 opening.classList.remove('clickable');
@@ -688,9 +692,10 @@
                 setTimeout(() => {
                     // 新しい桃を流す
                     wholePeach.classList.remove('flowing', 'picked-up', 'floating');
-                    wholePeach.style.left = '-150px';
+                    wholePeach.style.left = 'calc(-50vw - 150px)';
                     wholePeach.style.top = '50%';
                     wholePeach.style.transform = 'translateY(-50%)';
+                    wholePeach.style.transition = 'none';
                     wholePeach.style.display = 'block';
                     peachHalves.style.display = 'none';
                     setTimeout(() => {
@@ -709,9 +714,10 @@
         // アニメーション開始
         function startPeachAnimation() {
             wholePeach.style.display = 'block';
-            wholePeach.style.left = '-150px';
+            wholePeach.style.left = 'calc(-50vw - 150px)';
             wholePeach.style.top = '50%';
             wholePeach.style.transform = 'translateY(-50%)';
+            wholePeach.style.transition = 'none';
             wholePeach.classList.remove('picked-up', 'floating', 'flowing');
             // 少し遅延してからアニメーション開始
             setTimeout(() => {
@@ -733,23 +739,28 @@
             if (clickCount === 1) {
                 // 1回目のクリック：桃を拾う
                 wholePeach.classList.remove('flowing');
-                wholePeach.style.animationPlayState = 'paused';
-                const rect = wholePeach.getBoundingClientRect();
-                wholePeach.style.left = rect.left + 'px';
-                wholePeach.style.top = rect.top + 'px';
+                wholePeach.style.animation = 'none';
+                
+                // 現在位置を保存
+                const currentRect = wholePeach.getBoundingClientRect();
+                const currentLeft = currentRect.left + currentRect.width / 2;
+                const currentTop = currentRect.top + currentRect.height / 2;
+                
+                // 中央に移動
+                wholePeach.style.transition = 'all 0.5s ease-out';
+                wholePeach.style.left = '50%';
+                wholePeach.style.top = '50%';
+                wholePeach.style.transform = 'translate(-50%, -50%)';
                 
                 setTimeout(() => {
                     wholePeach.classList.add('picked-up');
                     setTimeout(() => {
                         wholePeach.classList.remove('picked-up');
                         wholePeach.classList.add('floating');
-                        wholePeach.style.left = '50%';
-                        wholePeach.style.top = '50%';
-                        wholePeach.style.transform = 'translate(-50%, -50%)';
                         // クリックヒントを更新
                         opening.style.setProperty('--hint-text', '"クリックして桃を切る"');
                     }, 500);
-                }, 100);
+                }, 500);
             } else if (clickCount === 2) {
                 // 2回目のクリック：桃を切る
                 opening.classList.remove('clickable');

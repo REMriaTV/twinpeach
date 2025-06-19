@@ -67,6 +67,9 @@
             height: 100px;
             z-index: 2;
             position: absolute;
+            left: -150px;
+            top: 50%;
+            transform: translateY(-50%);
         }
         
         .peach img {
@@ -79,35 +82,39 @@
         
         @keyframes peachFlow {
             0% {
-                transform: translateX(calc(-50vw - 100px)) rotate(0deg);
+                left: -150px;
             }
             100% {
-                transform: translateX(calc(50vw + 100px)) rotate(720deg);
+                left: calc(100% + 150px);
             }
         }
         
         @keyframes peachBobbing {
             0%, 100% {
-                transform: translateY(0);
+                top: 50%;
             }
             25% {
-                transform: translateY(-10px);
+                top: 48%;
             }
             75% {
-                transform: translateY(10px);
+                top: 52%;
+            }
+        }
+        
+        @keyframes peachRotate {
+            0% {
+                transform: translateY(-50%) rotate(0deg);
+            }
+            100% {
+                transform: translateY(-50%) rotate(720deg);
             }
         }
         
         .peach.flowing {
-            animation: peachFlow 15s linear forwards;
-        }
-        
-        .peach.flowing::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            animation: peachBobbing 2s ease-in-out infinite;
+            animation: 
+                peachFlow 12s linear forwards,
+                peachBobbing 2s ease-in-out infinite,
+                peachRotate 12s linear forwards;
         }
         
         .peach.picked-up {
@@ -116,10 +123,10 @@
         
         @keyframes peachPickup {
             0% {
-                transform: translateX(0) translateY(0) rotate(360deg);
+                transform: translateY(-50%);
             }
             100% {
-                transform: translateX(0) translateY(-30px) rotate(360deg) scale(1.1);
+                transform: translateY(-50%) translateY(-30px) scale(1.1);
             }
         }
         
@@ -129,10 +136,10 @@
         
         @keyframes peachFloat {
             0%, 100% {
-                transform: translateX(0) translateY(-30px) rotate(360deg) scale(1.1);
+                transform: translate(-50%, -50%) translateY(0) scale(1.1);
             }
             50% {
-                transform: translateX(0) translateY(-40px) rotate(360deg) scale(1.1);
+                transform: translate(-50%, -50%) translateY(-10px) scale(1.1);
             }
         }
         
@@ -681,6 +688,9 @@
                 setTimeout(() => {
                     // 新しい桃を流す
                     wholePeach.classList.remove('flowing', 'picked-up', 'floating');
+                    wholePeach.style.left = '-150px';
+                    wholePeach.style.top = '50%';
+                    wholePeach.style.transform = 'translateY(-50%)';
                     wholePeach.style.display = 'block';
                     peachHalves.style.display = 'none';
                     setTimeout(() => {
@@ -698,9 +708,13 @@
         
         // アニメーション開始
         function startPeachAnimation() {
-            wholePeach.classList.add('flowing');
-            wholePeach.innerHTML = '<img src="assets/peach.png" alt="Peach" style="animation: peachBobbing 2s ease-in-out infinite;">';
-            checkPeachPosition();
+            wholePeach.style.display = 'block';
+            wholePeach.classList.remove('picked-up', 'floating');
+            // 少し遅延してからアニメーション開始
+            setTimeout(() => {
+                wholePeach.classList.add('flowing');
+                checkPeachPosition();
+            }, 100);
         }
         
         startPeachAnimation();
@@ -713,21 +727,21 @@
             if (clickCount === 1) {
                 // 1回目のクリック：桃を拾う
                 wholePeach.classList.remove('flowing');
-                wholePeach.style.animation = 'none';
+                wholePeach.style.animationPlayState = 'paused';
                 const rect = wholePeach.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2 - window.innerWidth / 2;
-                wholePeach.style.transform = `translateX(${centerX}px)`;
+                wholePeach.style.left = rect.left + 'px';
+                wholePeach.style.top = rect.top + 'px';
                 
                 setTimeout(() => {
                     wholePeach.classList.add('picked-up');
                     setTimeout(() => {
                         wholePeach.classList.remove('picked-up');
                         wholePeach.classList.add('floating');
+                        wholePeach.style.left = '50%';
+                        wholePeach.style.top = '50%';
+                        wholePeach.style.transform = 'translate(-50%, -50%)';
                         // クリックヒントを更新
-                        const hint = document.querySelector('.opening.clickable::after');
-                        if (hint) {
-                            opening.style.setProperty('--hint-text', '"クリックして桃を切る"');
-                        }
+                        opening.style.setProperty('--hint-text', '"クリックして桃を切る"');
                     }, 500);
                 }, 100);
             } else if (clickCount === 2) {

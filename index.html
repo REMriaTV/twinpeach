@@ -35,6 +35,22 @@
             cursor: pointer;
         }
         
+        .opening.clickable::after {
+            content: 'クリックして桃を拾う';
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 18px;
+            animation: fadeInOut 2s ease-in-out infinite;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+        
         
         
         .peach-container {
@@ -87,12 +103,35 @@
                 transform: translateX(calc(0vw)) translateY(-5px) rotate(396deg);
             }
             100% {
+                transform: translateX(calc(50vw + 100px)) translateY(0) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .peach.picked-up {
+            animation: peachPickup 0.5s ease-out forwards;
+        }
+        
+        @keyframes peachPickup {
+            0% {
                 transform: translateX(0) translateY(0) rotate(360deg);
+            }
+            100% {
+                transform: translateX(0) translateY(-30px) rotate(360deg) scale(1.1);
             }
         }
         
         .peach.floating {
-            animation: peachDonburako 6s ease-out forwards, bobbing 3s ease-in-out 6s infinite;
+            animation: peachFloat 2s ease-in-out infinite;
+        }
+        
+        @keyframes peachFloat {
+            0%, 100% {
+                transform: translateX(0) translateY(-30px) rotate(360deg) scale(1.1);
+            }
+            50% {
+                transform: translateX(0) translateY(-40px) rotate(360deg) scale(1.1);
+            }
         }
         
         @keyframes bobbing {
@@ -619,31 +658,77 @@
         const smoke = document.getElementById('smoke');
         const mainContent = document.getElementById('mainContent');
         
-        // 6秒後にクリック可能に
-        setTimeout(() => {
-            opening.classList.add('clickable');
-            wholePeach.classList.add('floating');
-        }, 6000);
+        let clickCount = 0;
+        let peachPassed = false;
+        
+        // 桃が流れ去るのを監視
+        function checkPeachPosition() {
+            const peachRect = wholePeach.getBoundingClientRect();
+            const screenWidth = window.innerWidth;
+            
+            // 桃が画面中央付近にいる時だけクリック可能
+            if (peachRect.left > screenWidth * 0.3 && peachRect.left < screenWidth * 0.7 && !peachPassed) {
+                opening.classList.add('clickable');
+            } else {
+                opening.classList.remove('clickable');
+            }
+            
+            // 桃が画面外に出たら
+            if (peachRect.left > screenWidth && !peachPassed) {
+                peachPassed = true;
+                setTimeout(() => {
+                    // 新しい桃を流す
+                    wholePeach.style.animation = 'none';
+                    setTimeout(() => {
+                        wholePeach.style.animation = 'peachDonburako 10s linear forwards';
+                        peachPassed = false;
+                        clickCount = 0;
+                    }, 100);
+                }, 2000);
+            }
+            
+            if (!peachPassed) {
+                requestAnimationFrame(checkPeachPosition);
+            }
+        }
+        
+        // アニメーション開始
+        wholePeach.style.animation = 'peachDonburako 10s linear forwards';
+        checkPeachPosition();
         
         opening.addEventListener('click', () => {
             if (!opening.classList.contains('clickable')) return;
             
-            // 刀のアニメーション開始
-            swordSlash.classList.add('active');
+            clickCount++;
             
-            // 0.3秒後に桃を切り替え
-            setTimeout(() => {
-                wholePeach.style.display = 'none';
-                peachHalves.style.display = 'block';
-            }, 300);
-            
-            // 1秒後に煙を出す
-            setTimeout(() => {
-                smoke.classList.add('active');
-            }, 1000);
-            
-            // 2.5秒後にメインコンテンツへ遷移
-            setTimeout(() => {
+            if (clickCount === 1) {
+                // 1回目のクリック：桃を拾う
+                wholePeach.style.animationPlayState = 'paused';
+                wholePeach.classList.add('picked-up');
+                setTimeout(() => {
+                    wholePeach.classList.remove('picked-up');
+                    wholePeach.classList.add('floating');
+                }, 500);
+            } else if (clickCount === 2) {
+                // 2回目のクリック：桃を切る
+                opening.classList.remove('clickable');
+                
+                // 刀のアニメーション開始
+                swordSlash.classList.add('active');
+                
+                // 0.3秒後に桃を切り替え
+                setTimeout(() => {
+                    wholePeach.style.display = 'none';
+                    peachHalves.style.display = 'block';
+                }, 300);
+                
+                // 1秒後に煙を出す
+                setTimeout(() => {
+                    smoke.classList.add('active');
+                }, 1000);
+                
+                // 2.5秒後にメインコンテンツへ遷移
+                setTimeout(() => {
                 // モバイルの場合は煙エフェクトを簡略化
                 if (window.innerWidth <= 768) {
                     smoke.innerHTML = '<div class="whiteout"></div>';

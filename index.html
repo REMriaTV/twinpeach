@@ -53,6 +53,14 @@
         
         
         
+        .peach-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
         
         .peach {
             width: 100px;
@@ -713,7 +721,6 @@
         }
         
         // 初期設定と開始
-        wholePeach.innerHTML = '<img src="assets/peach.png" alt="Peach">';
         startPeachAnimation();
         
         opening.addEventListener('click', () => {

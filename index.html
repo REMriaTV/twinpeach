@@ -27,63 +27,155 @@
             align-items: center;
             background-color: #000;
             z-index: 1000;
+            cursor: pointer;
         }
         
-        .peach-animation {
+        .click-instruction {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 16px;
+            opacity: 0.7;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        .peach-container {
             position: relative;
-            font-size: 200px;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .peach {
+            font-size: 100px;
             animation: float 2s ease-in-out infinite;
+            z-index: 2;
         }
         
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* 桃の半分ずつ */
+        .peach-halves {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            font-size: 100px;
+        }
+        
+        .peach-left, .peach-right {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .peach-left {
+            left: 0;
+            animation: splitLeft 1s ease-out forwards;
+        }
+        
+        .peach-right {
+            right: 0;
+            animation: splitRight 1s ease-out forwards;
+        }
+        
+        .peach-left span, .peach-right span {
+            display: block;
+            font-size: 100px;
+        }
+        
+        .peach-left span {
+            transform: translateX(25px);
+        }
+        
+        .peach-right span {
+            transform: translateX(-25px);
+        }
+        
+        @keyframes splitLeft {
+            0% { transform: translateX(0) rotate(0deg); }
+            100% { transform: translateX(-30px) rotate(-15deg); }
+        }
+        
+        @keyframes splitRight {
+            0% { transform: translateX(0) rotate(0deg); }
+            100% { transform: translateX(30px) rotate(15deg); }
         }
         
         /* 刀のエフェクト */
         .sword-slash {
             position: absolute;
-            top: 50%;
-            left: -100%;
-            width: 200%;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, #fff, transparent);
-            transform: rotate(-15deg);
+            top: -100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 200%;
+            background: linear-gradient(180deg, transparent, #fff, transparent);
             opacity: 0;
-            animation: slash 0.5s ease-out 3s forwards;
+            z-index: 3;
         }
         
-        @keyframes slash {
+        .sword-slash.active {
+            animation: verticalSlash 0.3s ease-out forwards;
+        }
+        
+        @keyframes verticalSlash {
             0% {
-                left: -100%;
+                top: -100%;
                 opacity: 0;
             }
             50% {
                 opacity: 1;
             }
             100% {
-                left: 100%;
+                top: 100%;
                 opacity: 0;
             }
         }
         
-        /* 桃が割れるアニメーション */
-        .peach-split {
-            animation: split 1s ease-out 3.5s forwards;
+        /* 煙のエフェクト */
+        .smoke {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            display: none;
         }
         
-        @keyframes split {
+        .smoke.active {
+            display: block;
+            animation: smokeExpand 2s ease-out forwards;
+        }
+        
+        @keyframes smokeExpand {
             0% {
-                transform: scale(1);
-                filter: brightness(1);
-            }
-            50% {
-                transform: scale(1.1);
-                filter: brightness(1.5);
+                width: 10px;
+                height: 10px;
+                background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
             }
             100% {
-                transform: scale(0);
-                opacity: 0;
+                width: 200vw;
+                height: 200vh;
+                background: radial-gradient(circle, rgba(255,255,255,1) 50%, rgba(255,255,255,0.9) 100%);
             }
         }
         
@@ -143,10 +235,20 @@
 <body>
     <!-- オープニングアニメーション -->
     <div class="opening" id="opening">
-        <div class="peach-animation">
-            <div class="peach-split">🍑</div>
-            <div class="sword-slash"></div>
+        <div class="peach-container">
+            <div class="peach" id="wholePeach">🍑</div>
+            <div class="peach-halves" id="peachHalves">
+                <div class="peach-left">
+                    <span>🍑</span>
+                </div>
+                <div class="peach-right">
+                    <span>🍑</span>
+                </div>
+            </div>
+            <div class="sword-slash" id="swordSlash"></div>
+            <div class="smoke" id="smoke"></div>
         </div>
+        <div class="click-instruction">クリックして始める</div>
     </div>
     
     <!-- メインコンテンツ -->
@@ -167,13 +269,39 @@
     </div>
     
     <script>
-        // 4.5秒後にメインコンテンツを表示
-        setTimeout(() => {
-            document.getElementById('opening').style.display = 'none';
-            document.getElementById('mainContent').classList.add('show');
-            document.body.style.overflow = 'auto';
-            document.body.style.backgroundColor = '#f5f5f5';
-        }, 4500);
+        const opening = document.getElementById('opening');
+        const wholePeach = document.getElementById('wholePeach');
+        const peachHalves = document.getElementById('peachHalves');
+        const swordSlash = document.getElementById('swordSlash');
+        const smoke = document.getElementById('smoke');
+        const mainContent = document.getElementById('mainContent');
+        
+        opening.addEventListener('click', () => {
+            // クリック指示を消す
+            document.querySelector('.click-instruction').style.display = 'none';
+            
+            // 刀のアニメーション開始
+            swordSlash.classList.add('active');
+            
+            // 0.3秒後に桃を切り替え
+            setTimeout(() => {
+                wholePeach.style.display = 'none';
+                peachHalves.style.display = 'block';
+            }, 300);
+            
+            // 1秒後に煙を出す
+            setTimeout(() => {
+                smoke.classList.add('active');
+            }, 1000);
+            
+            // 2.5秒後にメインコンテンツへ遷移
+            setTimeout(() => {
+                opening.style.display = 'none';
+                mainContent.classList.add('show');
+                document.body.style.overflow = 'auto';
+                document.body.style.backgroundColor = '#f5f5f5';
+            }, 2500);
+        });
     </script>
 </body>
 </html>

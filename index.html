@@ -27,6 +27,10 @@
             align-items: center;
             background-color: #000;
             z-index: 1000;
+            cursor: default;
+        }
+        
+        .opening.clickable {
             cursor: pointer;
         }
         
@@ -42,13 +46,34 @@
         
         .peach {
             font-size: 100px;
-            animation: float 2s ease-in-out infinite;
             z-index: 2;
+            position: absolute;
+            animation: peachFlow 3s ease-out forwards;
+        }
+        
+        @keyframes peachFlow {
+            0% {
+                transform: translateX(calc(50vw + 100px)) translateY(0) rotate(0deg) scale(0.5);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            50% {
+                transform: translateX(0) translateY(0) rotate(360deg) scale(1);
+            }
+            100% {
+                transform: translateX(0) translateY(0) rotate(360deg) scale(1);
+            }
+        }
+        
+        .peach.floating {
+            animation: peachFlow 3s ease-out forwards, float 2s ease-in-out 3s infinite;
         }
         
         @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+            0%, 100% { transform: translateX(0) translateY(0) rotate(360deg) scale(1); }
+            50% { transform: translateX(0) translateY(-10px) rotate(360deg) scale(1); }
         }
         
         /* 桃の半分ずつ */
@@ -410,7 +435,14 @@
         const smoke = document.getElementById('smoke');
         const mainContent = document.getElementById('mainContent');
         
+        // 3秒後にクリック可能に
+        setTimeout(() => {
+            opening.classList.add('clickable');
+            wholePeach.classList.add('floating');
+        }, 3000);
+        
         opening.addEventListener('click', () => {
+            if (!opening.classList.contains('clickable')) return;
             
             // 刀のアニメーション開始
             swordSlash.classList.add('active');

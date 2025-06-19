@@ -741,33 +741,23 @@
             
             if (clickCount === 1) {
                 // 1回目のクリック：桃を拾う
-                // 現在の実際の位置を取得して保存
-                const rect = wholePeach.getBoundingClientRect();
-                const container = opening.getBoundingClientRect();
-                const relativeLeft = rect.left - container.left;
-                const relativeTop = rect.top - container.top;
+                // flowingアニメーションを一時停止
+                wholePeach.style.animationPlayState = 'paused';
                 
-                // flowingクラスを削除してアニメーションを停止
-                wholePeach.classList.remove('flowing');
+                // transitionを設定して浮かび上がるアニメーションを準備
+                wholePeach.style.transition = 'transform 0.5s ease-out';
                 
-                // 位置を固定
-                wholePeach.style.position = 'absolute';
-                wholePeach.style.left = relativeLeft + 'px';
-                wholePeach.style.top = relativeTop + 'px';
-                wholePeach.style.transform = 'none';
+                // 元の位置から少し上に浮かび上がる
+                const currentTransform = window.getComputedStyle(wholePeach).transform;
+                wholePeach.style.transform = currentTransform + ' translateY(-30px) scale(1.2)';
                 
-                // 浮かび上がるアニメーションを適用
-                requestAnimationFrame(() => {
-                    wholePeach.style.transition = 'transform 0.5s ease-out';
-                    wholePeach.classList.add('picked-up');
+                setTimeout(() => {
+                    // ゆらゆら浮遊アニメーションに切り替え
+                    wholePeach.style.transform = currentTransform + ' translateY(-20px) scale(1.15)';
                     
-                    setTimeout(() => {
-                        wholePeach.classList.remove('picked-up');
-                        wholePeach.classList.add('floating');
-                        // クリックヒントを更新
-                        opening.style.setProperty('--hint-text', '"クリックして桃を切る"');
-                    }, 500);
-                });
+                    // クリックヒントを更新
+                    opening.style.setProperty('--hint-text', '"クリックして桃を切る"');
+                }, 500);
             } else if (clickCount === 2) {
                 // 2回目のクリック：桃を切る
                 opening.classList.remove('clickable');

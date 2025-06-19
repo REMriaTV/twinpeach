@@ -55,27 +55,27 @@
         
         @keyframes peachDonburako {
             0% {
-                transform: translateX(calc(-50vw - 100px)) translateY(0) rotate(0deg);
+                transform: translateX(calc(-50vw - 100px)) translateY(0) rotate(180deg);
                 opacity: 0;
             }
             5% {
                 opacity: 1;
-                transform: translateX(calc(-45vw)) translateY(5px) rotate(20deg);
+                transform: translateX(calc(-45vw)) translateY(5px) rotate(180deg);
             }
             20% {
-                transform: translateX(calc(-30vw)) translateY(-10px) rotate(50deg);
+                transform: translateX(calc(-30vw)) translateY(-10px) rotate(180deg);
             }
             35% {
-                transform: translateX(calc(-20vw)) translateY(8px) rotate(80deg);
+                transform: translateX(calc(-20vw)) translateY(8px) rotate(180deg);
             }
             50% {
-                transform: translateX(calc(-10vw)) translateY(-8px) rotate(110deg);
+                transform: translateX(calc(-10vw)) translateY(-8px) rotate(180deg);
             }
             65% {
-                transform: translateX(calc(-5vw)) translateY(6px) rotate(140deg);
+                transform: translateX(calc(-5vw)) translateY(6px) rotate(180deg);
             }
             80% {
-                transform: translateX(calc(0vw)) translateY(-5px) rotate(170deg);
+                transform: translateX(calc(0vw)) translateY(-5px) rotate(180deg);
             }
             100% {
                 transform: translateX(0) translateY(0) rotate(180deg);
@@ -137,21 +137,29 @@
         }
         
         .peach-left span {
-            transform: translateX(25px) rotate(180deg);
+            transform: translateX(50%) rotate(180deg);
         }
         
         .peach-right span {
-            transform: translateX(-25px) rotate(180deg);
+            transform: translateX(-50%) rotate(180deg);
         }
         
         @keyframes splitLeft {
-            0% { transform: translateX(0) rotate(180deg); }
-            100% { transform: translateX(-30px) rotate(165deg); }
+            0% { 
+                transform: translateX(0) rotate(180deg); 
+            }
+            100% { 
+                transform: translateX(-40px) rotate(180deg); 
+            }
         }
         
         @keyframes splitRight {
-            0% { transform: translateX(0) rotate(180deg); }
-            100% { transform: translateX(30px) rotate(195deg); }
+            0% { 
+                transform: translateX(0) rotate(180deg); 
+            }
+            100% { 
+                transform: translateX(40px) rotate(180deg); 
+            }
         }
         
         /* 刀のエフェクト */

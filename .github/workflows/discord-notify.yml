@@ -1,0 +1,47 @@
+name: Discord更新通知
+
+  on:
+    push:
+      branches: [ main ]
+
+  jobs:
+    notify:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Discord通知送信
+          env:
+            DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          run: |
+            curl -X POST $DISCORD_WEBHOOK \
+            -H "Content-Type: application/json" \
+            -d '{
+              "content": "🍑 **TWIN PEACH** が更新されました！",
+              "embeds": [{
+                "title": "サイト更新通知",
+                "description": "'"${{ github.event.head_commit.message }}"'",
+                "url": "https://remriatv.github.io/twinpeach/",
+                "color": 16761035,
+                "fields": [
+                  {
+                    "name": "👤 更新者",
+                    "value": "'"${{ github.actor }}"'",
+                    "inline": true
+                  },
+                  {
+                    "name": "📝 コミット",
+                    "value": "['"${GITHUB_SHA::7}"'](https://github.com/REMriaTV/twinpeach/commit/'"$GITHUB_SHA"')",
+                    "inline": true
+                  },
+                  {
+                    "name": "🌸 ブランチ",
+                    "value": "main",
+                    "inline": true
+                  }
+                ],
+                "footer": {
+                  "text": "TWIN PEACH - GitHub Actions",
+                  "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                },
+                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"
+              }]
+            }'

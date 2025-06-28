@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テストページ - 桃次郎の世界</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .test-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+        }
+        h1 {
+            color: #ff6b6b;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .peach-emoji {
+            font-size: 5rem;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        .timestamp {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 2rem;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.8rem 2rem;
+            background: #ff6b6b;
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+        .back-link:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="peach-emoji">🍑</div>
+        <h1>テストページ1</h1>
+        <p>Claude Codeからのテストデプロイです！</p>
+        <p>桃次郎のサイトに新しいページを追加しました。</p>
+        <div class="timestamp">
+            作成日時: <span id="datetime"></span>
+        </div>
+        <a href="index.html" class="back-link">トップページに戻る</a>
+        <br>
+        <a href="test2.html" class="back-link" style="background: #4fc3f7; margin-top: 1rem;">テストページ2へ</a>
+    </div>
+    
+    <script>
+        document.getElementById('datetime').textContent = new Date().toLocaleString('ja-JP');
+    </script>
+</body>
+</html>

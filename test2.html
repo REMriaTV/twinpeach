@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テストページ2 - 桃次郎からのメッセージ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #4fc3f7 0%, #667eea 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Noto Sans JP', sans-serif;
+            overflow: hidden;
+        }
+        .message-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 700px;
+            position: relative;
+        }
+        h1 {
+            color: #4fc3f7;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .momotaro-message {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #333;
+            margin: 2rem 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+            border-radius: 15px;
+            border-left: 5px solid #ff6b6b;
+        }
+        .floating-peaches {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        .floating-peach {
+            position: absolute;
+            font-size: 2rem;
+            animation: float 10s infinite ease-in-out;
+        }
+        .floating-peach:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .floating-peach:nth-child(2) { left: 70%; animation-delay: 2s; }
+        .floating-peach:nth-child(3) { left: 40%; animation-delay: 4s; }
+        .floating-peach:nth-child(4) { left: 90%; animation-delay: 6s; }
+        
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        .navigation {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        .nav-link {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: #4fc3f7;
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            background: #29b6f6;
+            transform: translateY(-2px);
+        }
+        .success-badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-peaches">
+        <div class="floating-peach">🍑</div>
+        <div class="floating-peach">🍑</div>
+        <div class="floating-peach">🍑</div>
+        <div class="floating-peach">🍑</div>
+    </div>
+    
+    <div class="message-container">
+        <div class="success-badge">✅ デプロイテスト成功！</div>
+        <h1>桃次郎からのメッセージ</h1>
+        <div class="momotaro-message">
+            「やあ、Claude Codeからアクセスしてくれてありがとう！<br>
+            僕は桃太郎の弟、桃次郎だ。<br><br>
+            このページは自動的にGitHub Pagesにデプロイされて、<br>
+            世界中の人に見てもらえるようになったんだ。<br><br>
+            これからもっとたくさんの冒険を<br>
+            このサイトで紹介していくよ！」
+        </div>
+        
+        <div class="navigation">
+            <a href="index.html" class="nav-link">トップページ</a>
+            <a href="test.html" class="nav-link" style="background: #ff6b6b;">テストページ1</a>
+        </div>
+    </div>
+</body>
+</html>

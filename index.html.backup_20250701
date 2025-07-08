@@ -288,7 +288,7 @@
             transform: translate(-50%, -50%);
             width: 10px;
             height: 10px;
-            background: radial-gradient(circle, rgba(248,248,248,1) 0%, rgba(239,239,239,0.9) 50%, rgba(224,224,224,0.8) 100%);
+            background: radial-gradient(circle, rgba(240,240,240,1) 0%, rgba(220,220,220,0.9) 50%, rgba(200,200,200,0.8) 100%);
             border-radius: 50%;
             opacity: 0;
             filter: blur(5px);
@@ -507,7 +507,7 @@
             margin-bottom: 30px;
             font-size: 2.5em;
             opacity: 0;
-            animation: fadeInText 1s ease-out 0.3s forwards;
+            animation: fadeInText 3s ease-out 1s forwards;
             position: relative;
             z-index: 2;
         }
@@ -629,7 +629,7 @@
             font-style: italic;
             margin-bottom: 30px;
             opacity: 0;
-            animation: fadeInText 1.8s ease-out 0.8s forwards;
+            animation: fadeInText 3.5s ease-out 2s forwards;
             position: relative;
             z-index: 2;
         }
@@ -644,7 +644,7 @@
         
         .intro p {
             opacity: 0;
-            animation: fadeInTextSlow 2.2s ease-out forwards;
+            animation: fadeInTextSlow 4s ease-out forwards;
             position: relative;
             z-index: 2;
             font-size: 1.05em;
@@ -672,11 +672,11 @@
             }
         }
         
-        .intro p:nth-child(1) { animation-delay: 1.2s; }
-        .intro p:nth-child(2) { animation-delay: 1.6s; }
-        .intro p:nth-child(3) { animation-delay: 2s; }
-        .intro p:nth-child(5) { animation-delay: 2.6s; }
-        .intro p:nth-child(6) { animation-delay: 3s; }
+        .intro p:nth-child(1) { animation-delay: 3s; }
+        .intro p:nth-child(2) { animation-delay: 4s; }
+        .intro p:nth-child(3) { animation-delay: 5s; }
+        .intro p:nth-child(5) { animation-delay: 6.5s; }
+        .intro p:nth-child(6) { animation-delay: 7.5s; }
     </style>
 </head>
 <body>
@@ -713,7 +713,7 @@
         </div>
         
         <div class="container">
-            <!-- <h1>TWIN PEACH</h1> -->
+            <h1>TWIN PEACH</h1>
             <p class="subtitle">一つの桃から生まれた、二つの運命</p>
             
             <div class="intro">
@@ -726,9 +726,7 @@
             </div>
             
             <div style="text-align: center; margin-top: 50px;">
-                <a href="field.html" style="display: inline-block; animation: fadeInText 2.2s ease-out 3.5s forwards; opacity: 0;">
-                    <img src="assets/twinpeach_cropped.gif" alt="TWIN PEACH" style="max-width: 300px; height: auto;">
-                </a>
+                <a href="field.html" style="display: inline-block; padding: 15px 40px; background-color: #ff6b6b; color: #fff; text-decoration: none; border-radius: 5px; font-size: 18px; font-weight: bold; transition: all 0.3s ease; animation: fadeInText 4s ease-out 8.5s forwards; opacity: 0;">狼煙を焚く</a>
             </div>
         </div>
         
@@ -878,9 +876,6 @@
                 // 1秒後に煙を出す
                 setTimeout(() => {
                     smoke.classList.add('active');
-                    // 煙と同時に背景色の変更を開始
-                    document.body.style.transition = 'background-color 1.5s ease-out';
-                    document.body.style.backgroundColor = '#fff';
                 }, 1000);
                 
                 // 2.5秒後にメインコンテンツへ遷移
@@ -889,10 +884,10 @@
                     if (window.innerWidth <= 768) {
                         smoke.innerHTML = '<div class="whiteout"></div>';
                     }
-                    // 直接切り替え（フェードアウトなし）
                     opening.style.display = 'none';
                     mainContent.classList.add('show');
                     document.body.style.overflow = 'auto';
+                    document.body.style.backgroundColor = '#fff';
                     
                     // モバイルの場合は動画を停止して遅延読み込み
                     if (window.innerWidth <= 768) {

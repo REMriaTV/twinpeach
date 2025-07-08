@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smoke Network Service</title>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        
+        .character-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .character-btn {
+            padding: 10px 20px;
+            border: 2px solid #666;
+            background-color: transparent;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .character-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .character-btn.active {
+            background-color: #ff6b6b;
+            border-color: #ff6b6b;
+            color: #fff;
+        }
+        
+        .chat-container {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            animation: fadeIn 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .message:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        
+        .message:hover .message-actions {
+            opacity: 1;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message-character {
+            font-weight: bold;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        
+        .message-text {
+            display: inline;
+            line-height: 1.5;
+        }
+        
+        .message-time {
+            font-size: 0.8em;
+            color: #999;
+            margin-left: 10px;
+        }
+        
+        .message-actions {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-btn {
+            padding: 2px 8px;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .action-btn.delete:hover {
+            background-color: rgba(255, 107, 107, 0.2);
+        }
+        
+        .editing .message-text {
+            display: none;
+        }
+        
+        .editing {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .edit-input {
+            flex: 1;
+            padding: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            border-radius: 3px;
+        }
+        
+        .edit-actions {
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        
+        /* Character-specific colors */
+        .message.浦島 .message-character { color: #4ecdc4; }
+        .message.桃次郎 .message-character { color: #ff6b6b; }
+        .message.桃太郎 .message-character { color: #ffd93d; }
+        .message.猫 .message-character { color: #95e1d3; }
+        .message.狸 .message-character { color: #a8e6cf; }
+        .message.蛇女 .message-character { color: #c7a8ff; }
+        
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #ff5252;
+        }
+        
+        /* モーダルオーバーレイ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: #2a2a2a;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5em;
+            color: #ff6b6b;
+            margin: 0;
+        }
+        
+        .modal-close {
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            color: #fff;
+        }
+        
+        .modal-character-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            min-height: 100px;
+            resize: vertical;
+            outline: none;
+        }
+        
+        .modal-input:focus {
+            border-color: #ff6b6b;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .modal-btn {
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .modal-btn.primary {
+            background-color: #ff6b6b;
+            color: #fff;
+        }
+        
+        .modal-btn.primary:hover {
+            background-color: #ff5252;
+        }
+        
+        .modal-btn.secondary {
+            background-color: transparent;
+            color: #999;
+            border: 1px solid #666;
+        }
+        
+        .modal-btn.secondary:hover {
+            color: #fff;
+            border-color: #999;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .message-input:focus {
+            border-color: #ff6b6b;
+        }
+        
+        .send-btn {
+            padding: 12px 30px;
+            background-color: #ff6b6b;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .send-btn:hover {
+            background-color: #ff5252;
+            transform: translateY(-2px);
+        }
+        
+        .send-btn:active {
+            transform: translateY(0);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+        
+        .error {
+            background-color: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="javascript:history.back()" class="back-link">← 戻る</a>
+        
+        <h1>Smoke Network Service</h1>
+        <h2 id="placeName" style="font-size: 1.2em; color: #999; text-align: center; margin-top: -10px;"></h2>
+        
+        <div style="font-size: 12px; color: #666; margin-bottom: 15px; text-align: center;">
+            キーボードショートカット: Tab（次のキャラ）/ Shift+Tab（前のキャラ）/ Alt+1〜6（直接選択）
+        </div>
+        
+        <div class="character-selector">
+            <button class="character-btn active" data-character="浦島">浦島</button>
+            <button class="character-btn" data-character="桃次郎">桃次郎</button>
+            <button class="character-btn" data-character="桃太郎">桃太郎</button>
+            <button class="character-btn" data-character="猫">猫</button>
+            <button class="character-btn" data-character="狸">狸</button>
+            <button class="character-btn" data-character="蛇女">蛇女</button>
+        </div>
+        
+        <!-- 上部の入力欄 -->
+        <div class="input-container">
+            <input type="text" class="message-input" id="messageInput" placeholder="メッセージを入力..." maxlength="500">
+            <button class="send-btn" id="sendBtn">送信</button>
+        </div>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="loading">メッセージを読み込み中...</div>
+        </div>
+    </div>
+    
+    <!-- モーダル -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">新しいメッセージ</h2>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            
+            <div class="modal-character-selector" id="modalCharacterSelector">
+                <button class="character-btn active" data-character="浦島">浦島</button>
+                <button class="character-btn" data-character="桃次郎">桃次郎</button>
+                <button class="character-btn" data-character="桃太郎">桃太郎</button>
+                <button class="character-btn" data-character="猫">猫</button>
+                <button class="character-btn" data-character="狸">狸</button>
+                <button class="character-btn" data-character="蛇女">蛇女</button>
+            </div>
+            
+            <textarea class="modal-input" id="modalInput" placeholder="メッセージを入力..." maxlength="500"></textarea>
+            
+            <div class="modal-actions">
+                <button class="modal-btn secondary" id="modalCancel">キャンセル</button>
+                <button class="modal-btn primary" id="modalSend">送信</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Firebase設定
+        // TODO: 以下の設定を実際のFirebaseプロジェクトの設定に置き換えてください
+        // 1. Firebaseコンソール (https://console.firebase.google.com) でプロジェクトを作成
+        // 2. "プロジェクトの設定" → "全般" → "マイアプリ" → "ウェブアプリを追加"
+        // 3. 生成された設定情報をここにコピー
+        // 4. Realtime Databaseを有効化し、ルールを設定（開発時は以下のルールを使用可能）:
+        //    {
+        //      "rules": {
+        //        ".read": true,
+        //        ".write": true
+        //      }
+        //    }
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyC6kG3nI6VXmHqPcPsh9jYc-M6rBpGVlDw",
+            authDomain: "twinpeach-demo.firebaseapp.com",
+            databaseURL: "https://twinpeach-demo-default-rtdb.firebaseio.com",
+            projectId: "twinpeach-demo",
+            storageBucket: "twinpeach-demo.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef123456"
+        };
+        
+        // URLパラメータから場所を取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentPlace = urlParams.get('place') || 'default';
+        const currentThread = urlParams.get('thread') || '1';
+        
+        // 場所名のマッピング
+        const placeNames = {
+            'ibuki': '伊吹山麓',
+            'biwa': '琵琶湖畔',
+            'kusatsu': '草津街道',
+            'keihoku': '京北山中',
+            'tango': '丹後岬',
+            'default': '狼煙場'
+        };
+        
+        // ローカルストレージキーを場所とスレッドで分ける
+        const storageKey = `twinpeach-messages-${currentPlace}-${currentThread}`;
+        let messages = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        let isFirebaseInitialized = true; // ローカルモードでは常にtrue
+        
+        // メッセージIDのカウンター
+        let messageIdCounter = messages.length > 0 ? Math.max(...messages.map(m => m.id || 0)) + 1 : 1;
+        
+        // 現在選択されているキャラクター
+        let currentCharacter = '浦島';
+        let editingMessageId = null;
+        
+        // モーダル要素
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalInput = document.getElementById('modalInput');
+        const modalSend = document.getElementById('modalSend');
+        const modalCancel = document.getElementById('modalCancel');
+        const modalClose = document.getElementById('modalClose');
+        
+        // モーダルを開く
+        function openModal(isEdit = false, messageId = null, currentText = '') {
+            editingMessageId = messageId;
+            modalOverlay.classList.add('active');
+            modalTitle.textContent = isEdit ? 'メッセージを編集' : '新しいメッセージ';
+            modalInput.value = currentText;
+            
+            // 編集時はキャラクター選択を非表示、新規時は表示
+            const modalCharacterSelector = document.getElementById('modalCharacterSelector');
+            if (isEdit) {
+                modalCharacterSelector.style.display = 'none';
+            } else {
+                modalCharacterSelector.style.display = 'flex';
+                // 現在のキャラクターを選択状態にする
+                document.querySelectorAll('#modalCharacterSelector .character-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.character === currentCharacter);
+                });
+            }
+            
+            setTimeout(() => modalInput.focus(), 100);
+        }
+        
+        // モーダルを閉じる
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            modalInput.value = '';
+            editingMessageId = null;
+        }
+        
+        // キャラクター選択
+        document.querySelectorAll('.character-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 同じグループ内のボタンのアクティブ状態を切り替え
+                const isModalBtn = btn.closest('#modalCharacterSelector');
+                const selector = isModalBtn ? '#modalCharacterSelector .character-btn' : '.character-selector .character-btn';
+                
+                document.querySelectorAll(selector).forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // 新規投稿時のみキャラクター変更を反映
+                if (!isModalBtn) {
+                    currentCharacter = btn.dataset.character;
+                    // 入力欄にフォーカス
+                    document.getElementById('messageInput').focus();
+                }
+            });
+        });
+        
+        // キーボードショートカットでキャラクター切り替え
+        const characters = ['浦島', '桃次郎', '桃太郎', '猫', '狸', '蛇女'];
+        document.addEventListener('keydown', (e) => {
+            // 数字キー1-6でキャラクター切り替え（Alt/Optionキーと組み合わせ）
+            if (e.altKey && e.key >= '1' && e.key <= '6') {
+                e.preventDefault();
+                const index = parseInt(e.key) - 1;
+                const character = characters[index];
+                const btn = document.querySelector(`.character-selector .character-btn[data-character="${character}"]`);
+                if (btn) btn.click();
+            }
+            
+            // Tab キーで次のキャラクターに切り替え
+            if (e.key === 'Tab' && !e.shiftKey && !modalOverlay.classList.contains('active')) {
+                e.preventDefault();
+                const currentIndex = characters.indexOf(currentCharacter);
+                const nextIndex = (currentIndex + 1) % characters.length;
+                const nextBtn = document.querySelector(`.character-selector .character-btn[data-character="${characters[nextIndex]}"]`);
+                if (nextBtn) nextBtn.click();
+            }
+            
+            // Shift + Tab で前のキャラクターに切り替え
+            if (e.key === 'Tab' && e.shiftKey && !modalOverlay.classList.contains('active')) {
+                e.preventDefault();
+                const currentIndex = characters.indexOf(currentCharacter);
+                const prevIndex = (currentIndex - 1 + characters.length) % characters.length;
+                const prevBtn = document.querySelector(`.character-selector .character-btn[data-character="${characters[prevIndex]}"]`);
+                if (prevBtn) prevBtn.click();
+            }
+        });
+        
+        
+        // モーダル内の送信処理
+        modalSend.addEventListener('click', () => {
+            const messageText = modalInput.value.trim();
+            if (!messageText) return;
+            
+            // 編集の保存のみ（新規はモーダルを使わない）
+            if (editingMessageId) {
+                saveEditFromModal(editingMessageId, messageText);
+                closeModal();
+            }
+        });
+        
+        // モーダルを閉じる処理
+        modalCancel.addEventListener('click', closeModal);
+        modalClose.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
+        
+        // Escapeキーでモーダルを閉じる
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                closeModal();
+            }
+        });
+        
+        // モーダル内でEnterキーで送信（Shift+Enterで改行）
+        modalInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                modalSend.click();
+            }
+        });
+        
+        
+        // メッセージ送信
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const messageText = messageInput.value.trim();
+            
+            if (!messageText || !isFirebaseInitialized) return;
+            
+            // メッセージオブジェクトを作成
+            const newMessage = {
+                id: messageIdCounter++,
+                character: currentCharacter,
+                text: messageText,
+                timestamp: Date.now()
+            };
+            
+            // ローカルストレージに保存（場所別）
+            messages.push(newMessage);
+            localStorage.setItem(storageKey, JSON.stringify(messages));
+            
+            // スレッドの最終更新時刻を更新
+            updateThreadLastUpdate();
+            
+            // 画面に表示
+            displayNewMessage(newMessage);
+            
+            // 入力欄をクリア
+            messageInput.value = '';
+        }
+        
+        // モーダルから編集を保存
+        function saveEditFromModal(messageId, newText) {
+            const messageIndex = messages.findIndex(m => m.id === messageId);
+            if (messageIndex !== -1) {
+                messages[messageIndex].text = newText;
+                localStorage.setItem(storageKey, JSON.stringify(messages));
+                
+                // 画面を更新
+                const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (messageDiv) {
+                    const messageTextSpan = messageDiv.querySelector('.message-text');
+                    messageTextSpan.textContent = newText;
+                }
+            }
+        }
+        
+        // メッセージ表示
+        function displayMessage(data) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${data.character}`;
+            messageDiv.dataset.messageId = data.id;
+            
+            const time = new Date(data.timestamp).toLocaleTimeString('ja-JP', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            messageDiv.innerHTML = `
+                <span class="message-character">${data.character}:</span>
+                <span class="message-text">${escapeHtml(data.text)}</span>
+                <span class="message-time">${time}</span>
+                <div class="message-actions">
+                    <button class="action-btn delete" onclick="deleteMessage(${data.id})">消す</button>
+                </div>
+            `;
+            
+            // メッセージ全体をクリックで編集
+            messageDiv.addEventListener('click', (e) => {
+                // 削除ボタンや編集中の場合はスキップ
+                if (e.target.classList.contains('action-btn') || 
+                    e.target.classList.contains('edit-input') ||
+                    messageDiv.classList.contains('editing')) {
+                    return;
+                }
+                editMessage(data.id);
+            });
+            
+            return messageDiv;
+        }
+        
+        // HTMLエスケープ
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+        
+        // 新しいメッセージを画面に追加
+        function displayNewMessage(data) {
+            const chatContainer = document.getElementById('chatContainer');
+            const loading = chatContainer.querySelector('.loading');
+            if (loading) loading.remove();
+            
+            // 「メッセージがありません」が表示されている場合は削除
+            const emptyMessage = chatContainer.querySelector('.loading');
+            if (emptyMessage && emptyMessage.textContent === 'メッセージがありません') {
+                emptyMessage.remove();
+            }
+            
+            // 新しいメッセージを最上部に追加
+            chatContainer.insertBefore(displayMessage(data), chatContainer.firstChild);
+            // スクロールを最上部に
+            chatContainer.scrollTop = 0;
+        }
+        
+        // 初期表示
+        function loadMessages() {
+            const chatContainer = document.getElementById('chatContainer');
+            const loading = chatContainer.querySelector('.loading');
+            if (loading) loading.remove();
+            
+            // 最新50件を表示（新しい順）
+            const recentMessages = messages.slice(-50).reverse();
+            
+            if (recentMessages.length === 0) {
+                chatContainer.innerHTML = '<div class="loading">メッセージがありません</div>';
+            } else {
+                recentMessages.forEach(msg => {
+                    chatContainer.appendChild(displayMessage(msg));
+                });
+                // 最上部にスクロール
+                chatContainer.scrollTop = 0;
+            }
+        }
+        
+        // メッセージ編集（モーダルを使用）
+        function editMessage(messageId) {
+            const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
+            const messageTextSpan = messageDiv.querySelector('.message-text');
+            const currentText = messageTextSpan.textContent;
+            const messageCharacter = messageDiv.querySelector('.message-character').textContent.replace(':', '');
+            
+            // 編集時はキャラクターを固定
+            currentCharacter = messageCharacter;
+            
+            // モーダルを開く
+            openModal(true, messageId, currentText);
+        }
+        
+        
+        // メッセージ削除
+        function deleteMessage(messageId) {
+            if (!confirm('このメッセージを削除しますか？')) return;
+            
+            // メッセージを削除
+            messages = messages.filter(m => m.id !== messageId);
+            localStorage.setItem(storageKey, JSON.stringify(messages));
+            
+            // 画面から削除
+            const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageDiv) {
+                messageDiv.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => messageDiv.remove(), 300);
+            }
+        }
+        
+        // フェードアウトアニメーション追加
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                from { opacity: 1; transform: translateX(0); }
+                to { opacity: 0; transform: translateX(-20px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // スレッドの最終更新時刻を更新
+        function updateThreadLastUpdate() {
+            const threadsKey = `twinpeach-threads-${currentPlace}`;
+            const threads = JSON.parse(localStorage.getItem(threadsKey) || '[]');
+            
+            const threadIndex = threads.findIndex(t => t.id === currentThread);
+            if (threadIndex !== -1) {
+                threads[threadIndex].lastUpdate = Date.now();
+                localStorage.setItem(threadsKey, JSON.stringify(threads));
+            }
+        }
+        
+        // スレッド情報を取得
+        function getThreadInfo() {
+            const threadsKey = `twinpeach-threads-${currentPlace}`;
+            const threads = JSON.parse(localStorage.getItem(threadsKey) || '[]');
+            return threads.find(t => t.id === currentThread);
+        }
+        
+        // ページ読み込み時の処理
+        window.addEventListener('load', () => {
+            // 場所名を表示
+            const placeNameElement = document.getElementById('placeName');
+            if (currentPlace !== 'default') {
+                const threadInfo = getThreadInfo();
+                const threadTitle = threadInfo?.title || `狼煙 #${currentThread}`;
+                placeNameElement.textContent = `${placeNames[currentPlace]}の狼煙場 - ${threadTitle}`;
+            }
+            
+            // メッセージを読み込み
+            loadMessages();
+        });
+        
+        // イベントリスナー
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

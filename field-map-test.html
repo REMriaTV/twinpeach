@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ミニマップテスト - 野呂子無料相談所</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(to bottom, #0a0a0a 0%, #1a1a1a 100%);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+        
+        .noroshiya-message {
+            text-align: center;
+            font-size: 1.2em;
+            color: #4ecdc4;
+            margin: 30px 0;
+            line-height: 2;
+            min-height: 3em;
+        }
+        
+        .map-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        #mapCanvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #ff5252;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="field.html" class="back-link">← 通常版に戻る</a>
+        
+        <h1>野呂子無料相談所</h1>
+        
+        <div class="noroshiya-message">
+            <span id="typingText"></span>
+        </div>
+        
+        <div class="map-container">
+            <canvas id="mapCanvas"></canvas>
+            <div class="tooltip" id="tooltip"></div>
+        </div>
+    </div>
+    
+    <script>
+        // キャンバスとコンテキストの取得
+        const canvas = document.getElementById('mapCanvas');
+        const ctx = canvas.getContext('2d');
+        const tooltip = document.getElementById('tooltip');
+        
+        // 高解像度ディスプレイ対応
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        
+        // 狼煙場の定義
+        const places = {
+            ibuki: {
+                name: '伊吹山麓の狼煙場',
+                x: 0.7, y: 0.5,
+                active: 3,
+                description: '旅立ちの場所'
+            },
+            biwa: {
+                name: '琵琶湖畔の狼煙場',
+                x: 0.5, y: 0.45,
+                active: 1,
+                description: '水辺の静かな場所'
+            },
+            kusatsu: {
+                name: '草津街道の狼煙場',
+                x: 0.55, y: 0.65,
+                active: 0,
+                description: '街道沿いの賑やかな場所'
+            },
+            keihoku: {
+                name: '京北山中の狼煙場',
+                x: 0.35, y: 0.3,
+                active: 2,
+                description: '深い森の神秘的な場所'
+            },
+            tango: {
+                name: '丹後岬の狼煙場',
+                x: 0.15, y: 0.15,
+                active: 4,
+                description: '水宮への祈りが届く場所'
+            }
+        };
+        
+        // 粒子システム
+        const particles = [];
+        class Particle {
+            constructor(x, y, placeId) {
+                this.x = x;
+                this.y = y;
+                this.placeId = placeId;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = -Math.random() * 1 - 0.5;
+                this.life = 1.0;
+                this.decay = Math.random() * 0.01 + 0.005;
+                this.size = Math.random() * 3 + 2;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+                this.vx += (Math.random() - 0.5) * 0.1;
+                this.size *= 1.01;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life * 0.3;
+                ctx.fillStyle = '#4ecdc4';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
+        // 琵琶湖を描画
+        function drawBiwakoLake() {
+            ctx.save();
+            ctx.fillStyle = 'rgba(78, 205, 196, 0.2)';
+            ctx.strokeStyle = 'rgba(78, 205, 196, 0.3)';
+            ctx.lineWidth = 2;
+            
+            const centerX = rect.width * 0.5;
+            const centerY = rect.height * 0.45;
+            
+            // 簡略化した琵琶湖の形
+            ctx.beginPath();
+            ctx.moveTo(centerX - 40, centerY - 60);
+            ctx.bezierCurveTo(
+                centerX - 50, centerY - 40,
+                centerX - 50, centerY + 20,
+                centerX - 30, centerY + 50
+            );
+            ctx.bezierCurveTo(
+                centerX - 10, centerY + 70,
+                centerX + 10, centerY + 70,
+                centerX + 30, centerY + 50
+            );
+            ctx.bezierCurveTo(
+                centerX + 50, centerY + 20,
+                centerX + 50, centerY - 40,
+                centerX + 40, centerY - 60
+            );
+            ctx.bezierCurveTo(
+                centerX + 20, centerY - 80,
+                centerX - 20, centerY - 80,
+                centerX - 40, centerY - 60
+            );
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        // 狼煙場を描画
+        function drawPlaces() {
+            Object.entries(places).forEach(([id, place]) => {
+                const x = rect.width * place.x;
+                const y = rect.height * place.y;
+                
+                // 狼煙場の円
+                ctx.save();
+                ctx.fillStyle = place.active > 0 ? 'rgba(255, 107, 107, 0.3)' : 'rgba(100, 100, 100, 0.3)';
+                ctx.strokeStyle = place.active > 0 ? '#ff6b6b' : '#666';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(x, y, 15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                
+                // 炎のアイコン
+                if (place.active > 0) {
+                    ctx.fillStyle = '#ff6b6b';
+                    ctx.font = '16px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('🔥', x, y);
+                }
+                
+                ctx.restore();
+                
+                // 粒子を生成
+                if (place.active > 0 && Math.random() < 0.1 * place.active) {
+                    particles.push(new Particle(x, y, id));
+                }
+            });
+        }
+        
+        // 煙の道を描画
+        function drawSmokePaths() {
+            const activePlaces = Object.entries(places).filter(([id, p]) => p.active > 0);
+            
+            ctx.save();
+            ctx.strokeStyle = 'rgba(78, 205, 196, 0.1)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 10]);
+            
+            // アクティブな場所を線で結ぶ
+            for (let i = 0; i < activePlaces.length; i++) {
+                for (let j = i + 1; j < activePlaces.length; j++) {
+                    const place1 = activePlaces[i][1];
+                    const place2 = activePlaces[j][1];
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(rect.width * place1.x, rect.height * place1.y);
+                    ctx.lineTo(rect.width * place2.x, rect.height * place2.y);
+                    ctx.stroke();
+                }
+            }
+            
+            ctx.restore();
+        }
+        
+        // アニメーションループ
+        function animate() {
+            ctx.clearRect(0, 0, rect.width, rect.height);
+            
+            // 地図要素を描画
+            drawBiwakoLake();
+            drawSmokePaths();
+            drawPlaces();
+            
+            // 粒子を更新・描画
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const particle = particles[i];
+                particle.update();
+                
+                if (particle.life <= 0) {
+                    particles.splice(i, 1);
+                } else {
+                    particle.draw();
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // マウスイベント
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            let hoveredPlace = null;
+            Object.entries(places).forEach(([id, place]) => {
+                const px = rect.width * place.x;
+                const py = rect.height * place.y;
+                const distance = Math.sqrt((x - px) ** 2 + (y - py) ** 2);
+                
+                if (distance < 20) {
+                    hoveredPlace = place;
+                }
+            });
+            
+            if (hoveredPlace) {
+                tooltip.style.display = 'block';
+                tooltip.style.left = e.clientX + 10 + 'px';
+                tooltip.style.top = e.clientY - 30 + 'px';
+                tooltip.textContent = hoveredPlace.name;
+                canvas.style.cursor = 'pointer';
+            } else {
+                tooltip.style.display = 'none';
+                canvas.style.cursor = 'crosshair';
+            }
+        });
+        
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            Object.entries(places).forEach(([id, place]) => {
+                const px = rect.width * place.x;
+                const py = rect.height * place.y;
+                const distance = Math.sqrt((x - px) ** 2 + (y - py) ** 2);
+                
+                if (distance < 20) {
+                    window.location.href = `threads.html?place=${id}`;
+                }
+            });
+        });
+        
+        // タイピングアニメーション
+        const message = 'ヨウコソヨクゾオイデナサイマシ\nチズデバショエランデクダサイナ\nケムリツナガルミンナノオモイ...';
+        const typingElement = document.getElementById('typingText');
+        let charIndex = 0;
+        
+        function typeWriter() {
+            if (charIndex < message.length) {
+                if (message[charIndex] === '\n') {
+                    typingElement.innerHTML += '<br>';
+                } else {
+                    typingElement.innerHTML += message[charIndex];
+                }
+                charIndex++;
+                const speed = Math.random() * 20 + 30;
+                setTimeout(typeWriter, speed);
+            }
+        }
+        
+        // 開始
+        window.addEventListener('load', () => {
+            setTimeout(typeWriter, 500);
+            animate();
+        });
+    </script>
+</body>
+</html>

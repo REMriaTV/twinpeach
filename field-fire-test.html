@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>野呂子無料相談所 - Campfire Layout</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: radial-gradient(circle at center, #2a1810 0%, #0a0a0a 100%);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+        
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #ff5252;
+        }
+        
+        .noroshiya-message {
+            text-align: center;
+            font-size: 1.2em;
+            color: #4ecdc4;
+            margin: 20px 0;
+            line-height: 2;
+            min-height: 3em;
+        }
+        
+        /* Campfire circular layout */
+        .campfire-container {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            margin: 0 auto;
+        }
+        
+        .campfire-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, #ff6b6b 0%, #ff4444 50%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(20px);
+            animation: fire-pulse 2s infinite;
+        }
+        
+        @keyframes fire-pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+        }
+        
+        .place-card {
+            position: absolute;
+            width: 180px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .place-card:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 107, 107, 0.5);
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.3);
+        }
+        
+        /* Position places in a circle */
+        .place-card:nth-child(1) {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .place-card:nth-child(2) {
+            top: 35%;
+            right: 0;
+            transform: translateY(-50%);
+        }
+        
+        .place-card:nth-child(3) {
+            bottom: 0;
+            right: 15%;
+        }
+        
+        .place-card:nth-child(4) {
+            bottom: 0;
+            left: 15%;
+        }
+        
+        .place-card:nth-child(5) {
+            top: 35%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+        
+        .place-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff6b6b;
+        }
+        
+        .place-description {
+            display: none;
+        }
+        
+        .smoke-indicator {
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .smoke-active {
+            color: #4ecdc4;
+        }
+        
+        /* Smoke particles */
+        .smoke-particle {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(5px);
+            animation: smoke-rise 4s infinite;
+        }
+        
+        @keyframes smoke-rise {
+            0% {
+                bottom: 50%;
+                left: 50%;
+                transform: translate(-50%, 50%) scale(0.5);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.6;
+            }
+            100% {
+                bottom: 100%;
+                left: calc(50% + var(--drift));
+                transform: translate(-50%, 50%) scale(2);
+                opacity: 0;
+            }
+        }
+        
+        .footer-note {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #666;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="field.html" class="back-link">← 戻る</a>
+        
+        <h1>野呂子無料相談所</h1>
+        
+        <div class="noroshiya-message">
+            <span id="typingText"></span>
+        </div>
+        
+        <div class="campfire-container">
+            <div class="campfire-center"></div>
+            
+            <div class="place-card" onclick="enterPlace('ibuki')">
+                <div class="place-name">伊吹山麓の狼煙場</div>
+                <div class="smoke-indicator smoke-active">
+                    🔥 3つの狼煙
+                </div>
+            </div>
+            
+            <div class="place-card" onclick="enterPlace('biwa')">
+                <div class="place-name">琵琶湖畔の狼煙場</div>
+                <div class="smoke-indicator smoke-active">
+                    🔥 1つの狼煙
+                </div>
+            </div>
+            
+            <div class="place-card" onclick="enterPlace('kusatsu')">
+                <div class="place-name">草津街道の狼煙場</div>
+                <div class="smoke-indicator">
+                    💨 煙なし
+                </div>
+            </div>
+            
+            <div class="place-card" onclick="enterPlace('keihoku')">
+                <div class="place-name">京北山中の狼煙場</div>
+                <div class="smoke-indicator smoke-active">
+                    🔥 2つの狼煙
+                </div>
+            </div>
+            
+            <div class="place-card" onclick="enterPlace('tango')">
+                <div class="place-name">丹後岬の狼煙場</div>
+                <div class="smoke-indicator smoke-active">
+                    🔥 4つの狼煙
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-note">
+            狼煙屋たちが優しく煙を守っている...
+        </div>
+    </div>
+    
+    <script>
+        // 狼煙場に入る
+        function enterPlace(place) {
+            window.location.href = `threads.html?place=${place}`;
+        }
+        
+        // Create smoke particles
+        function createSmokeParticle() {
+            const container = document.querySelector('.campfire-container');
+            const particle = document.createElement('div');
+            particle.className = 'smoke-particle';
+            
+            // Random drift
+            const drift = (Math.random() - 0.5) * 100;
+            particle.style.setProperty('--drift', drift + 'px');
+            
+            // Random animation delay
+            particle.style.animationDelay = Math.random() * 4 + 's';
+            
+            container.appendChild(particle);
+            
+            // Remove particle after animation
+            setTimeout(() => {
+                particle.remove();
+            }, 4000);
+        }
+        
+        // Create particles continuously
+        setInterval(createSmokeParticle, 300);
+        
+        // タイピングアニメーション
+        const message = 'キャンプファイアヲカコンデ\nミンナデアタタマロウ\nケムリハホシゾライヌケテユク...';
+        const typingElement = document.getElementById('typingText');
+        let charIndex = 0;
+        
+        function typeWriter() {
+            if (charIndex < message.length) {
+                if (message[charIndex] === '\n') {
+                    typingElement.innerHTML += '<br>';
+                } else {
+                    typingElement.innerHTML += message[charIndex];
+                }
+                charIndex++;
+                const speed = Math.random() * 20 + 30;
+                setTimeout(typeWriter, speed);
+            }
+        }
+        
+        window.addEventListener('load', () => {
+            setTimeout(typeWriter, 500);
+        });
+    </script>
+</body>
+</html>

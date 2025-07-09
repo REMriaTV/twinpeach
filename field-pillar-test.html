@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>野呂子無料相談所 - Vertical Pillar Layout</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(to bottom, #0a0a0a 0%, #1a1a1a 100%);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #ff5252;
+        }
+        
+        .noroshiya-message {
+            text-align: center;
+            font-size: 1.2em;
+            color: #4ecdc4;
+            margin: 30px 0;
+            line-height: 2;
+            min-height: 3em;
+        }
+        
+        /* Vertical pillar layout */
+        .pillars-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 600px;
+            margin-top: 40px;
+            padding: 0 40px;
+        }
+        
+        .pillar-wrapper {
+            flex: 1;
+            max-width: 220px;
+            margin: 0 10px;
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        
+        .smoke-pillar {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 400px;
+            overflow: hidden;
+        }
+        
+        .smoke-flow {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, 
+                rgba(255, 255, 255, 0.3) 0%, 
+                rgba(255, 255, 255, 0.2) 50%, 
+                transparent 100%);
+            filter: blur(10px);
+            animation: smoke-flow 3s infinite;
+            transform-origin: bottom center;
+        }
+        
+        @keyframes smoke-flow {
+            0% {
+                transform: scaleY(0);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: scaleY(1);
+                opacity: 0;
+            }
+        }
+        
+        .place-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .place-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 107, 107, 0.3);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.2);
+        }
+        
+        .place-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff6b6b;
+        }
+        
+        .smoke-indicator {
+            margin-top: 15px;
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .smoke-active {
+            color: #4ecdc4;
+        }
+        
+        /* Different pillar heights based on smoke count */
+        .pillar-wrapper[data-smoke="0"] .smoke-pillar { display: none; }
+        .pillar-wrapper[data-smoke="1"] .smoke-pillar { height: 200px; }
+        .pillar-wrapper[data-smoke="2"] .smoke-pillar { height: 300px; }
+        .pillar-wrapper[data-smoke="3"] .smoke-pillar { height: 400px; }
+        .pillar-wrapper[data-smoke="4"] .smoke-pillar { height: 500px; }
+        
+        /* Smoke particles */
+        .smoke-particle {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(15px);
+            animation: particle-rise 4s infinite;
+        }
+        
+        @keyframes particle-rise {
+            0% {
+                bottom: 0;
+                left: 50%;
+                transform: translateX(-50%) scale(0.3);
+                opacity: 0.8;
+            }
+            100% {
+                bottom: 100%;
+                left: calc(50% + var(--drift));
+                transform: translateX(-50%) scale(1);
+                opacity: 0;
+            }
+        }
+        
+        .footer-note {
+            text-align: center;
+            margin-top: 60px;
+            color: #666;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+        
+        /* Glow effect for active pillars */
+        .pillar-wrapper[data-smoke]:not([data-smoke="0"]) .place-card {
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="field.html" class="back-link">← 戻る</a>
+        
+        <h1>野呂子無料相談所</h1>
+        
+        <div class="noroshiya-message">
+            <span id="typingText"></span>
+        </div>
+        
+        <div class="pillars-container">
+            <div class="pillar-wrapper" data-smoke="3">
+                <div class="smoke-pillar">
+                    <div class="smoke-flow"></div>
+                </div>
+                <div class="place-card" onclick="enterPlace('ibuki')">
+                    <div class="place-name">伊吹山麓の狼煙場</div>
+                    <div class="smoke-indicator smoke-active">
+                        🔥 3つの狼煙
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pillar-wrapper" data-smoke="1">
+                <div class="smoke-pillar">
+                    <div class="smoke-flow"></div>
+                </div>
+                <div class="place-card" onclick="enterPlace('biwa')">
+                    <div class="place-name">琵琶湖畔の狼煙場</div>
+                    <div class="smoke-indicator smoke-active">
+                        🔥 1つの狼煙
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pillar-wrapper" data-smoke="0">
+                <div class="smoke-pillar">
+                    <div class="smoke-flow"></div>
+                </div>
+                <div class="place-card" onclick="enterPlace('kusatsu')">
+                    <div class="place-name">草津街道の狼煙場</div>
+                    <div class="smoke-indicator">
+                        💨 煙なし
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pillar-wrapper" data-smoke="2">
+                <div class="smoke-pillar">
+                    <div class="smoke-flow"></div>
+                </div>
+                <div class="place-card" onclick="enterPlace('keihoku')">
+                    <div class="place-name">京北山中の狼煙場</div>
+                    <div class="smoke-indicator smoke-active">
+                        🔥 2つの狼煙
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pillar-wrapper" data-smoke="4">
+                <div class="smoke-pillar">
+                    <div class="smoke-flow"></div>
+                </div>
+                <div class="place-card" onclick="enterPlace('tango')">
+                    <div class="place-name">丹後岬の狼煙場</div>
+                    <div class="smoke-indicator smoke-active">
+                        🔥 4つの狼煙
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-note">
+            狼煙屋たちが優しく煙を守っている...
+        </div>
+    </div>
+    
+    <script>
+        // 狼煙場に入る
+        function enterPlace(place) {
+            window.location.href = `threads.html?place=${place}`;
+        }
+        
+        // Create smoke particles for pillars
+        function createSmokeParticle(pillar) {
+            const particle = document.createElement('div');
+            particle.className = 'smoke-particle';
+            
+            // Random drift
+            const drift = (Math.random() - 0.5) * 40;
+            particle.style.setProperty('--drift', drift + 'px');
+            
+            // Random delay
+            particle.style.animationDelay = Math.random() * 4 + 's';
+            
+            pillar.appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 4000);
+        }
+        
+        // Animate smoke for active pillars
+        function animateSmokePillars() {
+            document.querySelectorAll('.pillar-wrapper[data-smoke]:not([data-smoke="0"]) .smoke-pillar').forEach(pillar => {
+                const smokeCount = parseInt(pillar.parentElement.getAttribute('data-smoke'));
+                
+                // Create multiple smoke flows
+                for (let i = 1; i < Math.min(smokeCount, 3); i++) {
+                    const flow = document.createElement('div');
+                    flow.className = 'smoke-flow';
+                    flow.style.animationDelay = (i * 0.7) + 's';
+                    flow.style.left = (50 + (i - 1) * 20 - 10) + '%';
+                    flow.style.width = '60px';
+                    pillar.appendChild(flow);
+                }
+                
+                // Create particles periodically
+                setInterval(() => {
+                    createSmokeParticle(pillar);
+                }, 1000 / smokeCount);
+            });
+        }
+        
+        // タイピングアニメーション
+        const message = 'ケムリノハシラガソラヲツク\nタカクタカクノボッテイク\nカミサマニトドケ...';
+        const typingElement = document.getElementById('typingText');
+        let charIndex = 0;
+        
+        function typeWriter() {
+            if (charIndex < message.length) {
+                if (message[charIndex] === '\n') {
+                    typingElement.innerHTML += '<br>';
+                } else {
+                    typingElement.innerHTML += message[charIndex];
+                }
+                charIndex++;
+                const speed = Math.random() * 20 + 30;
+                setTimeout(typeWriter, speed);
+            }
+        }
+        
+        window.addEventListener('load', () => {
+            setTimeout(typeWriter, 500);
+            animateSmokePillars();
+        });
+    </script>
+</body>
+</html>

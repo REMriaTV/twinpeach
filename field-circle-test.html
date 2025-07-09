@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>野呂子無料相談所 - Circular Network Layout</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 100%);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+        
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #ff5252;
+        }
+        
+        .noroshiya-message {
+            text-align: center;
+            font-size: 1.2em;
+            color: #4ecdc4;
+            margin: 20px 0;
+            line-height: 2;
+            min-height: 3em;
+        }
+        
+        /* Circular network layout */
+        .network-container {
+            position: relative;
+            width: 700px;
+            height: 700px;
+            margin: 0 auto;
+        }
+        
+        /* Connection lines */
+        .connections {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .connection-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(78, 205, 196, 0.3), transparent);
+            transform-origin: left center;
+            animation: pulse-line 3s infinite;
+        }
+        
+        @keyframes pulse-line {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+        
+        /* Smoke flow along connections */
+        .smoke-flow-line {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(5px);
+            animation: flow-along-line 4s infinite linear;
+        }
+        
+        @keyframes flow-along-line {
+            0% {
+                left: 0;
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                left: calc(100% - 20px);
+                opacity: 0;
+            }
+        }
+        
+        .place-node {
+            position: absolute;
+            width: 180px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .place-node:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 107, 107, 0.5);
+            box-shadow: 0 0 40px rgba(255, 107, 107, 0.4);
+        }
+        
+        /* Position nodes in a perfect circle */
+        .place-node:nth-child(1) {
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .place-node:nth-child(2) {
+            top: 30%;
+            right: 20px;
+            transform: translateY(-50%);
+        }
+        
+        .place-node:nth-child(3) {
+            bottom: 80px;
+            right: 100px;
+        }
+        
+        .place-node:nth-child(4) {
+            bottom: 80px;
+            left: 100px;
+        }
+        
+        .place-node:nth-child(5) {
+            top: 30%;
+            left: 20px;
+            transform: translateY(-50%);
+        }
+        
+        .place-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff6b6b;
+        }
+        
+        .smoke-indicator {
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .smoke-active {
+            color: #4ecdc4;
+        }
+        
+        /* Central hub */
+        .central-hub {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(78, 205, 196, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: hub-pulse 2s infinite;
+        }
+        
+        @keyframes hub-pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+        }
+        
+        /* Node smoke effects */
+        .node-smoke {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            pointer-events: none;
+        }
+        
+        .smoke-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            animation: expand-ring 3s infinite;
+        }
+        
+        @keyframes expand-ring {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        .footer-note {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #666;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="field.html" class="back-link">← 戻る</a>
+        
+        <h1>野呂子無料相談所</h1>
+        
+        <div class="noroshiya-message">
+            <span id="typingText"></span>
+        </div>
+        
+        <div class="network-container">
+            <svg class="connections" width="700" height="700">
+                <!-- Connection lines will be drawn here -->
+            </svg>
+            
+            <div class="central-hub"></div>
+            
+            <div class="place-node" onclick="enterPlace('ibuki')" data-x="350" data-y="50">
+                <div class="place-name">伊吹山麓の狼煙場</div>
+                <div class="smoke-indicator smoke-active">
+                    🔥 3つの狼煙
+                </div>
+                <div class="node-smoke">
+                    <div class="smoke-ring"></div>
+                </div>
+            </div>
+            
+            <div class="place-node" onclick="enterPlace('biwa')" data-x="580" data-y="210">
+                <div class="place-name">琵琶湖畔の狼煙場</div>
+                <div class="smoke-indicator smoke-active">
+                    🔥 1つの狼煙
+                </div>
+                <div class="node-smoke">
+                    <div class="smoke-ring"></div>
+                </div>
+            </div>
+            
+            <div class="place-node" onclick="enterPlace('kusatsu')" data-x="500" data-y="470">
+                <div class="place-name">草津街道の狼煙場</div>
+                <div class="smoke-indicator">
+                    💨 煙なし
+                </div>
+            </div>
+            
+            <div class="place-node" onclick="enterPlace('keihoku')" data-x="200" data-y="470">
+                <div class="place-name">京北山中の狼煙場</div>
+                <div class="smoke-indicator smoke-active">
+                    🔥 2つの狼煙
+                </div>
+                <div class="node-smoke">
+                    <div class="smoke-ring"></div>
+                </div>
+            </div>
+            
+            <div class="place-node" onclick="enterPlace('tango')" data-x="120" data-y="210">
+                <div class="place-name">丹後岬の狼煙場</div>
+                <div class="smoke-indicator smoke-active">
+                    🔥 4つの狼煙
+                </div>
+                <div class="node-smoke">
+                    <div class="smoke-ring"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-note">
+            狼煙屋たちが優しく煙を守っている...
+        </div>
+    </div>
+    
+    <script>
+        // 狼煙場に入る
+        function enterPlace(place) {
+            window.location.href = `threads.html?place=${place}`;
+        }
+        
+        // Draw connection lines
+        function drawConnections() {
+            const svg = document.querySelector('.connections');
+            const nodes = document.querySelectorAll('.place-node');
+            const centerX = 350;
+            const centerY = 350;
+            
+            nodes.forEach((node, i) => {
+                const x = parseInt(node.getAttribute('data-x'));
+                const y = parseInt(node.getAttribute('data-y'));
+                
+                // Connect to center
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', centerX);
+                line.setAttribute('y1', centerY);
+                line.setAttribute('x2', x);
+                line.setAttribute('y2', y);
+                line.setAttribute('stroke', 'rgba(78, 205, 196, 0.3)');
+                line.setAttribute('stroke-width', '1');
+                line.setAttribute('stroke-dasharray', '5,5');
+                svg.appendChild(line);
+                
+                // Connect to adjacent nodes
+                const nextNode = nodes[(i + 1) % nodes.length];
+                const nextX = parseInt(nextNode.getAttribute('data-x'));
+                const nextY = parseInt(nextNode.getAttribute('data-y'));
+                
+                const connLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                connLine.setAttribute('x1', x);
+                connLine.setAttribute('y1', y);
+                connLine.setAttribute('x2', nextX);
+                connLine.setAttribute('y2', nextY);
+                connLine.setAttribute('stroke', 'rgba(255, 107, 107, 0.2)');
+                connLine.setAttribute('stroke-width', '1');
+                svg.appendChild(connLine);
+            });
+        }
+        
+        // Create flowing smoke particles
+        function createFlowingSmoke() {
+            const container = document.querySelector('.network-container');
+            const nodes = document.querySelectorAll('.place-node');
+            
+            nodes.forEach((node, i) => {
+                if (node.querySelector('.smoke-active')) {
+                    const smoke = document.createElement('div');
+                    smoke.className = 'smoke-flow-line';
+                    smoke.style.width = Math.random() * 20 + 10 + 'px';
+                    smoke.style.height = smoke.style.width;
+                    
+                    const angle = (i / nodes.length) * Math.PI * 2;
+                    const radius = 250;
+                    const x = 350 + Math.cos(angle) * radius;
+                    const y = 350 + Math.sin(angle) * radius;
+                    
+                    smoke.style.left = x + 'px';
+                    smoke.style.top = y + 'px';
+                    smoke.style.animationDelay = Math.random() * 4 + 's';
+                    
+                    container.appendChild(smoke);
+                    
+                    setTimeout(() => {
+                        smoke.remove();
+                    }, 4000);
+                }
+            });
+        }
+        
+        // Create multiple smoke rings
+        function createSmokeRings() {
+            document.querySelectorAll('.node-smoke').forEach(smokeContainer => {
+                const ring2 = document.createElement('div');
+                ring2.className = 'smoke-ring';
+                ring2.style.animationDelay = '1s';
+                smokeContainer.appendChild(ring2);
+                
+                const ring3 = document.createElement('div');
+                ring3.className = 'smoke-ring';
+                ring3.style.animationDelay = '2s';
+                smokeContainer.appendChild(ring3);
+            });
+        }
+        
+        // タイピングアニメーション
+        const message = 'ミンナツナガッテル\nケムリノワガヒロガル\nココロツナガル...';
+        const typingElement = document.getElementById('typingText');
+        let charIndex = 0;
+        
+        function typeWriter() {
+            if (charIndex < message.length) {
+                if (message[charIndex] === '\n') {
+                    typingElement.innerHTML += '<br>';
+                } else {
+                    typingElement.innerHTML += message[charIndex];
+                }
+                charIndex++;
+                const speed = Math.random() * 20 + 30;
+                setTimeout(typeWriter, speed);
+            }
+        }
+        
+        window.addEventListener('load', () => {
+            setTimeout(typeWriter, 500);
+            drawConnections();
+            createSmokeRings();
+            setInterval(createFlowingSmoke, 2000);
+        });
+    </script>
+</body>
+</html>

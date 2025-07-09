@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>野呂子無料相談所 - Smoke Network Service</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(to bottom, #0a0a0a 0%, #1a1a1a 100%);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+        
+        .intro {
+            text-align: center;
+            font-size: 1.1em;
+            color: #ccc;
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #ff5252;
+        }
+        
+        .places-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+        
+        .place-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .place-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 107, 107, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .place-card:hover::before {
+            opacity: 1;
+        }
+        
+        .place-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 107, 107, 0.3);
+        }
+        
+        .place-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff6b6b;
+        }
+        
+        .place-description {
+            color: #aaa;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+        
+        .smoke-indicator {
+            margin-top: 15px;
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .smoke-active {
+            color: #4ecdc4;
+        }
+        
+        .footer-note {
+            text-align: center;
+            margin-top: 60px;
+            color: #666;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+        
+        /* 煙のアニメーション */
+        @keyframes smoke {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-20px) scale(1.2);
+                opacity: 0;
+            }
+        }
+        
+        .smoke-effect {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            font-size: 24px;
+            animation: smoke 3s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← 戻る</a>
+        
+        <h1>野呂子無料相談所</h1>
+        
+        <div class="noroshiya-message" style="text-align: center; font-size: 1.2em; color: #4ecdc4; margin: 30px 0; line-height: 2; min-height: 3em;">
+            <span id="typingText"></span>
+        </div>
+        
+        
+        <div class="places-grid">
+            <div class="place-card" onclick="enterPlace('ibuki')">
+                <div class="place-name">伊吹山麓の狼煙場</div>
+                <div class="place-description">
+                    旅立ちの場所。古墳の丘から見える琵琶湖が美しい。
+                    桃次郎が最初に狼煙を上げた思い出の地。
+                </div>
+                <div class="smoke-indicator smoke-active">
+                    🔥 3つの狼煙が上がっている
+                </div>
+                <div class="smoke-effect">💨</div>
+            </div>
+            
+            <div class="place-card" onclick="enterPlace('biwa')">
+                <div class="place-name">琵琶湖畔の狼煙場</div>
+                <div class="place-description">
+                    水辺の静かな場所。湖面に映る煙が幻想的。
+                    旅人たちが一息つく憩いの狼煙場。
+                </div>
+                <div class="smoke-indicator smoke-active">
+                    🔥 1つの狼煙が上がっている
+                </div>
+                <div class="smoke-effect">💨</div>
+            </div>
+            
+            <div class="place-card" onclick="enterPlace('kusatsu')">
+                <div class="place-name">草津街道の狼煙場</div>
+                <div class="place-description">
+                    街道沿いの賑やかな場所。商人や旅人が情報交換する。
+                    様々な噂話が飛び交う活気ある狼煙場。
+                </div>
+                <div class="smoke-indicator">
+                    💨 今は煙が上がっていない
+                </div>
+            </div>
+            
+            <div class="place-card" onclick="enterPlace('keihoku')">
+                <div class="place-name">京北山中の狼煙場</div>
+                <div class="place-description">
+                    深い森に囲まれた神秘的な場所。
+                    狼煙屋たちが静かに見守る、祈りの狼煙場。
+                </div>
+                <div class="smoke-indicator smoke-active">
+                    🔥 2つの狼煙が上がっている
+                </div>
+                <div class="smoke-effect">💨</div>
+            </div>
+            
+            <div class="place-card" onclick="enterPlace('tango')">
+                <div class="place-name">丹後岬の狼煙場</div>
+                <div class="place-description">
+                    水宮への祈りが届く場所。浦島からの返信を待つ者たちが集う。
+                    海風に乗って遠くまで煙が届く。
+                </div>
+                <div class="smoke-indicator smoke-active">
+                    🔥 4つの狼煙が上がっている
+                </div>
+                <div class="smoke-effect">💨</div>
+            </div>
+        </div>
+        
+        <div class="footer-note">
+            狼煙屋たちが優しく煙を守っている...
+        </div>
+    </div>
+    
+    <script>
+        // 狼煙場に入る
+        function enterPlace(place) {
+            // スレッド選択画面へ遷移
+            window.location.href = `threads.html?place=${place}`;
+        }
+        
+        // 煙のアニメーションをランダムに
+        document.querySelectorAll('.smoke-effect').forEach(smoke => {
+            smoke.style.animationDelay = Math.random() * 3 + 's';
+        });
+        
+        // タイピングアニメーション
+        const message = 'ヨウコソヨクゾオイデナサイマシ\nノロシアゲタイバショエランデチョウダイナ\nアナタトドケタイオモイコトバケムリカナタトドケヨウ...';
+        const typingElement = document.getElementById('typingText');
+        let charIndex = 0;
+        
+        function typeWriter() {
+            if (charIndex < message.length) {
+                if (message[charIndex] === '\n') {
+                    typingElement.innerHTML += '<br>';
+                } else {
+                    typingElement.innerHTML += message[charIndex];
+                }
+                charIndex++;
+                // 狼煙屋の早口を表現（30-50msのランダム）
+                const speed = Math.random() * 20 + 30;
+                setTimeout(typeWriter, speed);
+            }
+        }
+        
+        // ページ読み込み後、少し遅れてタイピング開始
+        window.addEventListener('load', () => {
+            setTimeout(typeWriter, 500);
+        });
+    </script>
+</body>
+</html>

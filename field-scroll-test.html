@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>野呂子無料相談所 - Horizontal Scroll Layout</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98D8C8 50%, #F7DC6F 100%);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            height: 100vh;
+        }
+        
+        .sky {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #87CEEB 0%, #FFE4B5 100%);
+            z-index: -2;
+        }
+        
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+            font-size: 2em;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+        }
+        
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #ff5252;
+        }
+        
+        .noroshiya-message {
+            text-align: center;
+            font-size: 1em;
+            color: #4ecdc4;
+            margin: 10px 0 0;
+            line-height: 1.5;
+            min-height: 2em;
+        }
+        
+        /* Horizontal scroll landscape */
+        .landscape-scroll {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 120px);
+            margin-top: 120px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .landscape-container {
+            position: relative;
+            width: 3000px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 60%, #8B7355 60%, #654321 100%);
+        }
+        
+        /* Mountain silhouettes */
+        .mountains {
+            position: absolute;
+            bottom: 30%;
+            width: 100%;
+            height: 40%;
+            background-image: 
+                linear-gradient(135deg, transparent 40%, #4a4a4a 40%),
+                linear-gradient(45deg, #4a4a4a 60%, transparent 60%);
+            background-size: 400px 100%, 300px 100%;
+            background-position: 0 0, 200px 0;
+            background-repeat: repeat-x;
+            opacity: 0.3;
+        }
+        
+        .place-card {
+            position: absolute;
+            bottom: 20%;
+            width: 200px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #ff6b6b;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .place-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Position places along the landscape */
+        .place-card:nth-child(1) { left: 200px; }
+        .place-card:nth-child(2) { left: 700px; }
+        .place-card:nth-child(3) { left: 1200px; }
+        .place-card:nth-child(4) { left: 1700px; }
+        .place-card:nth-child(5) { left: 2200px; }
+        
+        .place-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff6b6b;
+        }
+        
+        .place-description {
+            display: none;
+        }
+        
+        .smoke-indicator {
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .smoke-active {
+            color: #4ecdc4;
+        }
+        
+        /* Smoke columns rising from places */
+        .smoke-column {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 200px;
+            opacity: 0.6;
+        }
+        
+        .smoke-particle {
+            position: absolute;
+            width: 100%;
+            height: 30px;
+            background: radial-gradient(circle, rgba(200, 200, 200, 0.8) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(8px);
+            animation: smoke-rise-horizontal 3s infinite;
+        }
+        
+        @keyframes smoke-rise-horizontal {
+            0% {
+                bottom: 0;
+                transform: translateX(0) scale(0.5);
+                opacity: 0.8;
+            }
+            100% {
+                bottom: 100%;
+                transform: translateX(var(--drift)) scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: #666;
+            font-size: 14px;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(10px); }
+        }
+        
+        /* Clouds */
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 100px;
+            opacity: 0.4;
+        }
+        
+        .cloud:before {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 100px;
+        }
+        
+        .cloud1 {
+            width: 100px;
+            height: 40px;
+            top: 20%;
+            animation: drift 30s infinite;
+        }
+        
+        .cloud1:before {
+            width: 50px;
+            height: 50px;
+            top: -25px;
+            left: 10px;
+        }
+        
+        @keyframes drift {
+            0% { left: -100px; }
+            100% { left: 3100px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sky"></div>
+    
+    <div class="container">
+        <div class="header">
+            <a href="field.html" class="back-link">← 戻る</a>
+            <h1>野呂子無料相談所</h1>
+            <div class="noroshiya-message">
+                <span id="typingText"></span>
+            </div>
+        </div>
+        
+        <div class="landscape-scroll">
+            <div class="landscape-container">
+                <div class="mountains"></div>
+                
+                <div class="cloud cloud1"></div>
+                
+                <div class="place-card" onclick="enterPlace('ibuki')">
+                    <div class="place-name">伊吹山麓の狼煙場</div>
+                    <div class="smoke-indicator smoke-active">
+                        🔥 3つの狼煙
+                    </div>
+                    <div class="smoke-column" id="smoke-ibuki"></div>
+                </div>
+                
+                <div class="place-card" onclick="enterPlace('biwa')">
+                    <div class="place-name">琵琶湖畔の狼煙場</div>
+                    <div class="smoke-indicator smoke-active">
+                        🔥 1つの狼煙
+                    </div>
+                    <div class="smoke-column" id="smoke-biwa"></div>
+                </div>
+                
+                <div class="place-card" onclick="enterPlace('kusatsu')">
+                    <div class="place-name">草津街道の狼煙場</div>
+                    <div class="smoke-indicator">
+                        💨 煙なし
+                    </div>
+                </div>
+                
+                <div class="place-card" onclick="enterPlace('keihoku')">
+                    <div class="place-name">京北山中の狼煙場</div>
+                    <div class="smoke-indicator smoke-active">
+                        🔥 2つの狼煙
+                    </div>
+                    <div class="smoke-column" id="smoke-keihoku"></div>
+                </div>
+                
+                <div class="place-card" onclick="enterPlace('tango')">
+                    <div class="place-name">丹後岬の狼煙場</div>
+                    <div class="smoke-indicator smoke-active">
+                        🔥 4つの狼煙
+                    </div>
+                    <div class="smoke-column" id="smoke-tango"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scroll-indicator">
+            横にスクロール →
+        </div>
+    </div>
+    
+    <script>
+        // 狼煙場に入る
+        function enterPlace(place) {
+            window.location.href = `threads.html?place=${place}`;
+        }
+        
+        // Create smoke particles for active places
+        function createSmokeForPlace(placeId, count) {
+            const column = document.getElementById(placeId);
+            if (!column) return;
+            
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'smoke-particle';
+                    particle.style.bottom = '0';
+                    particle.style.animationDelay = (i * 0.5) + 's';
+                    
+                    const drift = (Math.random() - 0.5) * 20;
+                    particle.style.setProperty('--drift', drift + 'px');
+                    
+                    column.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        particle.remove();
+                    }, 3000);
+                }, i * 500);
+            }
+        }
+        
+        // Continuously create smoke
+        function animateSmoke() {
+            createSmokeForPlace('smoke-ibuki', 3);
+            createSmokeForPlace('smoke-biwa', 1);
+            createSmokeForPlace('smoke-keihoku', 2);
+            createSmokeForPlace('smoke-tango', 4);
+        }
+        
+        setInterval(animateSmoke, 2000);
+        animateSmoke(); // Start immediately
+        
+        // タイピングアニメーション
+        const message = 'チヘイセンノムコウマデ\nケムリガツヅイテル\nアルイテイコウ...';
+        const typingElement = document.getElementById('typingText');
+        let charIndex = 0;
+        
+        function typeWriter() {
+            if (charIndex < message.length) {
+                if (message[charIndex] === '\n') {
+                    typingElement.innerHTML += '<br>';
+                } else {
+                    typingElement.innerHTML += message[charIndex];
+                }
+                charIndex++;
+                const speed = Math.random() * 20 + 30;
+                setTimeout(typeWriter, speed);
+            }
+        }
+        
+        window.addEventListener('load', () => {
+            setTimeout(typeWriter, 500);
+        });
+    </script>
+</body>
+</html>

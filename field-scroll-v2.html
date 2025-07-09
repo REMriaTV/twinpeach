@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>野呂子無料相談所 - Smoke Network Service</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* 時間帯による背景グラデーション */
+        .sky-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70%;
+            transition: all 3s ease;
+        }
+        
+        .sky-gradient.dawn {
+            background: linear-gradient(to bottom, 
+                #1a237e 0%, 
+                #3949ab 20%, 
+                #5c6bc0 40%, 
+                #ff6f00 80%, 
+                #ff8f00 100%);
+        }
+        
+        .sky-gradient.day {
+            background: linear-gradient(to bottom, 
+                #6BB6FF 0%, 
+                #87CEEB 20%, 
+                #ADD8E6 50%, 
+                #E6F3FF 80%,
+                #F0F8FF 100%);
+        }
+        
+        .sky-gradient.dusk {
+            background: linear-gradient(to bottom, 
+                #1a237e 0%, 
+                #4a148c 30%, 
+                #880e4f 60%, 
+                #ff6f00 90%, 
+                #ff8f00 100%);
+        }
+        
+        /* 山のレイヤー */
+        .mountain-layer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 300%;
+            height: 100%;
+            will-change: transform;
+        }
+        
+        .mountain-bg {
+            fill: #1a1a1a;
+            opacity: 0.3;
+        }
+        
+        .mountain-mid {
+            fill: #2a2a2a;
+            opacity: 0.6;
+        }
+        
+        .mountain-fg {
+            fill: #0a0a0a;
+        }
+        
+        /* スクロール可能なコンテンツ */
+        .scroll-container {
+            position: absolute;
+            bottom: 100px;
+            left: 0;
+            width: 100%;
+            height: 300px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            z-index: 5;
+        }
+        
+        .scroll-content {
+            display: flex;
+            gap: 100px;
+            padding: 0 50%;
+            height: 100%;
+            align-items: flex-end;
+            width: max-content;
+        }
+        
+        /* 場所カード */
+        .place-card {
+            flex-shrink: 0;
+            width: 200px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+        
+        .place-card:hover {
+            transform: translateY(-10px);
+            background: rgba(0, 0, 0, 0.8);
+            border-color: rgba(255, 107, 107, 0.5);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+        
+        /* 炎のアニメーション */
+        .fire-container {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 60px;
+            pointer-events: none;
+            z-index: 10;
+            margin-bottom: 10px;
+        }
+        
+        .flame {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            transform-origin: bottom center;
+            animation: flicker 0.5s ease-in-out infinite alternate;
+        }
+        
+        .flame-inner {
+            width: 30px;
+            height: 50px;
+            background: radial-gradient(ellipse at bottom, #ff6b6b 0%, #ff8f00 50%, transparent 70%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            filter: drop-shadow(0 0 10px #ff6b6b);
+        }
+        
+        @keyframes flicker {
+            0% {
+                transform: scale(1) rotate(-2deg);
+            }
+            100% {
+                transform: scale(1.1) rotate(2deg);
+            }
+        }
+        
+        /* 煙のキャンバス */
+        #smokeCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        /* ヘッダー部分 */
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
+            z-index: 10;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+        
+        .noroshiya-message {
+            text-align: center;
+            font-size: 1.2em;
+            color: #4ecdc4;
+            margin: 20px 0;
+            line-height: 2;
+        }
+        
+        .back-link {
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #ff5252;
+        }
+        
+        /* スクロールインジケーター */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            animation: bounce 2s infinite;
+            z-index: 10;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+        
+        /* 風のエフェクト用 */
+        .wind-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 空のグラデーション -->
+        <div class="sky-gradient dawn" id="skyGradient"></div>
+        
+        <!-- 山のレイヤー（背景） -->
+        <svg class="mountain-layer" style="z-index: 1;" data-speed="0.2">
+            <path class="mountain-bg" d="M0,400 L200,300 L400,350 L600,250 L800,320 L1000,280 L1200,340 L1400,300 L1600,360 L1800,320 L2000,380 L2200,340 L2400,400 L2600,360 L2800,400 L3000,400 L3000,600 L0,600 Z"></path>
+        </svg>
+        
+        <!-- 山のレイヤー（中景） -->
+        <svg class="mountain-layer" style="z-index: 2;" data-speed="0.5">
+            <path class="mountain-mid" d="M0,450 L300,350 L500,400 L700,320 L900,380 L1100,340 L1300,400 L1500,360 L1700,410 L1900,370 L2100,420 L2300,380 L2500,430 L2700,390 L2900,450 L3000,450 L3000,600 L0,600 Z"></path>
+        </svg>
+        
+        <!-- 山のレイヤー（前景） -->
+        <svg class="mountain-layer" style="z-index: 3;" data-speed="1">
+            <path class="mountain-fg" d="M0,500 L250,420 L450,470 L650,400 L850,460 L1050,420 L1250,480 L1450,440 L1650,490 L1850,450 L2050,500 L2250,460 L2450,510 L2650,470 L2850,520 L3000,500 L3000,600 L0,600 Z"></path>
+        </svg>
+        
+        <!-- 煙のキャンバス -->
+        <canvas id="smokeCanvas"></canvas>
+        
+        <!-- ヘッダー -->
+        <div class="header">
+            <a href="field.html" class="back-link">← 通常版に戻る</a>
+            <h1>野呂子無料相談所</h1>
+            <div class="noroshiya-message">
+                <span id="typingText"></span>
+            </div>
+        </div>
+        
+        <!-- スクロール可能な場所選択 -->
+        <div class="scroll-container" id="scrollContainer">
+            <div class="scroll-content">
+                <div class="place-card" data-place="ibuki" data-active="3">
+                    <div class="fire-container">
+                        <div class="flame">
+                            <div class="flame-inner"></div>
+                        </div>
+                    </div>
+                    <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">伊吹山麓の狼煙場</h3>
+                    <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">旅立ちの場所。古墳の丘から見える琵琶湖が美しい。</p>
+                    <p style="font-size: 0.85em; color: #4ecdc4;">🔥 3つの狼煙が上がっている</p>
+                </div>
+                
+                <div class="place-card" data-place="biwa" data-active="1">
+                    <div class="fire-container">
+                        <div class="flame">
+                            <div class="flame-inner"></div>
+                        </div>
+                    </div>
+                    <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">琵琶湖畔の狼煙場</h3>
+                    <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">水辺の静かな場所。湖面に映る煙が幻想的。</p>
+                    <p style="font-size: 0.85em; color: #4ecdc4;">🔥 1つの狼煙が上がっている</p>
+                </div>
+                
+                <div class="place-card" data-place="kusatsu" data-active="0">
+                    <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">草津街道の狼煙場</h3>
+                    <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">街道沿いの賑やかな場所。商人や旅人が情報交換する。</p>
+                    <p style="font-size: 0.85em; color: #666;">💨 今は煙が上がっていない</p>
+                </div>
+                
+                <div class="place-card" data-place="keihoku" data-active="2">
+                    <div class="fire-container">
+                        <div class="flame">
+                            <div class="flame-inner"></div>
+                        </div>
+                    </div>
+                    <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">京北山中の狼煙場</h3>
+                    <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">深い森に囲まれた神秘的な場所。</p>
+                    <p style="font-size: 0.85em; color: #4ecdc4;">🔥 2つの狼煙が上がっている</p>
+                </div>
+                
+                <div class="place-card" data-place="tango" data-active="4">
+                    <div class="fire-container">
+                        <div class="flame">
+                            <div class="flame-inner"></div>
+                        </div>
+                    </div>
+                    <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">丹後岬の狼煙場</h3>
+                    <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">水宮への祈りが届く場所。海風に乗って遠くまで煙が届く。</p>
+                    <p style="font-size: 0.85em; color: #4ecdc4;">🔥 4つの狼煙が上がっている</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scroll-indicator">← スクロールして狼煙場を選ぶ →</div>
+    </div>
+    
+    <script>
+        // 煙のキャンバス設定
+        const canvas = document.getElementById('smokeCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 高解像度対応
+        function resizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            canvas.style.width = window.innerWidth + 'px';
+            canvas.style.height = window.innerHeight + 'px';
+            ctx.scale(dpr, dpr);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // 風の強さと方向
+        let windStrength = 0.5;
+        let windDirection = 1;
+        let windTime = 0;
+        
+        // 煙粒子クラス
+        class SmokeParticle {
+            constructor(x, y, intensity) {
+                this.x = x;
+                this.y = y;
+                this.intensity = intensity;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = -Math.random() * 1.5 - 0.5;
+                this.life = 1.0;
+                this.decay = Math.random() * 0.005 + 0.003;
+                this.size = Math.random() * 15 + 10;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+                this.wobble = Math.random() * Math.PI * 2;
+            }
+            
+            update() {
+                // 風の影響を受ける
+                const windEffect = Math.sin(windTime + this.wobble) * windStrength;
+                this.vx += windEffect * 0.1 * windDirection;
+                
+                // 上昇とともに横に流れる
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // 徐々に上昇速度が遅くなる
+                this.vy *= 0.99;
+                
+                // 生命値を減らす
+                this.life -= this.decay;
+                
+                // サイズを大きくする
+                this.size *= 1.01;
+                
+                // 回転
+                this.rotation += this.rotationSpeed;
+                
+                // 揺らぎを更新
+                this.wobble += 0.05;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life * 0.3;
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                
+                // グラデーションで煙を描画
+                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+                gradient.addColorStop(0, 'rgba(200, 200, 200, 0.3)');
+                gradient.addColorStop(0.5, 'rgba(150, 150, 150, 0.2)');
+                gradient.addColorStop(1, 'rgba(100, 100, 100, 0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
+        // 煙粒子の配列
+        const particles = [];
+        
+        // 煙を生成する場所を追跡
+        const smokeSources = [];
+        
+        // 場所カードの位置を更新
+        function updateSmokeSources() {
+            smokeSources.length = 0;
+            const cards = document.querySelectorAll('.place-card');
+            
+            cards.forEach(card => {
+                const active = parseInt(card.dataset.active);
+                if (active > 0) {
+                    const rect = card.getBoundingClientRect();
+                    smokeSources.push({
+                        x: rect.left + rect.width / 2,
+                        y: rect.top,
+                        intensity: active
+                    });
+                }
+            });
+        }
+        
+        // パララックススクロール
+        const scrollContainer = document.getElementById('scrollContainer');
+        const mountainLayers = document.querySelectorAll('.mountain-layer');
+        
+        scrollContainer.addEventListener('scroll', () => {
+            const scrollX = scrollContainer.scrollLeft;
+            
+            mountainLayers.forEach(layer => {
+                const speed = parseFloat(layer.dataset.speed);
+                layer.style.transform = `translateX(${-scrollX * speed}px)`;
+            });
+            
+            updateSmokeSources();
+        });
+        
+        // 時間帯の変化（リアルタイムに対応）
+        const skyGradient = document.getElementById('skyGradient');
+        
+        function updateTimeOfDay() {
+            const hour = new Date().getHours();
+            let timePhase;
+            
+            if (hour >= 5 && hour < 8) {
+                timePhase = 'dawn';  // 朝焼け
+            } else if (hour >= 8 && hour < 17) {
+                timePhase = 'day';   // 昼
+            } else {
+                timePhase = 'dusk';  // 夕焼け・夜
+            }
+            
+            skyGradient.className = 'sky-gradient ' + timePhase;
+        }
+        
+        // 初回実行と1分ごとに更新
+        updateTimeOfDay();
+        setInterval(updateTimeOfDay, 60000);
+        
+        // アニメーションループ
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 風の更新
+            windTime += 0.01;
+            windStrength = 0.5 + Math.sin(windTime * 0.5) * 0.3;
+            windDirection = Math.sin(windTime * 0.3);
+            
+            // 新しい煙粒子を生成
+            smokeSources.forEach(source => {
+                for (let i = 0; i < source.intensity; i++) {
+                    if (Math.random() < 0.1) {
+                        particles.push(new SmokeParticle(
+                            source.x + (Math.random() - 0.5) * 20,
+                            source.y,
+                            source.intensity
+                        ));
+                    }
+                }
+            });
+            
+            // 粒子を更新・描画
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const particle = particles[i];
+                particle.update();
+                
+                if (particle.life <= 0 || particle.y < -50) {
+                    particles.splice(i, 1);
+                } else {
+                    particle.draw();
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // クリックイベント
+        document.querySelectorAll('.place-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const place = card.dataset.place;
+                window.location.href = `threads.html?place=${place}`;
+            });
+        });
+        
+        // タイピングアニメーション
+        const message = 'ヤマカゼニノッテケムリガナガレル\nトオクノトモダチニオモイトドクヨ\nミンナノノロシツナガッテル...';
+        const typingElement = document.getElementById('typingText');
+        let charIndex = 0;
+        
+        function typeWriter() {
+            if (charIndex < message.length) {
+                if (message[charIndex] === '\n') {
+                    typingElement.innerHTML += '<br>';
+                } else {
+                    typingElement.innerHTML += message[charIndex];
+                }
+                charIndex++;
+                const speed = Math.random() * 20 + 30;
+                setTimeout(typeWriter, speed);
+            }
+        }
+        
+        // 開始
+        window.addEventListener('load', () => {
+            setTimeout(typeWriter, 500);
+            // 初期化時に煙源を設定
+            setTimeout(() => {
+                updateSmokeSources();
+                animate();
+            }, 100);
+        });
+    </script>
+</body>
+</html>

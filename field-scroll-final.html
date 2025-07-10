@@ -519,15 +519,15 @@
         
         // 煙粒子クラス
         class SmokeParticle {
-            constructor(x, y, intensity) {
+            constructor(x, y, source) {
                 this.x = x;
                 this.y = y;
-                this.intensity = intensity;
+                this.source = source;
                 this.vx = (Math.random() - 0.5) * 0.02; // 横の動きをほぼゼロに
-                this.vy = -Math.random() * 2.0 - 0.5; // 上昇速度にばらつきを持たせる
+                this.vy = (-Math.random() * 1.5 - 0.5) * source.speed; // 速度をソースごとに調整
                 this.life = 1.0;
                 this.decay = Math.random() * 0.003 + 0.002; // さらに寿命を延ばす
-                this.size = Math.random() * 10 + 8; // サイズを小さく
+                this.size = (Math.random() * 6 + 4) * source.scale; // サイズもソースごとに調整
                 this.rotation = Math.random() * Math.PI * 2;
                 this.rotationSpeed = (Math.random() - 0.5) * 0.01;
                 this.wobble = Math.random() * Math.PI * 2;
@@ -595,25 +595,25 @@
         // 煙を生成する場所を追跡
         const smokeSources = [];
         
-        // 煙源の位置を更新
-        function updateSmokeSources() {
+        // 山のあちこちに煙源を配置
+        function setupRandomSmokeSources() {
             smokeSources.length = 0;
-            const smokeElements = document.querySelectorAll('.smoke-source');
+            const numSources = 8 + Math.floor(Math.random() * 5); // 8〜12個の煙源
             
-            smokeElements.forEach(source => {
-                const intensity = parseInt(source.dataset.smokeIntensity) || 0;
-                if (intensity > 0) {
-                    const rect = source.getBoundingClientRect();
-                    const card = source.closest('.place-card');
-                    const cardRect = card.getBoundingClientRect();
-                    
-                    smokeSources.push({
-                        x: cardRect.left + cardRect.width / 2,
-                        y: cardRect.top - 10, // 煙源のすぐ上から
-                        intensity: intensity
-                    });
-                }
-            });
+            for (let i = 0; i < numSources; i++) {
+                smokeSources.push({
+                    x: Math.random() * window.innerWidth, // 画面全体のランダムな位置
+                    y: window.innerHeight * (0.4 + Math.random() * 0.3), // 山の高さあたり
+                    intensity: Math.random() * 0.8 + 0.2, // 煙の濃さもランダム
+                    scale: Math.random() * 0.6 + 0.4, // 煙のスケールもランダム
+                    speed: Math.random() * 0.5 + 0.5 // 速度もランダム
+                });
+            }
+        }
+        
+        // 煙源の位置を更新（スクロール時は再配置しない）
+        function updateSmokeSources() {
+            // スクロール時は何もしない（煙源は固定）
         }
         
         // パララックススクロール
@@ -664,14 +664,12 @@
             
             // 新しい煙粒子を生成
             smokeSources.forEach(source => {
-                for (let i = 0; i < source.intensity; i++) {
-                    if (Math.random() < 0.3 + Math.random() * 0.3) { // 生成確率にランダム性
-                        particles.push(new SmokeParticle(
-                            source.x + (Math.random() - 0.5) * 0.3, // 少し幅を戻す
-                            source.y + (Math.random() - 0.5) * 5, // Y位置にも少しランダム性
-                            source.intensity
-                        ));
-                    }
+                if (Math.random() < 0.1 * source.intensity) { // 煙源ごとの生成確率
+                    particles.push(new SmokeParticle(
+                        source.x + (Math.random() - 0.5) * 2, // 煙源ごとの幅
+                        source.y + (Math.random() - 0.5) * 5, // Y位置にも少しランダム性
+                        source
+                    ));
                 }
             });
             
@@ -721,21 +719,17 @@
         function generateInitialSmoke() {
             smokeSources.forEach(source => {
                 // 各煙源に対して、既に立ち上がっている煙を生成
-                const particleCount = 60; // 各煙源あたりの初期粒子数を増やす
+                const particleCount = Math.floor(30 * source.intensity); // 煙源の強さに応じた粒子数
                 for (let i = 0; i < particleCount; i++) {
                     const progress = i / particleCount; // 0から1までの進行度
                     const particle = new SmokeParticle(
-                        source.x + (Math.random() - 0.5) * 0.2, // 初期煙も同じく狭く
+                        source.x + (Math.random() - 0.5) * 2,
                         source.y,
-                        source.intensity
+                        source
                     );
                     // 煙を既に上昇した位置に配置
-                    particle.y = source.y - (progress * 300); // 固定値で自然な初期配置
+                    particle.y = source.y - (progress * 200 * source.scale); // スケールに応じた高さ
                     particle.life = 1.0 - (progress * 0.5); // 寿命の減少を一定に
-                    
-                    // 通常の煙と同じように速度を調整
-                    particle.vy = particle.vy * 0.7; // 速度を落とす
-                    particle.size = particle.size * 1.2; // サイズを少し大きく
                     
                     particles.push(particle);
                 }
@@ -747,7 +741,7 @@
             setTimeout(typeWriter, 500);
             // 初期化時に煙源を設定
             setTimeout(() => {
-                updateSmokeSources();
+                setupRandomSmokeSources(); // ランダムな煙源を設定
                 generateInitialSmoke(); // 初期煙を生成
                 animate();
             }, 100);

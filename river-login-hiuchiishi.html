@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>川の狼煙場 - 火打石との出会い</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            min-height: 100vh;
+            background: #87CEEB; /* デフォルトの空色 */
+            transition: background 3s ease;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        
+        /* 天候エフェクト */
+        .weather-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        /* 雨のエフェクト */
+        .rain {
+            position: absolute;
+            width: 2px;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.4), transparent);
+            animation: fall 1s linear infinite;
+        }
+        
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+        
+        /* 川の表現 */
+        .river {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(to bottom, 
+                rgba(100, 150, 200, 0.4) 0%,
+                rgba(70, 120, 170, 0.6) 50%,
+                rgba(50, 100, 150, 0.8) 100%);
+            overflow: hidden;
+        }
+        
+        .river-wave {
+            position: absolute;
+            width: 200%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: wave 4s ease-in-out infinite;
+        }
+        
+        @keyframes wave {
+            0%, 100% { transform: translateX(0) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+        
+        /* 川岸 */
+        .riverbank {
+            position: absolute;
+            bottom: 40%;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to top,
+                #8B7355 0%,
+                #A0826D 50%,
+                #C19A6B 100%);
+            clip-path: polygon(0 20%, 100% 0, 100% 100%, 0 100%);
+        }
+        
+        /* 石のエリア */
+        .stones-area {
+            position: absolute;
+            bottom: 35%;
+            width: 100%;
+            height: 15%;
+            z-index: 15;
+        }
+        
+        .stone {
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .stone:hover {
+            transform: translateY(-5px) scale(1.1);
+        }
+        
+        /* メインコンテンツ */
+        .main-content {
+            position: relative;
+            z-index: 20;
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 10%;
+        }
+        
+        .location-info {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 0 auto 30px;
+            max-width: 400px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .location-info h2 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+        
+        .weather-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+        }
+        
+        .weather-item {
+            text-align: center;
+        }
+        
+        .weather-icon {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .weather-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        /* 対話ボックス */
+        .dialogue-box {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 150px;
+        }
+        
+        .dialogue-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .dialogue-button {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+        }
+        
+        .dialogue-button:hover {
+            background: #45b7b8;
+            transform: scale(1.05);
+        }
+        
+        /* 石の説明入力 */
+        .stone-description {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            margin: 20px auto;
+            display: block;
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .stone-description:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+        
+        /* 狼煙屋の登場演出 */
+        .noroshiya-entrance {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -40%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+        
+        .noroshiya-icon-large {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .noroshiya-message {
+            font-size: 1.2em;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 30px;
+            font-family: monospace; /* カタカナを強調 */
+        }
+        
+        /* ローディング */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 100;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4ecdc4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <p>現在地の情報を取得中...</p>
+    </div>
+    
+    <div class="container">
+        <!-- 天候オーバーレイ -->
+        <div class="weather-overlay" id="weatherOverlay"></div>
+        
+        <!-- 川 -->
+        <div class="river" id="river">
+            <!-- 波のアニメーション -->
+        </div>
+        
+        <!-- 川岸 -->
+        <div class="riverbank"></div>
+        
+        <!-- 石のエリア -->
+        <div class="stones-area" id="stonesArea"></div>
+        
+        <!-- メインコンテンツ -->
+        <div class="main-content">
+            <div class="location-info">
+                <h2>📍 <span id="locationName">現在地</span></h2>
+                <div class="weather-info">
+                    <div class="weather-item">
+                        <div class="weather-icon" id="weatherIcon">☀️</div>
+                        <div class="weather-label" id="weatherLabel">晴れ</div>
+                    </div>
+                    <div class="weather-item">
+                        <div class="weather-icon">🌡️</div>
+                        <div class="weather-label"><span id="temperature">--</span>°C</div>
+                    </div>
+                    <div class="weather-item">
+                        <div class="weather-icon">🕐</div>
+                        <div class="weather-label" id="currentTime">--:--</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dialogue-box" id="dialogueBox">
+                <div class="dialogue-text" id="dialogueText">
+                    河原に綺麗な色の石が落ちている...<br>
+                    石を拾いますか？
+                </div>
+                <div id="dialogueActions">
+                    <button class="dialogue-button" onclick="startStonePicking()">はい</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 狼煙屋登場演出 -->
+    <div class="noroshiya-entrance" id="noroshiyaEntrance">
+        <div class="noroshiya-icon-large" id="noroshiyaIcon"></div>
+        <div class="noroshiya-message" id="noroshiyaMessage"></div>
+        <button class="dialogue-button" onclick="completeEncounter()">
+            狼煙場へ進む
+        </button>
+    </div>
+    
+    <script>
+        let weatherData = {};
+        let currentStage = 'initial';
+        let selectedStone = null;
+        
+        // 狼煙屋のキャラクターデータ
+        const noroshiyaTypes = {
+            pure: {
+                icon: '🕊️',
+                name: 'ツバメ',
+                greeting: 'オォ、ナンダァ、キレイナイシ、ミツケタノカ？ミセテクレミセテクレ',
+                finalMessage: 'ケムリ、アゲタイカ？オモイ、トドケタイカ？'
+            },
+            otaku: {
+                icon: '🐦‍⬛',
+                name: 'カラス',
+                greeting: 'ア、ア、ア、ソーレ、オレノイシイシ、チョッチョット！',
+                finalMessage: 'ケムリ、アゲタイカ？オモイ、トドケタイカ？'
+            },
+            mendokusai: {
+                icon: '🦉',
+                name: 'フクロウ',
+                greeting: 'イシシシ、ナアンダ、ミルメアルネエ、ソイツハイイケムリニナルヨオ！',
+                finalMessage: 'ケムリ、アゲタイカ？オモイ、トドケタイカ？'
+            },
+            speedy: {
+                icon: '🦚',
+                name: 'キジ',
+                greeting: 'ハヤイハヤイ、ソノイシスゴイネ、モットミセテミセテ！',
+                finalMessage: 'ケムリ、アゲタイカ？オモイ、トドケタイカ？'
+            },
+            calm: {
+                icon: '🪶',
+                name: 'ハト',
+                greeting: 'アラアラ、イイイシダネエ、ユックリミセテクレルカイ？',
+                finalMessage: 'ケムリ、アゲタイカ？オモイ、トドケタイカ？'
+            }
+        };
+        
+        // 石のデータ
+        const stoneTypes = [
+            { color: '#FF6B6B', size: 'large', shape: 'round' },
+            { color: '#4ECDC4', size: 'medium', shape: 'flat' },
+            { color: '#95E1D3', size: 'small', shape: 'sharp' },
+            { color: '#2D3436', size: 'large', shape: 'rough' },
+            { color: '#FDCB6E', size: 'medium', shape: 'smooth' },
+            { color: '#6C5CE7', size: 'small', shape: 'square' },
+            { color: '#FFF', size: 'medium', shape: 'round' },
+            { color: '#A29BFE', size: 'large', shape: 'flat' }
+        ];
+        
+        // 天候に応じた背景色
+        const weatherBackgrounds = {
+            'Clear': 'linear-gradient(180deg, #87CEEB 0%, #98D8E8 100%)',
+            'Clouds': 'linear-gradient(180deg, #8B95A1 0%, #B0C4DE 100%)',
+            'Rain': 'linear-gradient(180deg, #4A5568 0%, #718096 100%)',
+            'Drizzle': 'linear-gradient(180deg, #6B7280 0%, #9CA3AF 100%)',
+            'Thunderstorm': 'linear-gradient(180deg, #2D3748 0%, #4A5568 100%)',
+            'Snow': 'linear-gradient(180deg, #E0E7FF 0%, #F3F4F6 100%)',
+            'Mist': 'linear-gradient(180deg, #CBD5E0 0%, #E2E8F0 100%)',
+            'Fog': 'linear-gradient(180deg, #CBD5E0 0%, #E2E8F0 100%)'
+        };
+        
+        // 天候アイコン
+        const weatherIcons = {
+            'Clear': '☀️',
+            'Clouds': '☁️',
+            'Rain': '🌧️',
+            'Drizzle': '🌦️',
+            'Thunderstorm': '⛈️',
+            'Snow': '❄️',
+            'Mist': '🌫️',
+            'Fog': '🌫️'
+        };
+        
+        // 石を生成
+        function generateStones() {
+            const stonesArea = document.getElementById('stonesArea');
+            stonesArea.innerHTML = '';
+            
+            // ランダムに10-15個の石を配置
+            const stoneCount = 10 + Math.floor(Math.random() * 6);
+            
+            for (let i = 0; i < stoneCount; i++) {
+                const stone = document.createElement('div');
+                stone.className = 'stone';
+                const stoneData = stoneTypes[Math.floor(Math.random() * stoneTypes.length)];
+                
+                // 石のスタイル設定
+                const size = stoneData.size === 'large' ? 40 : stoneData.size === 'medium' ? 25 : 15;
+                stone.style.width = size + 'px';
+                stone.style.height = size * 0.8 + 'px';
+                stone.style.backgroundColor = stoneData.color;
+                stone.style.left = Math.random() * 90 + 5 + '%';
+                stone.style.top = Math.random() * 80 + 10 + '%';
+                
+                // 形状に応じたスタイル
+                if (stoneData.shape === 'round') {
+                    stone.style.borderRadius = '50%';
+                } else if (stoneData.shape === 'flat') {
+                    stone.style.borderRadius = '30%';
+                    stone.style.transform = 'scaleY(0.6)';
+                } else if (stoneData.shape === 'sharp') {
+                    stone.style.clipPath = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
+                } else if (stoneData.shape === 'square') {
+                    stone.style.borderRadius = '10%';
+                }
+                
+                stone.dataset.stoneData = JSON.stringify(stoneData);
+                stone.style.display = 'none'; // 初期は非表示
+                
+                stonesArea.appendChild(stone);
+            }
+        }
+        
+        // 石拾いを開始
+        function startStonePicking() {
+            currentStage = 'pickStone';
+            document.getElementById('dialogueText').innerHTML = 'どの石を拾いますか？<br><br>石の特徴を教えてください：';
+            
+            const textarea = document.createElement('textarea');
+            textarea.className = 'stone-description';
+            textarea.placeholder = '例：赤くて平たい石、黒くてゴツゴツした大きな石、白くて丸い小さな石...';
+            
+            const button = document.createElement('button');
+            button.className = 'dialogue-button';
+            button.textContent = '石を拾う';
+            button.onclick = pickStone;
+            
+            const actions = document.getElementById('dialogueActions');
+            actions.innerHTML = '';
+            actions.appendChild(textarea);
+            actions.appendChild(button);
+            
+            // 石を表示
+            document.querySelectorAll('.stone').forEach((stone, index) => {
+                setTimeout(() => {
+                    stone.style.display = 'block';
+                }, index * 100);
+            });
+        }
+        
+        // 石を拾う（テキスト解析）
+        function pickStone() {
+            const description = document.querySelector('.stone-description').value;
+            if (!description.trim()) {
+                alert('石の特徴を入力してください');
+                return;
+            }
+            
+            // 簡単なテキスト解析で狼煙屋を決定
+            const lowerDesc = description.toLowerCase();
+            let noroshiyaType = 'pure'; // デフォルト
+            
+            if (lowerDesc.includes('黒') || lowerDesc.includes('尖') || lowerDesc.includes('dark')) {
+                noroshiyaType = 'otaku';
+            } else if (lowerDesc.includes('白') || lowerDesc.includes('丸') || lowerDesc.includes('smooth')) {
+                noroshiyaType = 'calm';
+            } else if (lowerDesc.includes('赤') || lowerDesc.includes('大き') || lowerDesc.includes('big')) {
+                noroshiyaType = 'speedy';
+            } else if (lowerDesc.includes('ゴツゴツ') || lowerDesc.includes('rough') || lowerDesc.includes('四角')) {
+                noroshiyaType = 'mendokusai';
+            }
+            
+            // 火打石判定
+            currentStage = 'hiuchiishi';
+            document.getElementById('dialogueText').innerHTML = 'あなたが拾ったのはどうやら火打石のようです...<br><br>すると...';
+            document.getElementById('dialogueActions').innerHTML = '';
+            
+            // 狼煙屋登場
+            setTimeout(() => {
+                showNoroshiya(noroshiyaType);
+            }, 2000);
+        }
+        
+        // 狼煙屋を表示
+        function showNoroshiya(type) {
+            const noroshiya = noroshiyaTypes[type];
+            const entrance = document.getElementById('noroshiyaEntrance');
+            
+            document.getElementById('noroshiyaIcon').textContent = noroshiya.icon;
+            document.getElementById('noroshiyaMessage').innerHTML = 
+                `「${noroshiya.greeting}」<br><br>` +
+                `${noroshiya.name}の狼煙屋が現れた！<br><br>` +
+                `「${noroshiya.finalMessage}」`;
+            
+            entrance.style.display = 'block';
+            
+            // 選択情報を保存
+            selectedNoroshiya = type;
+        }
+        
+        // 出会い完了
+        function completeEncounter() {
+            if (selectedNoroshiya) {
+                // 選択情報を保存
+                localStorage.setItem('selectedNoroshiya', selectedNoroshiya);
+                localStorage.setItem('noroshiyaData', JSON.stringify(noroshiyaTypes[selectedNoroshiya]));
+                localStorage.setItem('userLocation', JSON.stringify({
+                    name: weatherData.name,
+                    weather: weatherData.weather[0].main,
+                    temp: weatherData.main.temp
+                }));
+                
+                // 狼煙場ネットワークへ遷移
+                window.location.href = 'field-scroll-final.html';
+            }
+        }
+        
+        // 現在地の天候を取得
+        async function getWeatherData() {
+            try {
+                // デモ用データ
+                weatherData = {
+                    name: '東京',
+                    weather: [{ main: 'Rain', description: '小雨' }],
+                    main: { temp: 22 }
+                };
+                updateWeatherDisplay();
+                
+            } catch (error) {
+                console.error('Weather fetch error:', error);
+            }
+            
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        // 天候表示を更新
+        function updateWeatherDisplay() {
+            const weatherMain = weatherData.weather[0].main;
+            const weatherDesc = weatherData.weather[0].description;
+            
+            // 背景を変更
+            document.body.style.background = weatherBackgrounds[weatherMain] || weatherBackgrounds['Clear'];
+            
+            // 天候情報を更新
+            document.getElementById('locationName').textContent = weatherData.name || '現在地';
+            document.getElementById('weatherIcon').textContent = weatherIcons[weatherMain] || '🌤️';
+            document.getElementById('weatherLabel').textContent = weatherDesc;
+            document.getElementById('temperature').textContent = Math.round(weatherData.main.temp);
+            
+            // 雨のエフェクトを追加
+            if (weatherMain === 'Rain' || weatherMain === 'Drizzle' || weatherMain === 'Thunderstorm') {
+                createRainEffect();
+            }
+            
+            // 川の波を生成
+            createRiverWaves();
+        }
+        
+        // 雨のエフェクト
+        function createRainEffect() {
+            const overlay = document.getElementById('weatherOverlay');
+            for (let i = 0; i < 100; i++) {
+                const rain = document.createElement('div');
+                rain.className = 'rain';
+                rain.style.left = Math.random() * 100 + '%';
+                rain.style.animationDelay = Math.random() * 2 + 's';
+                rain.style.animationDuration = (0.5 + Math.random() * 0.5) + 's';
+                overlay.appendChild(rain);
+            }
+        }
+        
+        // 川の波を生成
+        function createRiverWaves() {
+            const river = document.getElementById('river');
+            for (let i = 0; i < 5; i++) {
+                const wave = document.createElement('div');
+                wave.className = 'river-wave';
+                wave.style.top = (20 + i * 15) + '%';
+                wave.style.animationDelay = i * 0.5 + 's';
+                river.appendChild(wave);
+            }
+        }
+        
+        // 現在時刻を更新
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('currentTime').textContent = `${hours}:${minutes}`;
+            
+            // 時間帯に応じた空の色調整
+            if (now.getHours() >= 18 || now.getHours() < 6) {
+                document.body.style.filter = 'brightness(0.7)';
+            }
+        }
+        
+        // 初期化
+        window.addEventListener('load', () => {
+            getWeatherData();
+            updateTime();
+            setInterval(updateTime, 60000); // 1分ごとに更新
+            generateStones();
+        });
+    </script>
+</body>
+</html>

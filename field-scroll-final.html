@@ -513,84 +513,7 @@
         window.addEventListener('resize', resizeCanvas);
         
         // 風の強さと方向
-        let windStrength = 0.5;
-        let windDirection = 1;
         let windTime = 0;
-        
-        // 煙粒子クラス
-        class SmokeParticle {
-            constructor(x, y, source) {
-                this.x = x;
-                this.y = y;
-                this.source = source;
-                this.vx = (Math.random() - 0.5) * 0.02; // 横の動きをほぼゼロに
-                this.vy = (-Math.random() * 1.5 - 0.5) * source.speed; // 速度をソースごとに調整
-                this.life = 1.0;
-                this.decay = Math.random() * 0.002 + 0.001; // 寿命をさらに延ばす（0.003+0.002から0.002+0.001に）
-                this.size = (Math.random() * 2 + 2) * source.scale; // サイズをさらに小さく（4+3から2+2に）
-                this.rotation = Math.random() * Math.PI * 2;
-                this.rotationSpeed = (Math.random() - 0.5) * 0.01;
-                this.wobble = Math.random() * Math.PI * 2;
-            }
-            
-            update() {
-                // 風の影響を受ける（かなり弱く）
-                const windEffect = Math.sin(windTime + this.wobble) * windStrength;
-                this.vx += windEffect * 0.02 * windDirection; // 風の影響を大幅に減らす
-                
-                // ゆらゆらとした動きを少し増やす
-                const wobbleX = Math.sin(this.wobble) * 0.2; // 自然な揺れ
-                
-                // 上昇とともに横に流れる
-                this.x += this.vx + wobbleX;
-                this.y += this.vy;
-                
-                // 徐々に上昇速度が遅くなる
-                this.vy *= 0.99;
-                
-                // 生命値を減らす
-                this.life -= this.decay;
-                
-                // サイズは一定に保つ（大きくしない）
-                // this.size *= 1.01; // コメントアウト
-                
-                // 回転
-                this.rotation += this.rotationSpeed;
-                
-                // 揺らぎを更新
-                this.wobble += 0.05;
-            }
-            
-            draw() {
-                ctx.save();
-                ctx.globalAlpha = Math.min(this.life * 1.2, 1); // より不透明に
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-                
-                // より濃い白の煙
-                ctx.fillStyle = 'rgba(255, 255, 255, 1)'; // 完全に白
-                ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-                ctx.shadowBlur = 3;
-                ctx.beginPath();
-                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 縁をぼかすための追加の円
-                const gradient = ctx.createRadialGradient(0, 0, this.size * 0.6, 0, 0, this.size);
-                gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-                gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.9)');
-                gradient.addColorStop(1, 'rgba(255, 255, 255, 0.3)');
-                ctx.fillStyle = gradient;
-                ctx.beginPath();
-                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.restore();
-            }
-        }
-        
-        // 煙粒子の配列
-        const particles = [];
         
         // 煙を生成する場所を追跡
         const smokeSources = [];
@@ -606,7 +529,9 @@
                     y: window.innerHeight * (0.4 + Math.random() * 0.3), // 山の高さあたり
                     intensity: Math.random() * 0.8 + 0.2, // 煙の濃さもランダム
                     scale: Math.random() * 0.6 + 0.4, // 煙のスケールもランダム
-                    speed: Math.random() * 0.5 + 0.5 // 速度もランダム
+                    phase: Math.random() * Math.PI * 2, // 揺れの位相
+                    width: 1 + Math.random() * 2, // 煙の幅（1-3）
+                    height: 200 + Math.random() * 200 // 煙の高さ（200-400）
                 });
             }
         }
@@ -653,42 +578,93 @@
         updateTimeOfDay();
         setInterval(updateTimeOfDay, 60000);
         
+        // 煙をパスで描画
+        function drawSmokeColumn(source, time) {
+            ctx.save();
+            ctx.translate(source.x, source.y);
+            
+            // 煙の柱を曲線で描画
+            ctx.beginPath();
+            
+            const segments = 40;
+            const points = [];
+            
+            // 左側の輪郭を計算
+            for (let j = 0; j <= segments; j++) {
+                const progress = j / segments;
+                const y = -progress * source.height * source.scale;
+                
+                // ゆっくりとした風の揺れ（遠くから見た煙は動きが遅い）
+                const windOffset = Math.sin(time * 0.0003 + progress * 2 + source.phase) * 
+                                 (10 + progress * 15) * source.scale;
+                const x = windOffset;
+                
+                // 幅（上に行くほどわずかに広がる）
+                const width = source.width + progress * source.width * 0.5;
+                
+                points.push({ x: x - width, y: y });
+            }
+            
+            // 左側を描く
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                const prev = points[i - 1];
+                const curr = points[i];
+                const cpx = prev.x;
+                const cpy = (prev.y + curr.y) / 2;
+                ctx.quadraticCurveTo(cpx, cpy, curr.x, curr.y);
+            }
+            
+            // 右側を描く
+            for (let j = segments; j >= 0; j--) {
+                const progress = j / segments;
+                const y = -progress * source.height * source.scale;
+                const windOffset = Math.sin(time * 0.0003 + progress * 2 + source.phase) * 
+                                 (10 + progress * 15) * source.scale;
+                const x = windOffset;
+                const width = source.width + progress * source.width * 0.5;
+                
+                if (j === segments) {
+                    ctx.lineTo(x + width, y);
+                } else {
+                    const next = points[j + 1];
+                    const cpx = x + width;
+                    const cpy = (y + next.y) / 2;
+                    ctx.quadraticCurveTo(cpx, cpy, x + width, y);
+                }
+            }
+            
+            ctx.closePath();
+            
+            // グラデーション（煙の濃淡）
+            const gradient = ctx.createLinearGradient(0, 0, 0, -source.height * source.scale);
+            gradient.addColorStop(0, `rgba(255, 255, 255, ${source.intensity * 0.9})`);
+            gradient.addColorStop(0.3, `rgba(255, 255, 255, ${source.intensity * 0.7})`);
+            gradient.addColorStop(0.6, `rgba(255, 255, 255, ${source.intensity * 0.4})`);
+            gradient.addColorStop(1, `rgba(255, 255, 255, ${source.intensity * 0.1})`);
+            
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // ぼかし効果のために薄い層を重ねる
+            ctx.globalAlpha = 0.3;
+            ctx.filter = 'blur(2px)';
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
         // アニメーションループ
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // 風の更新
-            windTime += 0.01;
-            windStrength = 0.5 + Math.sin(windTime * 0.5) * 0.3;
-            windDirection = Math.sin(windTime * 0.3);
+            // 風の時間を更新（ゆっくり）
+            windTime += 16; // ミリ秒単位
             
-            // 新しい煙粒子を生成
+            // 各煙源の煙を描画
             smokeSources.forEach(source => {
-                // 煙源ごとに大量の粒子を生成して密度を大幅に上げる
-                const particlesToCreate = Math.floor(source.intensity * 8); // 3から8に増加
-                for (let i = 0; i < particlesToCreate; i++) {
-                    if (Math.random() < 0.85) { // 生成確率を0.4から0.85に大幅アップ
-                        particles.push(new SmokeParticle(
-                            source.x + (Math.random() - 0.5) * 0.5, // さらに狭い範囲（1から0.5に）
-                            source.y + (Math.random() - 0.5) * 2, // Y位置のランダム性も減らす（3から2に）
-                            source
-                        ));
-                    }
-                }
+                drawSmokeColumn(source, windTime);
             });
-            
-            // 粒子を更新・描画
-            for (let i = particles.length - 1; i >= 0; i--) {
-                const particle = particles[i];
-                particle.update();
-                
-                // 寿命のみで煙を消す（高さ制限なし）
-                if (particle.life <= 0) {
-                    particles.splice(i, 1);
-                } else {
-                    particle.draw();
-                }
-            }
             
             requestAnimationFrame(animate);
         }
@@ -719,37 +695,12 @@
             }
         }
         
-        // 初期の煙を生成
-        function generateInitialSmoke() {
-            smokeSources.forEach(source => {
-                // 各煙源に対して、既に立ち上がっている煙を生成
-                const particleCount = Math.floor(80 * source.intensity); // 粒子数を30から80に大幅増加
-                for (let i = 0; i < particleCount; i++) {
-                    const progress = i / particleCount; // 0から1までの進行度
-                    // 複数の粒子を同じ高さに生成して密度を上げる
-                    for (let j = 0; j < 3; j++) {
-                        const particle = new SmokeParticle(
-                            source.x + (Math.random() - 0.5) * 0.5, // 狭い範囲
-                            source.y,
-                            source
-                        );
-                        // 煙を既に上昇した位置に配置
-                        particle.y = source.y - (progress * 200 * source.scale); // スケールに応じた高さ
-                        particle.life = 1.0 - (progress * 0.3); // 寿命の減少を緩やかに（0.5から0.3に）
-                        
-                        particles.push(particle);
-                    }
-                }
-            });
-        }
-
         // 開始
         window.addEventListener('load', () => {
             setTimeout(typeWriter, 500);
             // 初期化時に煙源を設定
             setTimeout(() => {
                 setupRandomSmokeSources(); // ランダムな煙源を設定
-                generateInitialSmoke(); // 初期煙を生成
                 animate();
             }, 100);
         });

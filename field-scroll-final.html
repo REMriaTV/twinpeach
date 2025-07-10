@@ -526,8 +526,8 @@
                 this.vx = (Math.random() - 0.5) * 0.02; // 横の動きをほぼゼロに
                 this.vy = (-Math.random() * 1.5 - 0.5) * source.speed; // 速度をソースごとに調整
                 this.life = 1.0;
-                this.decay = Math.random() * 0.003 + 0.002; // さらに寿命を延ばす
-                this.size = (Math.random() * 6 + 4) * source.scale; // サイズもソースごとに調整
+                this.decay = Math.random() * 0.002 + 0.001; // 寿命をさらに延ばす（0.003+0.002から0.002+0.001に）
+                this.size = (Math.random() * 2 + 2) * source.scale; // サイズをさらに小さく（4+3から2+2に）
                 this.rotation = Math.random() * Math.PI * 2;
                 this.rotationSpeed = (Math.random() - 0.5) * 0.01;
                 this.wobble = Math.random() * Math.PI * 2;
@@ -664,12 +664,16 @@
             
             // 新しい煙粒子を生成
             smokeSources.forEach(source => {
-                if (Math.random() < 0.1 * source.intensity) { // 煙源ごとの生成確率
-                    particles.push(new SmokeParticle(
-                        source.x + (Math.random() - 0.5) * 2, // 煙源ごとの幅
-                        source.y + (Math.random() - 0.5) * 5, // Y位置にも少しランダム性
-                        source
-                    ));
+                // 煙源ごとに大量の粒子を生成して密度を大幅に上げる
+                const particlesToCreate = Math.floor(source.intensity * 8); // 3から8に増加
+                for (let i = 0; i < particlesToCreate; i++) {
+                    if (Math.random() < 0.85) { // 生成確率を0.4から0.85に大幅アップ
+                        particles.push(new SmokeParticle(
+                            source.x + (Math.random() - 0.5) * 0.5, // さらに狭い範囲（1から0.5に）
+                            source.y + (Math.random() - 0.5) * 2, // Y位置のランダム性も減らす（3から2に）
+                            source
+                        ));
+                    }
                 }
             });
             
@@ -719,19 +723,22 @@
         function generateInitialSmoke() {
             smokeSources.forEach(source => {
                 // 各煙源に対して、既に立ち上がっている煙を生成
-                const particleCount = Math.floor(30 * source.intensity); // 煙源の強さに応じた粒子数
+                const particleCount = Math.floor(80 * source.intensity); // 粒子数を30から80に大幅増加
                 for (let i = 0; i < particleCount; i++) {
                     const progress = i / particleCount; // 0から1までの進行度
-                    const particle = new SmokeParticle(
-                        source.x + (Math.random() - 0.5) * 2,
-                        source.y,
-                        source
-                    );
-                    // 煙を既に上昇した位置に配置
-                    particle.y = source.y - (progress * 200 * source.scale); // スケールに応じた高さ
-                    particle.life = 1.0 - (progress * 0.5); // 寿命の減少を一定に
-                    
-                    particles.push(particle);
+                    // 複数の粒子を同じ高さに生成して密度を上げる
+                    for (let j = 0; j < 3; j++) {
+                        const particle = new SmokeParticle(
+                            source.x + (Math.random() - 0.5) * 0.5, // 狭い範囲
+                            source.y,
+                            source
+                        );
+                        // 煙を既に上昇した位置に配置
+                        particle.y = source.y - (progress * 200 * source.scale); // スケールに応じた高さ
+                        particle.life = 1.0 - (progress * 0.3); // 寿命の減少を緩やかに（0.5から0.3に）
+                        
+                        particles.push(particle);
+                    }
                 }
             });
         }

@@ -523,7 +523,7 @@
                 this.x = x;
                 this.y = y;
                 this.intensity = intensity;
-                this.vx = (Math.random() - 0.5) * 0.1; // 横の動きを極端に減らす
+                this.vx = (Math.random() - 0.5) * 0.02; // 横の動きをほぼゼロに
                 this.vy = -Math.random() * 1.5 - 1.0; // 上昇速度を少し遅く
                 this.life = 1.0;
                 this.decay = Math.random() * 0.006 + 0.004; // 高さに合わせて寿命を延ばす
@@ -538,8 +538,8 @@
                 const windEffect = Math.sin(windTime + this.wobble) * windStrength;
                 this.vx += windEffect * 0.02 * windDirection; // 風の影響を大幅に減らす
                 
-                // ゆらゆらとした動きを追加
-                const wobbleX = Math.sin(this.wobble) * 0.5;
+                // ゆらゆらとした動きを最小限に
+                const wobbleX = Math.sin(this.wobble) * 0.1; // 揺れを小さく
                 
                 // 上昇とともに横に流れる
                 this.x += this.vx + wobbleX;
@@ -667,7 +667,7 @@
                 for (let i = 0; i < source.intensity; i++) {
                     if (Math.random() < 0.5) { // 生成確率をさらに上げる
                         particles.push(new SmokeParticle(
-                            source.x + (Math.random() - 0.5) * 1.5, // さらに狭く
+                            source.x + (Math.random() - 0.5) * 0.5, // 極限まで狭く（0.5ピクセル範囲）
                             source.y,
                             source.intensity
                         ));
@@ -726,7 +726,7 @@
                 for (let i = 0; i < particleCount; i++) {
                     const progress = i / particleCount; // 0から1までの進行度
                     const particle = new SmokeParticle(
-                        source.x + (Math.random() - 0.5) * 1.5,
+                        source.x + (Math.random() - 0.5) * 0.5, // 初期煙も極限まで狭く
                         source.y,
                         source.intensity
                     );

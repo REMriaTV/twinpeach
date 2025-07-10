@@ -523,20 +523,20 @@
                 this.x = x;
                 this.y = y;
                 this.intensity = intensity;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = -Math.random() * 1.5 - 0.5;
+                this.vx = (Math.random() - 0.5) * 0.1; // 横の動きを極端に減らす
+                this.vy = -Math.random() * 2.5 - 1.5; // 上昇速度を速く
                 this.life = 1.0;
-                this.decay = Math.random() * 0.005 + 0.003;
-                this.size = Math.random() * 15 + 15; // サイズを中程度に
+                this.decay = Math.random() * 0.002 + 0.001; // ゆっくり消える
+                this.size = Math.random() * 10 + 8; // サイズを小さく
                 this.rotation = Math.random() * Math.PI * 2;
-                this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.01;
                 this.wobble = Math.random() * Math.PI * 2;
             }
             
             update() {
-                // 風の影響を受ける
+                // 風の影響を受ける（かなり弱く）
                 const windEffect = Math.sin(windTime + this.wobble) * windStrength;
-                this.vx += windEffect * 0.1 * windDirection;
+                this.vx += windEffect * 0.02 * windDirection; // 風の影響を大幅に減らす
                 
                 // 上昇とともに横に流れる
                 this.x += this.vx;
@@ -560,21 +560,26 @@
             
             draw() {
                 ctx.save();
-                ctx.globalAlpha = this.life * 0.95; // もっと不透明に
+                ctx.globalAlpha = this.life; // 完全に不透明から始まる
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation);
                 
-                // グラデーションで煙を描画（力強い白）
-                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
-                gradient.addColorStop(0, 'rgba(255, 255, 255, 1)'); // 中心は完全に白
-                gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.9)');
-                gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.6)');
-                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                // はっきりとした白の煙
+                ctx.fillStyle = 'rgba(255, 255, 255, 1)'; // 完全に白
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fill();
                 
+                // 縁をぼかすための追加の円
+                const gradient = ctx.createRadialGradient(0, 0, this.size * 0.5, 0, 0, this.size);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                gradient.addColorStop(0.8, 'rgba(255, 255, 255, 0.8)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
                 ctx.arc(0, 0, this.size, 0, Math.PI * 2);
                 ctx.fill();
+                
                 ctx.restore();
             }
         }
@@ -655,9 +660,9 @@
             // 新しい煙粒子を生成
             smokeSources.forEach(source => {
                 for (let i = 0; i < source.intensity; i++) {
-                    if (Math.random() < 0.3) { // 生成確率を上げる
+                    if (Math.random() < 0.5) { // 生成確率をさらに上げる
                         particles.push(new SmokeParticle(
-                            source.x + (Math.random() - 0.5) * 10, // 横の広がりを狭く
+                            source.x + (Math.random() - 0.5) * 3, // 極端に狭く
                             source.y,
                             source.intensity
                         ));

@@ -526,7 +526,7 @@
                 this.vx = (Math.random() - 0.5) * 0.1; // 横の動きを極端に減らす
                 this.vy = -Math.random() * 2.5 - 1.5; // 上昇速度を速く
                 this.life = 1.0;
-                this.decay = Math.random() * 0.01 + 0.008; // もっと早く消える
+                this.decay = Math.random() * 0.006 + 0.004; // 高さに合わせて寿命を延ばす
                 this.size = Math.random() * 10 + 8; // サイズを小さく
                 this.rotation = Math.random() * Math.PI * 2;
                 this.rotationSpeed = (Math.random() - 0.5) * 0.01;
@@ -680,8 +680,8 @@
                 const particle = particles[i];
                 particle.update();
                 
-                // 画面の上部2分の1あたりで消える（もっと高く）
-                const maxHeight = window.innerHeight * 0.2;
+                // 画面のもっと上まで煙を伸ばす（現在の1.5倍）
+                const maxHeight = window.innerHeight * 0.1; // 0.2から0.1に（画面上部10%）
                 if (particle.life <= 0 || particle.y < maxHeight) {
                     particles.splice(i, 1);
                 } else {
@@ -718,12 +718,33 @@
             }
         }
         
+        // 初期の煙を生成
+        function generateInitialSmoke() {
+            smokeSources.forEach(source => {
+                // 各煙源に対して、既に立ち上がっている煙を生成
+                const particleCount = 50; // 各煙源あたりの初期粒子数
+                for (let i = 0; i < particleCount; i++) {
+                    const progress = i / particleCount; // 0から1までの進行度
+                    const particle = new SmokeParticle(
+                        source.x + (Math.random() - 0.5) * 1.5,
+                        source.y,
+                        source.intensity
+                    );
+                    // 煙を既に上昇した位置に配置
+                    particle.y = source.y - (progress * window.innerHeight * 0.5);
+                    particle.life = 1.0 - (progress * 0.5); // 上の方ほど寿命が短い
+                    particles.push(particle);
+                }
+            });
+        }
+
         // 開始
         window.addEventListener('load', () => {
             setTimeout(typeWriter, 500);
             // 初期化時に煙源を設定
             setTimeout(() => {
                 updateSmokeSources();
+                generateInitialSmoke(); // 初期煙を生成
                 animate();
             }, 100);
         });

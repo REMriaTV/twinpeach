@@ -563,21 +563,23 @@
             
             draw() {
                 ctx.save();
-                ctx.globalAlpha = this.life; // 完全に不透明から始まる
+                ctx.globalAlpha = Math.min(this.life * 1.2, 1); // より不透明に
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation);
                 
-                // はっきりとした白の煙
+                // より濃い白の煙
                 ctx.fillStyle = 'rgba(255, 255, 255, 1)'; // 完全に白
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                ctx.shadowBlur = 3;
                 ctx.beginPath();
                 ctx.arc(0, 0, this.size, 0, Math.PI * 2);
                 ctx.fill();
                 
                 // 縁をぼかすための追加の円
-                const gradient = ctx.createRadialGradient(0, 0, this.size * 0.5, 0, 0, this.size);
+                const gradient = ctx.createRadialGradient(0, 0, this.size * 0.6, 0, 0, this.size);
                 gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-                gradient.addColorStop(0.8, 'rgba(255, 255, 255, 0.8)');
-                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.9)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0.3)');
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
                 ctx.arc(0, 0, this.size, 0, Math.PI * 2);
@@ -665,7 +667,7 @@
                 for (let i = 0; i < source.intensity; i++) {
                     if (Math.random() < 0.5) { // 生成確率をさらに上げる
                         particles.push(new SmokeParticle(
-                            source.x + (Math.random() - 0.5) * 3, // 極端に狭く
+                            source.x + (Math.random() - 0.5) * 1.5, // さらに狭く
                             source.y,
                             source.intensity
                         ));
@@ -678,8 +680,8 @@
                 const particle = particles[i];
                 particle.update();
                 
-                // 画面の上部3分の1あたりで消える
-                const maxHeight = window.innerHeight * 0.3;
+                // 画面の上部2分の1あたりで消える（もっと高く）
+                const maxHeight = window.innerHeight * 0.2;
                 if (particle.life <= 0 || particle.y < maxHeight) {
                     particles.splice(i, 1);
                 } else {

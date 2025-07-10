@@ -524,7 +524,7 @@
                 this.y = y;
                 this.intensity = intensity;
                 this.vx = (Math.random() - 0.5) * 0.02; // 横の動きをほぼゼロに
-                this.vy = -Math.random() * 1.5 - 1.0; // 上昇速度を少し遅く
+                this.vy = -Math.random() * 2.0 - 0.5; // 上昇速度にばらつきを持たせる
                 this.life = 1.0;
                 this.decay = Math.random() * 0.003 + 0.002; // さらに寿命を延ばす
                 this.size = Math.random() * 10 + 8; // サイズを小さく
@@ -538,8 +538,8 @@
                 const windEffect = Math.sin(windTime + this.wobble) * windStrength;
                 this.vx += windEffect * 0.02 * windDirection; // 風の影響を大幅に減らす
                 
-                // ゆらゆらとした動きを最小限に
-                const wobbleX = Math.sin(this.wobble) * 0.1; // 揺れを小さく
+                // ゆらゆらとした動きを少し増やす
+                const wobbleX = Math.sin(this.wobble) * 0.2; // 自然な揺れ
                 
                 // 上昇とともに横に流れる
                 this.x += this.vx + wobbleX;
@@ -665,10 +665,10 @@
             // 新しい煙粒子を生成
             smokeSources.forEach(source => {
                 for (let i = 0; i < source.intensity; i++) {
-                    if (Math.random() < 0.5) { // 生成確率をさらに上げる
+                    if (Math.random() < 0.3 + Math.random() * 0.3) { // 生成確率にランダム性
                         particles.push(new SmokeParticle(
-                            source.x + (Math.random() - 0.5) * 0.2, // さらに狭く（0.2ピクセル範囲）
-                            source.y,
+                            source.x + (Math.random() - 0.5) * 0.3, // 少し幅を戻す
+                            source.y + (Math.random() - 0.5) * 5, // Y位置にも少しランダム性
                             source.intensity
                         ));
                     }
@@ -730,9 +730,10 @@
                         source.y,
                         source.intensity
                     );
-                    // 煙を既に上昇した位置に配置（低い位置で統一）
-                    particle.y = source.y - (progress * window.innerHeight * 0.3);
-                    particle.life = 1.0 - (progress * 0.4); // 寿命の減少を元に戻す
+                    // 煙を既に上昇した位置に配置（ランダムな高さ）
+                    const randomHeight = 0.2 + Math.random() * 0.2; // 0.2〜0.4の範囲
+                    particle.y = source.y - (progress * window.innerHeight * randomHeight);
+                    particle.life = 1.0 - (progress * 0.5 * Math.random()); // 寿命もランダムに
                     
                     // 通常の煙と同じように速度を調整
                     particle.vy = particle.vy * 0.7; // 速度を落とす

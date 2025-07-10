@@ -667,7 +667,7 @@
                 for (let i = 0; i < source.intensity; i++) {
                     if (Math.random() < 0.5) { // 生成確率をさらに上げる
                         particles.push(new SmokeParticle(
-                            source.x + (Math.random() - 0.5) * 0.5, // 極限まで狭く（0.5ピクセル範囲）
+                            source.x + (Math.random() - 0.5) * 0.2, // さらに狭く（0.2ピクセル範囲）
                             source.y,
                             source.intensity
                         ));
@@ -680,8 +680,8 @@
                 const particle = particles[i];
                 particle.update();
                 
-                // 画面の最上部まで煙を伸ばす
-                const maxHeight = -50; // 画面外まで煙を伸ばす
+                // 画面の中程で煙を消す（低い位置で統一）
+                const maxHeight = window.innerHeight * 0.4; // 画面の40%の高さで消える
                 if (particle.life <= 0 || particle.y < maxHeight) {
                     particles.splice(i, 1);
                 } else {
@@ -726,13 +726,13 @@
                 for (let i = 0; i < particleCount; i++) {
                     const progress = i / particleCount; // 0から1までの進行度
                     const particle = new SmokeParticle(
-                        source.x + (Math.random() - 0.5) * 0.5, // 初期煙も極限まで狭く
+                        source.x + (Math.random() - 0.5) * 0.2, // 初期煙も同じく狭く
                         source.y,
                         source.intensity
                     );
-                    // 煙を既に上昇した位置に配置（画面上部まで）
-                    particle.y = source.y - (progress * window.innerHeight * 0.8);
-                    particle.life = 1.0 - (progress * 0.2); // 寿命の減少を緩やかに
+                    // 煙を既に上昇した位置に配置（低い位置で統一）
+                    particle.y = source.y - (progress * window.innerHeight * 0.3);
+                    particle.life = 1.0 - (progress * 0.4); // 寿命の減少を元に戻す
                     
                     // 通常の煙と同じように速度を調整
                     particle.vy = particle.vy * 0.7; // 速度を落とす

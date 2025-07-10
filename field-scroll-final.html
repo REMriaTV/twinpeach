@@ -271,46 +271,57 @@
             box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
         }
         
-        /* 炎のアニメーション */
-        .fire-container {
+        /* 煙の発生源 */
+        .smoke-source {
             position: absolute;
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            width: 40px;
-            height: 60px;
+            width: 60px;
+            height: 20px;
             pointer-events: none;
             z-index: 10;
             margin-bottom: 10px;
         }
         
-        .flame {
-            position: absolute;
-            bottom: 0;
+        /* 煙源の視覚的表現（炭や灰のような見た目） */
+        .smoke-base {
             width: 100%;
             height: 100%;
-            transform-origin: bottom center;
-            animation: flicker 0.5s ease-in-out infinite alternate;
+            background: radial-gradient(ellipse at center, 
+                rgba(60, 60, 60, 0.8) 0%, 
+                rgba(40, 40, 40, 0.6) 40%, 
+                rgba(30, 30, 30, 0.4) 70%, 
+                transparent 100%);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
         }
         
-        .flame-inner {
-            width: 30px;
-            height: 50px;
-            background: radial-gradient(ellipse at bottom, #ff6b6b 0%, #ff8f00 50%, transparent 70%);
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+        /* くすぶる効果 */
+        .smoke-base::after {
+            content: '';
             position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            filter: drop-shadow(0 0 10px #ff6b6b);
+            top: 30%;
+            left: 20%;
+            width: 60%;
+            height: 40%;
+            background: radial-gradient(ellipse at center, 
+                rgba(255, 100, 0, 0.3) 0%, 
+                rgba(255, 50, 0, 0.1) 50%, 
+                transparent 100%);
+            border-radius: 50%;
+            animation: glow 3s ease-in-out infinite;
         }
         
-        @keyframes flicker {
-            0% {
-                transform: scale(1) rotate(-2deg);
+        @keyframes glow {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(0.9);
             }
-            100% {
-                transform: scale(1.1) rotate(2deg);
+            50% {
+                opacity: 0.6;
+                transform: scale(1.1);
             }
         }
         
@@ -438,25 +449,21 @@
         <div class="scroll-container" id="scrollContainer">
             <div class="scroll-content">
                 <div class="place-card" data-place="ibuki" data-active="3">
-                    <div class="fire-container">
-                        <div class="flame">
-                            <div class="flame-inner"></div>
-                        </div>
+                    <div class="smoke-source" data-smoke-intensity="3">
+                        <div class="smoke-base"></div>
                     </div>
                     <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">伊吹山麓の狼煙場</h3>
                     <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">旅立ちの場所。古墳の丘から見える琵琶湖が美しい。</p>
-                    <p style="font-size: 0.85em; color: #4ecdc4;">🔥 3つの狼煙が上がっている</p>
+                    <p style="font-size: 0.85em; color: #4ecdc4;">💨 3つの狼煙が上がっている</p>
                 </div>
                 
                 <div class="place-card" data-place="biwa" data-active="1">
-                    <div class="fire-container">
-                        <div class="flame">
-                            <div class="flame-inner"></div>
-                        </div>
+                    <div class="smoke-source" data-smoke-intensity="1">
+                        <div class="smoke-base"></div>
                     </div>
                     <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">琵琶湖畔の狼煙場</h3>
                     <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">水辺の静かな場所。湖面に映る煙が幻想的。</p>
-                    <p style="font-size: 0.85em; color: #4ecdc4;">🔥 1つの狼煙が上がっている</p>
+                    <p style="font-size: 0.85em; color: #4ecdc4;">💨 1つの狼煙が上がっている</p>
                 </div>
                 
                 <div class="place-card" data-place="kusatsu" data-active="0">
@@ -466,25 +473,21 @@
                 </div>
                 
                 <div class="place-card" data-place="keihoku" data-active="2">
-                    <div class="fire-container">
-                        <div class="flame">
-                            <div class="flame-inner"></div>
-                        </div>
+                    <div class="smoke-source" data-smoke-intensity="2">
+                        <div class="smoke-base"></div>
                     </div>
                     <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">京北山中の狼煙場</h3>
                     <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">深い森に囲まれた神秘的な場所。</p>
-                    <p style="font-size: 0.85em; color: #4ecdc4;">🔥 2つの狼煙が上がっている</p>
+                    <p style="font-size: 0.85em; color: #4ecdc4;">💨 2つの狼煙が上がっている</p>
                 </div>
                 
                 <div class="place-card" data-place="tango" data-active="4">
-                    <div class="fire-container">
-                        <div class="flame">
-                            <div class="flame-inner"></div>
-                        </div>
+                    <div class="smoke-source" data-smoke-intensity="4">
+                        <div class="smoke-base"></div>
                     </div>
                     <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">丹後岬の狼煙場</h3>
                     <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">水宮への祈りが届く場所。海風に乗って遠くまで煙が届く。</p>
-                    <p style="font-size: 0.85em; color: #4ecdc4;">🔥 4つの狼煙が上がっている</p>
+                    <p style="font-size: 0.85em; color: #4ecdc4;">💨 4つの狼煙が上がっている</p>
                 </div>
             </div>
         </div>
@@ -581,19 +584,22 @@
         // 煙を生成する場所を追跡
         const smokeSources = [];
         
-        // 場所カードの位置を更新
+        // 煙源の位置を更新
         function updateSmokeSources() {
             smokeSources.length = 0;
-            const cards = document.querySelectorAll('.place-card');
+            const smokeElements = document.querySelectorAll('.smoke-source');
             
-            cards.forEach(card => {
-                const active = parseInt(card.dataset.active);
-                if (active > 0) {
-                    const rect = card.getBoundingClientRect();
+            smokeElements.forEach(source => {
+                const intensity = parseInt(source.dataset.smokeIntensity) || 0;
+                if (intensity > 0) {
+                    const rect = source.getBoundingClientRect();
+                    const card = source.closest('.place-card');
+                    const cardRect = card.getBoundingClientRect();
+                    
                     smokeSources.push({
-                        x: rect.left + rect.width / 2,
-                        y: rect.top,
-                        intensity: active
+                        x: cardRect.left + cardRect.width / 2,
+                        y: cardRect.top - 10, // 煙源のすぐ上から
+                        intensity: intensity
                     });
                 }
             });

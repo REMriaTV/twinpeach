@@ -540,6 +540,12 @@ function displayChangeHistory(history) {
     `).join('');
 }
 
+// スマホでサイドバーを開閉
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('expanded');
+}
+
 // 入力フィールドに変更検知を追加
 document.addEventListener('DOMContentLoaded', () => {
     // すべての入力フィールドに変更検知を追加

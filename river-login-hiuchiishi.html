@@ -16,6 +16,124 @@
             transition: background 3s ease;
         }
         
+        /* スマホ対応 */
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            
+            .container {
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            .weather-info {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin: 1rem;
+                padding: 1rem;
+                font-size: 0.9rem;
+                min-width: auto;
+                width: calc(100% - 2rem);
+                box-sizing: border-box;
+            }
+            
+            .location-name {
+                font-size: 1.2rem;
+            }
+            
+            .weather-details {
+                gap: 1rem;
+            }
+            
+            .river {
+                height: 120px;
+                margin-bottom: 1rem;
+            }
+            
+            .dialogue-box {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                transform: none;
+                padding: 1.5rem;
+                margin: 1rem;
+                max-width: none;
+                min-width: auto;
+                width: calc(100% - 2rem);
+                box-sizing: border-box;
+                min-height: 150px;
+            }
+            
+            .dialogue-text {
+                font-size: 1rem;
+                line-height: 1.6;
+            }
+            
+            .dialogue-actions {
+                margin-top: 1.5rem;
+            }
+            
+            .dialogue-button {
+                width: 100%;
+                padding: 1rem;
+                font-size: 1.1rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .stone-description {
+                width: 100%;
+                min-height: 120px;
+                font-size: 1rem;
+                padding: 1rem;
+                margin: 1rem 0;
+                box-sizing: border-box;
+            }
+            
+            .stone {
+                width: 40px;
+                height: 40px;
+                margin: 5px;
+            }
+            
+            .noroshiya-entrance {
+                position: fixed;
+                margin: 0;
+                padding: 2rem 1.5rem;
+                max-width: none;
+                width: calc(100% - 2rem);
+                left: 1rem;
+                right: 1rem;
+                box-sizing: border-box;
+            }
+            
+            .noroshiya-icon-large {
+                font-size: 3em;
+                margin-bottom: 1rem;
+            }
+            
+            .noroshiya-message {
+                font-size: 1.1rem;
+                line-height: 1.7;
+                margin-bottom: 2rem;
+            }
+            
+            .loading {
+                width: 60px;
+                height: 60px;
+                margin-top: -30px;
+                margin-left: -30px;
+            }
+            
+            .loading::before {
+                width: 60px;
+                height: 60px;
+                border-width: 3px;
+            }
+        }
+        
         .container {
             position: relative;
             width: 100%;

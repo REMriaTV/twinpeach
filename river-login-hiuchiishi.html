@@ -338,10 +338,21 @@
         </button>
     </div>
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Supabase設定
+        const SUPABASE_URL = 'https://roaucowddadmvxgzrvnu.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvYXVjb3dkZGFkbXZ4Z3pydm51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNDQxMDMsImV4cCI6MjA2NzgyMDEwM30.Tqs__X1JOfPiKsb5llj93jVLnyszF_ZrZjfp_UaIiNw';
+        
+        let supabase;
+        if (typeof window !== 'undefined' && window.supabase) {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+        
         let weatherData = {};
         let currentStage = 'initial';
         let selectedStone = null;
+        let noroshiyaCharacters = []; // Supabaseから読み込んだ狼煙屋データ
         
         // 狼煙屋のキャラクターデータ
         const noroshiyaTypes = {
@@ -481,53 +492,188 @@
         }
         
         // 石を拾う（テキスト解析）
-        function pickStone() {
+        async function pickStone() {
             const description = document.querySelector('.stone-description').value;
             if (!description.trim()) {
                 alert('石の特徴を入力してください');
                 return;
             }
             
-            // 簡単なテキスト解析で狼煙屋を決定
-            const lowerDesc = description.toLowerCase();
-            let noroshiyaType = 'pure'; // デフォルト
-            
-            if (lowerDesc.includes('黒') || lowerDesc.includes('尖') || lowerDesc.includes('dark')) {
-                noroshiyaType = 'otaku';
-            } else if (lowerDesc.includes('白') || lowerDesc.includes('丸') || lowerDesc.includes('smooth')) {
-                noroshiyaType = 'calm';
-            } else if (lowerDesc.includes('赤') || lowerDesc.includes('大き') || lowerDesc.includes('big')) {
-                noroshiyaType = 'speedy';
-            } else if (lowerDesc.includes('ゴツゴツ') || lowerDesc.includes('rough') || lowerDesc.includes('四角')) {
-                noroshiyaType = 'mendokusai';
-            }
-            
-            // 火打石判定
-            currentStage = 'hiuchiishi';
-            document.getElementById('dialogueText').innerHTML = 'あなたが拾ったのはどうやら火打石のようです...<br><br>すると...';
+            // ローディング表示
+            document.getElementById('dialogueText').innerHTML = 'あなたが拾ったのはどうやら火打石のようです...<br><br>狼煙屋を探しています...';
             document.getElementById('dialogueActions').innerHTML = '';
             
-            // 狼煙屋登場
+            // Supabaseから狼煙屋データを取得してマッチング
+            const matchedNoroshiya = await findBestMatchNoroshiya(description);
+            
             setTimeout(() => {
-                showNoroshiya(noroshiyaType);
+                showNoroshiya(matchedNoroshiya);
             }, 2000);
         }
         
+        // 最適な狼煙屋を見つける
+        async function findBestMatchNoroshiya(userDescription) {
+            try {
+                // Supabaseから狼煙屋データを取得
+                const { data, error } = await supabase
+                    .from('noroshiya_characters')
+                    .select('id, name, matching_keywords, stone_affinities, dialogues');
+                
+                if (error) throw error;
+                
+                if (!data || data.length === 0) {
+                    console.log('Supabaseデータが見つからないため、デフォルトロジックを使用');
+                    return getDefaultNoroshiya(userDescription);
+                }
+                
+                // 各狼煙屋とのマッチングスコアを計算
+                let bestMatch = null;
+                let highestScore = 0;
+                
+                data.forEach(noroshiya => {
+                    const score = calculateMatchingScore(userDescription, noroshiya.matching_keywords);
+                    console.log(`${noroshiya.name}: スコア ${score}`);
+                    
+                    if (score > highestScore) {
+                        highestScore = score;
+                        bestMatch = noroshiya;
+                    }
+                });
+                
+                return bestMatch || data[0]; // マッチしない場合は最初のキャラクター
+                
+            } catch (error) {
+                console.error('Supabase接続エラー:', error);
+                return getDefaultNoroshiya(userDescription);
+            }
+        }
+        
+        // マッチングスコアを計算
+        function calculateMatchingScore(userDescription, keywords) {
+            if (!keywords) return 0;
+            
+            const userWords = userDescription.toLowerCase().split(/[、,\s]+/);
+            const keywordList = keywords.toLowerCase().split(/[、,\s]+/);
+            
+            let score = 0;
+            keywordList.forEach(keyword => {
+                if (keyword.trim()) {
+                    userWords.forEach(userWord => {
+                        if (userWord.includes(keyword.trim()) || keyword.trim().includes(userWord)) {
+                            score += 10;
+                        }
+                    });
+                }
+            });
+            
+            return score;
+        }
+        
+        // デフォルトの狼煙屋選択（Supabase接続失敗時）
+        function getDefaultNoroshiya(description) {
+            const lowerDesc = description.toLowerCase();
+            
+            if (lowerDesc.includes('黒') || lowerDesc.includes('尖') || lowerDesc.includes('dark')) {
+                return { name: 'フクロウジ', type: 'otaku' };
+            } else if (lowerDesc.includes('白') || lowerDesc.includes('丸') || lowerDesc.includes('smooth')) {
+                return { name: 'ハトポッポ', type: 'calm' };
+            } else if (lowerDesc.includes('赤') || lowerDesc.includes('大き') || lowerDesc.includes('big')) {
+                return { name: 'ツバクロウ', type: 'speedy' };
+            } else if (lowerDesc.includes('ゴツゴツ') || lowerDesc.includes('rough') || lowerDesc.includes('四角')) {
+                return { name: 'カラスケ', type: 'mendokusai' };
+            }
+            
+            return { name: 'ピヨマル', type: 'pure' };
+        }
+        
         // 狼煙屋を表示
-        function showNoroshiya(type) {
-            const noroshiya = noroshiyaTypes[type];
+        function showNoroshiya(noroshiyaData) {
             const entrance = document.getElementById('noroshiyaEntrance');
             
-            document.getElementById('noroshiyaIcon').textContent = noroshiya.icon;
-            document.getElementById('noroshiyaMessage').innerHTML = 
-                `「${noroshiya.greeting}」<br><br>` +
-                `${noroshiya.name}の狼煙屋が現れた！<br><br>` +
-                `「${noroshiya.finalMessage}」`;
+            // Supabaseデータを使用する場合
+            if (noroshiyaData && noroshiyaData.name && !noroshiyaData.type) {
+                // マッチしたセリフを取得
+                const greeting = getGreeting(noroshiyaData);
+                const finalMessage = getFinalMessage(noroshiyaData);
+                
+                document.getElementById('noroshiyaIcon').textContent = getIcon(noroshiyaData.name);
+                document.getElementById('noroshiyaMessage').innerHTML = 
+                    `「${greeting}」<br><br>` +
+                    `${noroshiyaData.name}が現れた！<br><br>` +
+                    `「${finalMessage}」`;
+                
+                // 選択情報を保存
+                selectedNoroshiya = noroshiyaData.name;
+                localStorage.setItem('selectedNoroshiyaData', JSON.stringify(noroshiyaData));
+            } else {
+                // デフォルトデータを使用
+                const type = noroshiyaData.type || 'pure';
+                const noroshiya = noroshiyaTypes[type];
+                
+                document.getElementById('noroshiyaIcon').textContent = noroshiya.icon;
+                document.getElementById('noroshiyaMessage').innerHTML = 
+                    `「${noroshiya.greeting}」<br><br>` +
+                    `${noroshiya.name}の狼煙屋が現れた！<br><br>` +
+                    `「${noroshiya.finalMessage}」`;
+                
+                selectedNoroshiya = type;
+            }
             
             entrance.style.display = 'block';
-            
-            // 選択情報を保存
-            selectedNoroshiya = type;
+        }
+        
+        // 狼煙屋の挨拶を取得
+        function getGreeting(noroshiyaData) {
+            const dialogues = noroshiyaData.dialogues;
+            if (dialogues && dialogues.hiuchiishi && dialogues.hiuchiishi['初回出会い時']) {
+                return dialogues.hiuchiishi['初回出会い時'];
+            }
+            return getDefaultGreeting(noroshiyaData.name);
+        }
+        
+        // 最終メッセージを取得
+        function getFinalMessage(noroshiyaData) {
+            const dialogues = noroshiyaData.dialogues;
+            if (dialogues && dialogues.hiuchiishi && dialogues.hiuchiishi['再会時']) {
+                return dialogues.hiuchiishi['再会時'];
+            }
+            return getDefaultFinalMessage(noroshiyaData.name);
+        }
+        
+        // アイコンを取得
+        function getIcon(name) {
+            const icons = {
+                'ピヨマル': '🐦',
+                'フクロウジ': '🦉',
+                'カラスケ': '🐦‍⬛',
+                'ハトポッポ': '🕊️',
+                'ツバクロウ': '🐦'
+            };
+            return icons[name] || '🐦';
+        }
+        
+        // デフォルトの挨拶
+        function getDefaultGreeting(name) {
+            const greetings = {
+                'ピヨマル': 'ピヨピヨ！ナニソレ、オモシロソウ！',
+                'フクロウジ': 'ホーホー、ダイジョウブカナ？',
+                'カラスケ': 'カーカー、ベツニキミノタメジャナイカラネ',
+                'ハトポッポ': 'ポッポー、ユックリハナソウヨ',
+                'ツバクロウ': 'ピューッ！イソガシイケド、チョットダケ！'
+            };
+            return greetings[name] || 'ヨロシクネ！';
+        }
+        
+        // デフォルトの最終メッセージ
+        function getDefaultFinalMessage(name) {
+            const messages = {
+                'ピヨマル': 'イッショニ オオゾラヲ トボウ！',
+                'フクロウジ': 'キヲツケテ イコウネ',
+                'カラスケ': 'マァ、ツイテキテモ イイヨ',
+                'ハトポッポ': 'ノンビリ イコウ',
+                'ツバクロウ': 'ハヤク イコウ！'
+            };
+            return messages[name] || 'ヨロシクネ！';
         }
         
         // 出会い完了

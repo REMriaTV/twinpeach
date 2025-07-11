@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>狼煙屋設定管理ツール</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+        
+        .header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 0.25rem;
+        }
+        
+        .container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+        
+        /* サイドバー */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+        }
+        
+        .character-list {
+            padding: 1rem;
+        }
+        
+        .character-item {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .character-item:hover {
+            background: #e9ecef;
+        }
+        
+        .character-item.active {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+        
+        .character-item .name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .character-item .type {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .add-character-btn {
+            width: calc(100% - 2rem);
+            margin: 1rem;
+            padding: 0.75rem;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        
+        .add-character-btn:hover {
+            background: #45a049;
+        }
+        
+        /* メインエリア */
+        .main-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+        
+        .edit-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .form-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .form-section h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 0.5rem;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+            background: #fafafa;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2196f3;
+            background: white;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        /* セリフパターン管理 */
+        .dialogue-patterns {
+            background: #f5f5f5;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .dialogue-item {
+            background: white;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .dialogue-item input {
+            flex: 1;
+            border: 1px solid #e0e0e0;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .dialogue-item .situation {
+            width: 150px;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .remove-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .add-dialogue-btn {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+        
+        /* 保存ボタン */
+        .save-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e0e0e0;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        
+        .save-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        
+        .save-btn:hover {
+            background: #45a049;
+        }
+        
+        .cancel-btn {
+            background: #666;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        
+        .cancel-btn:hover {
+            background: #555;
+        }
+        
+        /* 開発メモ */
+        .dev-notes {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .dev-notes textarea {
+            background: transparent;
+            border: none;
+            width: 100%;
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        /* タブ */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #666;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        
+        .tab:hover {
+            color: #333;
+        }
+        
+        .tab.active {
+            color: #2196f3;
+            border-bottom-color: #2196f3;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* ステータスインジケーター */
+        .status-indicator {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: #4caf50;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(100px);
+            transition: transform 0.3s;
+        }
+        
+        .status-indicator.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>狼煙屋設定管理ツール</h1>
+        <div class="subtitle">火打石画面・煙チャットでの案内役キャラクター設定</div>
+    </div>
+    
+    <div class="container">
+        <aside class="sidebar">
+            <div class="character-list" id="characterList">
+                <!-- キャラクターリストはJSで動的生成 -->
+            </div>
+            <button class="add-character-btn" onclick="addNewCharacter()">+ 新規狼煙屋を追加</button>
+        </aside>
+        
+        <main class="main-area">
+            <div class="edit-form" id="editForm">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('basic')">基本設定</button>
+                    <button class="tab" onclick="switchTab('dialogue')">セリフ・反応</button>
+                    <button class="tab" onclick="switchTab('behavior')">振る舞い設定</button>
+                    <button class="tab" onclick="switchTab('dev')">開発メモ</button>
+                </div>
+                
+                <!-- 基本設定タブ -->
+                <div class="tab-content active" id="tab-basic">
+                    <div class="form-section">
+                        <h2>基本情報</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>名前</label>
+                                <input type="text" id="name" placeholder="例: ピヨマル">
+                            </div>
+                            <div class="form-group">
+                                <label>タイプ</label>
+                                <input type="text" id="type" placeholder="例: 好奇心旺盛でピュアタイプ">
+                            </div>
+                            <div class="form-group">
+                                <label>鳥の種類</label>
+                                <input type="text" id="birdType" placeholder="例: スズメ">
+                            </div>
+                            <div class="form-group">
+                                <label>口癖（カタカナ）</label>
+                                <input type="text" id="catchphrase" placeholder="例: ピヨピヨ！ナニソレ、オモシロソウ！">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>詳細設定</h2>
+                        <div class="form-group">
+                            <label>外見</label>
+                            <textarea id="appearance" placeholder="キャラクターの見た目の特徴を詳しく"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>性格</label>
+                            <textarea id="personality" placeholder="性格や特徴を詳しく"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>背景ストーリー</label>
+                            <textarea id="background" placeholder="どうやって狼煙屋になったか等"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>狼煙場の場所</label>
+                            <input type="text" id="noroshiPlace" placeholder="例: 東の丘の頂上">
+                        </div>
+                        <div class="form-group">
+                            <label>特技</label>
+                            <textarea id="specialSkill" placeholder="狼煙に関する特殊能力など"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- セリフ・反応タブ -->
+                <div class="tab-content" id="tab-dialogue">
+                    <div class="form-section">
+                        <h2>火打石画面でのセリフパターン</h2>
+                        <div class="dialogue-patterns" id="hiuchiishiDialogues">
+                            <div class="dialogue-item">
+                                <span class="situation">初回出会い時</span>
+                                <input type="text" placeholder="例: オッ！キレイナイシダネ！ボクト トモダチニナロウ！">
+                                <button class="remove-btn" onclick="removeDialogue(this)">削除</button>
+                            </div>
+                            <div class="dialogue-item">
+                                <span class="situation">再会時</span>
+                                <input type="text" placeholder="例: マタアエタネ！キョウモ ガンバロウ！">
+                                <button class="remove-btn" onclick="removeDialogue(this)">削除</button>
+                            </div>
+                        </div>
+                        <button class="add-dialogue-btn" onclick="addDialogue('hiuchiishiDialogues')">+ セリフを追加</button>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>煙チャットでの反応パターン</h2>
+                        <div class="dialogue-patterns" id="chatReactions">
+                            <div class="dialogue-item">
+                                <span class="situation">メッセージ送信時</span>
+                                <input type="text" placeholder="例: ヨシ！チャントトドケルヨ！">
+                                <button class="remove-btn" onclick="removeDialogue(this)">削除</button>
+                            </div>
+                            <div class="dialogue-item">
+                                <span class="situation">返信受信時</span>
+                                <input type="text" placeholder="例: ヘンジガキタヨ！ミテミテ！">
+                                <button class="remove-btn" onclick="removeDialogue(this)">削除</button>
+                            </div>
+                        </div>
+                        <button class="add-dialogue-btn" onclick="addDialogue('chatReactions')">+ 反応を追加</button>
+                    </div>
+                </div>
+                
+                <!-- 振る舞い設定タブ -->
+                <div class="tab-content" id="tab-behavior">
+                    <div class="form-section">
+                        <h2>活動時間設定</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>活動開始時刻</label>
+                                <input type="time" id="activeStartTime" value="06:00">
+                            </div>
+                            <div class="form-group">
+                                <label>活動終了時刻</label>
+                                <input type="time" id="activeEndTime" value="18:00">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>非活動時の振る舞い</label>
+                            <textarea id="inactiveBehavior" placeholder="例: 寝ている、ぼーっとしている等"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>煙の特徴</h2>
+                        <div class="form-group">
+                            <label>煙の色・質感</label>
+                            <input type="text" id="smokeCharacteristics" placeholder="例: 白くてふわふわ、少し甘い香り">
+                        </div>
+                        <div class="form-group">
+                            <label>煙の速度</label>
+                            <select id="smokeSpeed">
+                                <option value="slow">ゆっくり</option>
+                                <option value="normal">普通</option>
+                                <option value="fast">速い</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 開発メモタブ -->
+                <div class="tab-content" id="tab-dev">
+                    <div class="form-section">
+                        <h2>開発メモ</h2>
+                        <div class="dev-notes">
+                            <textarea id="devNotes" placeholder="キャラクター開発に関するメモ、アイデア、TODO等を自由に記入"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>変更履歴</h2>
+                        <div id="changeHistory" style="background: #f5f5f5; padding: 1rem; border-radius: 8px;">
+                            <!-- 変更履歴はJSで動的生成 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="save-section">
+                    <button class="cancel-btn" onclick="cancelEdit()">キャンセル</button>
+                    <button class="save-btn" onclick="saveCharacter()">保存</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div class="status-indicator" id="statusIndicator">
+        保存しました
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="noroshiya-dev.js"></script>
+</body>
+</html>

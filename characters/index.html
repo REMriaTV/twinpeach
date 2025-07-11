@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>狼煙屋キャラクター紹介</title>
+    <title>桃次郎キャラクター図鑑</title>
+    <link rel="stylesheet" href="character-themes.css">
     <style>
         * {
             margin: 0;
@@ -262,9 +263,14 @@
         }
     </style>
 </head>
-<body>
+<body class="theme-noroshiya">
     <div class="container">
-        <h1>狼煙屋キャラクター紹介</h1>
+        <h1>桃次郎キャラクター図鑑</h1>
+        
+        <div class="group-header">
+            <h2 class="group-title">狼煙屋（ノロシヤ）</h2>
+            <p class="group-description">煙を使って時空を超えてメッセージを届ける、不思議な鳥たち</p>
+        </div>
         
         <div class="character-grid" id="characterGrid">
             <!-- キャラクターカードはJavaScriptで動的に生成 -->
@@ -284,6 +290,14 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="characters.js"></script>
+    <script src="main-characters.js"></script>
     <script src="supabase-integration.js"></script>
+    <script>
+        // ページ読み込み時に全グループを表示
+        window.addEventListener('DOMContentLoaded', () => {
+            // bodyのテーマを削除（グループごとに設定するため）
+            document.body.className = '';
+        });
+    </script>
 </body>
 </html>

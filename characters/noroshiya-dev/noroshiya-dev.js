@@ -13,6 +13,7 @@ if (typeof window !== 'undefined' && window.supabase) {
 let characters = [];
 let currentCharacterId = null;
 let isDirty = false;
+let availableStones = []; // 利用可能な火打石リスト
 
 // 初期データ（ローカルストレージ用）
 const initialCharacters = [

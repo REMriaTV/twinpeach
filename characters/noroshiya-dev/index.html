@@ -316,6 +316,49 @@
             display: block;
         }
         
+        /* 火打石設定 */
+        .stone-affinity-list {
+            background: #f5f5f5;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .stone-item {
+            background: white;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .stone-item .stone-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        
+        .stone-item .form-grid {
+            margin-top: 1rem;
+        }
+        
+        .affinity-score {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .affinity-score input[type="range"] {
+            flex: 1;
+        }
+        
+        .affinity-score span {
+            font-weight: 600;
+            color: #2196f3;
+            min-width: 40px;
+            text-align: center;
+        }
+        
         /* ステータスインジケーター */
         .status-indicator {
             position: fixed;
@@ -355,6 +398,7 @@
                     <button class="tab active" onclick="switchTab('basic')">基本設定</button>
                     <button class="tab" onclick="switchTab('dialogue')">セリフ・反応</button>
                     <button class="tab" onclick="switchTab('behavior')">振る舞い設定</button>
+                    <button class="tab" onclick="switchTab('hiuchiishi')">火打石設定</button>
                     <button class="tab" onclick="switchTab('dev')">開発メモ</button>
                 </div>
                 
@@ -477,6 +521,25 @@
                                 <option value="normal">普通</option>
                                 <option value="fast">速い</option>
                             </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 火打石設定タブ -->
+                <div class="tab-content" id="tab-hiuchiishi">
+                    <div class="form-section">
+                        <h2>相性の良い火打石</h2>
+                        <div class="stone-affinity-list" id="stoneAffinityList">
+                            <!-- 火打石との相性リストはJSで動的生成 -->
+                        </div>
+                        <button class="add-dialogue-btn" onclick="addStoneAffinity()">+ 火打石を追加</button>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>火打石マッチングキーワード</h2>
+                        <div class="form-group">
+                            <label>この狼煙屋が現れやすいキーワード（カンマ区切り）</label>
+                            <textarea id="matchingKeywords" placeholder="例: 小さい, キラキラ, 透明, 朝" rows="3"></textarea>
                         </div>
                     </div>
                 </div>

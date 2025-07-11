@@ -39,7 +39,14 @@ async function loadCharactersFromSupabase() {
             background: char.background,
             noroshiPlace: char.noroshi_place,
             specialSkill: char.special_skill,
-            description: char.description
+            description: char.description,
+            // 開発用データは紹介ページでは使用しないが、保存時のために保持
+            stoneAffinities: char.stone_affinities,
+            matchingKeywords: char.matching_keywords,
+            dialogues: char.dialogues,
+            behavior: char.behavior,
+            devNotes: char.dev_notes,
+            changeHistory: char.change_history
         }));
         
         // ローカルストレージにもキャッシュとして保存
@@ -73,11 +80,22 @@ async function saveCharacterToSupabase(character) {
             description: character.description
         };
         
+        // 開発用データも含めて保存（設定管理ツールとの連携のため）
+        const fullData = {
+            ...supabaseChar,
+            stone_affinities: character.stoneAffinities || [],
+            matching_keywords: character.matchingKeywords || '',
+            dialogues: character.dialogues || { hiuchiishi: {}, chat: {} },
+            behavior: character.behavior || {},
+            dev_notes: character.devNotes || '',
+            change_history: character.changeHistory || []
+        };
+        
         if (character.id && typeof character.id === 'number' && character.id < 1000000) {
             // 既存のキャラクターを更新
             const { data, error } = await supabase
                 .from('noroshiya_characters')
-                .update(supabaseChar)
+                .update(fullData)
                 .eq('id', character.id)
                 .select();
             
@@ -87,7 +105,7 @@ async function saveCharacterToSupabase(character) {
             // 新規キャラクターを追加
             const { data, error } = await supabase
                 .from('noroshiya_characters')
-                .insert([supabaseChar])
+                .insert([fullData])
                 .select();
             
             if (error) throw error;

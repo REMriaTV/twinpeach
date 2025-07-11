@@ -85,9 +85,21 @@ async function loadCharacters() {
             if (!error && data) {
                 // Supabaseのデータを優先
                 characters = data.map(char => ({
-                    ...char,
+                    id: char.id,
+                    name: char.name,
+                    type: char.type,
+                    birdType: char.bird_type,
+                    appearance: char.appearance,
+                    personality: char.personality,
+                    catchphrase: char.catchphrase,
+                    background: char.background,
+                    noroshiPlace: char.noroshi_place,
+                    specialSkill: char.special_skill,
+                    description: char.description,
                     dialogues: char.dialogues || { hiuchiishi: {}, chat: {} },
                     behavior: char.behavior || {},
+                    stoneAffinities: char.stone_affinities || [],
+                    matchingKeywords: char.matching_keywords || '',
                     devNotes: char.dev_notes || "",
                     changeHistory: char.change_history || []
                 }));
@@ -321,6 +333,8 @@ async function saveCharacter() {
                     description: char.description,
                     dialogues: char.dialogues,
                     behavior: char.behavior,
+                    stone_affinities: char.stoneAffinities,
+                    matching_keywords: char.matchingKeywords,
                     dev_notes: char.devNotes,
                     change_history: char.changeHistory
                 });

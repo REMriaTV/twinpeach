@@ -47,8 +47,21 @@ const initialCharacters = [
             smokeSpeed: "normal"
         },
         devNotes: "",
-        changeHistory: []
+        changeHistory: [],
+        stoneAffinities: [
+            { stoneId: 'morning-dew', stoneName: '朝露の石', affinityScore: 90, specialDialogue: 'ワァ！アサツユノイシダ！ボクノダイスキナイシ！' }
+        ],
+        matchingKeywords: '小さい, キラキラ, 透明, 朝'
     }
+];
+
+// 初期火打石データ
+const initialStones = [
+    { id: 'morning-dew', name: '朝露の石', colorPrimary: '透明', colorSecondary: '白', size: '親指大', shape: '丸い', texture: 'ツルツル', specialFeatures: '朝の光を受けるとキラキラ光る', rarity: 'common' },
+    { id: 'sunset', name: '夕焼け石', colorPrimary: 'オレンジ', colorSecondary: '赤', size: '手のひらサイズ', shape: '平たい', texture: 'ザラザラ', specialFeatures: '夕方になると温かくなる', rarity: 'uncommon' },
+    { id: 'moonlight', name: '月光石', colorPrimary: '白', colorSecondary: '青', size: 'ビー玉大', shape: '球形', texture: 'ツルツル', specialFeatures: '夜になるとほのかに光る', rarity: 'rare' },
+    { id: 'riverbed', name: '川底石', colorPrimary: '灰色', colorSecondary: '黒', size: '握りこぶし大', shape: '角ばった', texture: 'ツルツル', specialFeatures: '水に濡れると模様が浮かぶ', rarity: 'common' },
+    { id: 'rainbow', name: '虹色石', colorPrimary: '虹色', colorSecondary: null, size: '小石サイズ', shape: '不規則', texture: 'キラキラ', specialFeatures: '見る角度で色が変わる', rarity: 'legendary' }
 ];
 
 // データ読み込み
@@ -145,6 +158,10 @@ function selectCharacter(id) {
     document.getElementById('inactiveBehavior').value = char.behavior?.inactiveBehavior || '';
     document.getElementById('smokeCharacteristics').value = char.behavior?.smokeCharacteristics || '';
     document.getElementById('smokeSpeed').value = char.behavior?.smokeSpeed || 'normal';
+    
+    // 火打石設定
+    displayStoneAffinities(char.stoneAffinities || []);
+    document.getElementById('matchingKeywords').value = char.matchingKeywords || '';
     
     // 開発メモ
     document.getElementById('devNotes').value = char.devNotes || '';
@@ -260,6 +277,10 @@ async function saveCharacter() {
         smokeCharacteristics: document.getElementById('smokeCharacteristics').value,
         smokeSpeed: document.getElementById('smokeSpeed').value
     };
+    
+    // 火打石設定
+    char.stoneAffinities = char.stoneAffinities || [];
+    char.matchingKeywords = document.getElementById('matchingKeywords').value;
     
     // 開発メモ
     char.devNotes = document.getElementById('devNotes').value;
@@ -391,6 +412,102 @@ function showStatus(message) {
     setTimeout(() => {
         indicator.classList.remove('show');
     }, 3000);
+}
+
+// 火打石相性表示
+function displayStoneAffinities(affinities) {
+    const container = document.getElementById('stoneAffinityList');
+    container.innerHTML = '';
+    
+    // 利用可能な石を読み込み
+    if (availableStones.length === 0) {
+        availableStones = [...initialStones];
+    }
+    
+    affinities.forEach((affinity, index) => {
+        const stoneItem = document.createElement('div');
+        stoneItem.className = 'stone-item';
+        stoneItem.innerHTML = `
+            <div class="stone-name">${affinity.stoneName || '未設定の石'}</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>相性スコア</label>
+                    <div class="affinity-score">
+                        <input type="range" min="0" max="100" value="${affinity.affinityScore || 50}" 
+                               onchange="updateAffinityScore(${index}, this.value)" 
+                               oninput="this.nextElementSibling.textContent = this.value">
+                        <span>${affinity.affinityScore || 50}</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>特別なセリフ（この石で出会った時）</label>
+                    <input type="text" value="${affinity.specialDialogue || ''}" 
+                           placeholder="例: キレイナイシダネ！ボクト トモダチニナロウ！"
+                           onchange="updateAffinityDialogue(${index}, this.value)">
+                </div>
+            </div>
+            <button class="remove-btn" onclick="removeStoneAffinity(${index})">削除</button>
+        `;
+        container.appendChild(stoneItem);
+    });
+}
+
+// 火打石相性を追加
+function addStoneAffinity() {
+    const char = characters.find(c => c.id === currentCharacterId);
+    if (!char) return;
+    
+    // 石を選択
+    const stoneNames = availableStones.map(s => s.name).join('\\n');
+    const selectedStoneName = prompt(`追加する火打石を選んでください：\\n${stoneNames}`);
+    
+    if (!selectedStoneName) return;
+    
+    const stone = availableStones.find(s => s.name === selectedStoneName);
+    if (!stone) {
+        alert('石が見つかりませんでした');
+        return;
+    }
+    
+    if (!char.stoneAffinities) char.stoneAffinities = [];
+    
+    char.stoneAffinities.push({
+        stoneId: stone.id,
+        stoneName: stone.name,
+        affinityScore: 50,
+        specialDialogue: ''
+    });
+    
+    displayStoneAffinities(char.stoneAffinities);
+    setDirty();
+}
+
+// 火打石相性を削除
+function removeStoneAffinity(index) {
+    const char = characters.find(c => c.id === currentCharacterId);
+    if (!char || !char.stoneAffinities) return;
+    
+    char.stoneAffinities.splice(index, 1);
+    displayStoneAffinities(char.stoneAffinities);
+    setDirty();
+}
+
+// 相性スコア更新
+function updateAffinityScore(index, value) {
+    const char = characters.find(c => c.id === currentCharacterId);
+    if (!char || !char.stoneAffinities || !char.stoneAffinities[index]) return;
+    
+    char.stoneAffinities[index].affinityScore = parseInt(value);
+    setDirty();
+}
+
+// 特別セリフ更新
+function updateAffinityDialogue(index, value) {
+    const char = characters.find(c => c.id === currentCharacterId);
+    if (!char || !char.stoneAffinities || !char.stoneAffinities[index]) return;
+    
+    char.stoneAffinities[index].specialDialogue = value;
+    setDirty();
 }
 
 // 変更履歴表示

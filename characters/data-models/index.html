@@ -254,11 +254,31 @@
             border-radius: 5px;
             margin-bottom: 20px;
         }
+
+        .admin-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #f56565;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .admin-link:hover {
+            background: #e53e3e;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🐦 鳥・💎 石マスターデータ管理</h1>
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="admin.html" class="admin-link">✏️ データを編集する（管理者用）</a>
+        </div>
         
         <div class="tab-container">
             <div class="tabs">

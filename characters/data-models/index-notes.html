@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>狼煙屋制作ノート | 鳥・石リサーチメモ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #fafaf9;
+            color: #1f1f1f;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #f7f6f3;
+            border-right: 1px solid #e5e4e2;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #e5e4e2;
+        }
+
+        .app-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin-bottom: 4px;
+        }
+
+        .app-subtitle {
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        .nav-section {
+            padding: 20px;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 14px;
+            font-weight: 400;
+            color: #374151;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: #f3f2ef;
+            color: #1f1f1f;
+        }
+
+        .nav-item.active {
+            background: #6366f1;
+            color: white;
+        }
+
+        .nav-item .icon {
+            margin-right: 12px;
+            font-size: 16px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #e5e4e2;
+        }
+
+        .admin-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+
+        .admin-link:hover {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .content-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .search-container {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #f9fafb;
+            color: #374151;
+            transition: all 0.15s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: white;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 16px;
+        }
+
+        .content-body {
+            flex: 1;
+            padding: 24px 32px;
+            background: #fafaf9;
+        }
+
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .note-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .note-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: #d1d5db;
+        }
+
+        .note-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .note-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .note-meta {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        .note-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .tag.primary {
+            background: #eff6ff;
+            border-color: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .tag.secondary {
+            background: #f0fdf4;
+            border-color: #dcfce7;
+            color: #166534;
+        }
+
+        .note-content {
+            color: #4b5563;
+            font-size: 14px;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .note-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .stat-label {
+            font-weight: 500;
+            margin-right: 4px;
+        }
+
+        .stat-value {
+            color: #374151;
+        }
+
+        /* モーダル */
+        .note-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow: auto;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 40px auto;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            animation: slideIn 0.3s ease;
+            max-height: calc(100vh - 80px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .close-modal {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: #f9fafb;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .close-modal:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .modal-body {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        .detail-section {
+            margin-bottom: 32px;
+        }
+
+        .detail-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            color: #111827;
+            font-weight: 500;
+        }
+
+        .detail-text {
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 80px 20px;
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #6b7280;
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+            }
+            
+            .main-content {
+                margin-left: 240px;
+            }
+            
+            .notes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .content-header {
+                padding: 16px 20px;
+                flex-direction: column;
+                gap: 16px;
+                align-items: stretch;
+            }
+            
+            .search-container {
+                width: 100%;
+            }
+            
+            .content-body {
+                padding: 20px;
+            }
+            
+            .notes-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .modal-content {
+                margin: 20px;
+                width: calc(100% - 40px);
+                max-height: calc(100vh - 40px);
+            }
+            
+            .modal-header,
+            .modal-body {
+                padding: 20px;
+            }
+        }
+
+        /* ダークモード対応の準備 */
+        @media (prefers-color-scheme: dark) {
+            /* 必要に応じてダークモードスタイルを追加 */
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- サイドバー -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="app-title">制作ノート</div>
+                <div class="app-subtitle">狼煙屋リサーチメモ</div>
+            </div>
+            
+            <div class="nav-section">
+                <button class="nav-item active" onclick="showTab('birds')">
+                    <span class="icon">🐦</span>
+                    鳥類ノート
+                </button>
+                <button class="nav-item" onclick="showTab('stones')">
+                    <span class="icon">🪨</span>
+                    鉱物ノート
+                </button>
+            </div>
+            
+            <div class="sidebar-footer">
+                <a href="admin.html" class="admin-link">
+                    <span class="icon">✏️</span>
+                    編集モード
+                </a>
+            </div>
+        </div>
+
+        <!-- メインコンテンツ -->
+        <div class="main-content">
+            <div class="content-header">
+                <h1 class="content-title" id="content-title">鳥類ノート</h1>
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" id="search-input" placeholder="ノートを検索...">
+                </div>
+            </div>
+            
+            <div class="content-body">
+                <!-- 鳥類ノート -->
+                <div id="birds-content" class="tab-content">
+                    <div id="birds-grid" class="notes-grid">
+                        <div class="loading">ノートを読み込み中...</div>
+                    </div>
+                </div>
+                
+                <!-- 鉱物ノート -->
+                <div id="stones-content" class="tab-content" style="display: none;">
+                    <div id="stones-grid" class="notes-grid">
+                        <div class="loading">ノートを読み込み中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 詳細モーダル -->
+    <div id="note-modal" class="note-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">詳細ノート</h2>
+                <button class="close-modal" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- 詳細内容がここに表示される -->
+            </div>
+        </div>
+    </div>
+
+    <script src="birds-database.js"></script>
+    <script src="stones-database.js"></script>
+    <script>
+        let currentTab = 'birds';
+        let currentBirds = [];
+        let currentStones = [];
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBirdsData();
+            loadStonesData();
+            setupSearch();
+        });
+
+        // タブ切り替え
+        function showTab(tab) {
+            currentTab = tab;
+            
+            // ナビゲーションのアクティブ状態を更新
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // コンテンツの表示切り替え
+            document.getElementById('birds-content').style.display = tab === 'birds' ? 'block' : 'none';
+            document.getElementById('stones-content').style.display = tab === 'stones' ? 'block' : 'none';
+            
+            // タイトル更新
+            document.getElementById('content-title').textContent = tab === 'birds' ? '鳥類ノート' : '鉱物ノート';
+            
+            // 検索プレースホルダー更新
+            document.getElementById('search-input').placeholder = 
+                tab === 'birds' ? '鳥のノートを検索...' : '石のノートを検索...';
+        }
+
+        // 検索機能のセットアップ
+        function setupSearch() {
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                if (currentTab === 'birds') {
+                    searchBirds(searchTerm);
+                } else {
+                    searchStones(searchTerm);
+                }
+            });
+        }
+
+        // 鳥データの読み込み
+        function loadBirdsData() {
+            try {
+                currentBirds = BirdsDB.getAll();
+                displayBirds(currentBirds);
+            } catch (error) {
+                document.getElementById('birds-grid').innerHTML = '<div class="empty-state">データの読み込みに失敗しました</div>';
+            }
+        }
+
+        // 石データの読み込み
+        function loadStonesData() {
+            try {
+                currentStones = StonesDB.getAll();
+                displayStones(currentStones);
+            } catch (error) {
+                document.getElementById('stones-grid').innerHTML = '<div class="empty-state">データの読み込みに失敗しました</div>';
+            }
+        }
+
+        // 鳥ノートの表示
+        function displayBirds(birds) {
+            const grid = document.getElementById('birds-grid');
+            
+            if (birds.length === 0) {
+                grid.innerHTML = '<div class="empty-state">ノートが見つかりません</div>';
+                return;
+            }
+            
+            grid.innerHTML = birds.map(bird => `
+                <div class="note-card" onclick="showBirdDetail('${bird.id}')">
+                    <div class="note-header">
+                        <div>
+                            <div class="note-title">${bird.name}</div>
+                            <div class="note-meta">${bird.scientificName || '学名未記録'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="note-tags">
+                        <span class="tag primary">${bird.family || '科未分類'}</span>
+                        <span class="tag">${bird.size || 'サイズ不明'}</span>
+                        ${bird.noroshiyaTraits.suitableTypes && bird.noroshiyaTraits.suitableTypes.length > 0 
+                            ? `<span class="tag secondary">${bird.noroshiyaTraits.suitableTypes[0]}</span>` 
+                            : ''}
+                    </div>
+                    
+                    <div class="note-content">
+                        ${bird.characteristics.appearance || '外見の記録がありません...'}
+                    </div>
+                    
+                    <div class="note-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">生息地:</span>
+                            <span class="stat-value">${bird.habitat || '不明'}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">活動:</span>
+                            <span class="stat-value">${bird.lifeStyle.activity || '不明'}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 石ノートの表示
+        function displayStones(stones) {
+            const grid = document.getElementById('stones-grid');
+            
+            if (stones.length === 0) {
+                grid.innerHTML = '<div class="empty-state">ノートが見つかりません</div>';
+                return;
+            }
+            
+            grid.innerHTML = stones.map(stone => `
+                <div class="note-card" onclick="showStoneDetail('${stone.id}')">
+                    <div class="note-header">
+                        <div>
+                            <div class="note-title">${stone.name}</div>
+                            <div class="note-meta">${stone.type || 'タイプ未記録'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="note-tags">
+                        ${Array.isArray(stone.colors) && stone.colors.length > 0 
+                            ? stone.colors.slice(0, 3).map(color => `<span class="tag">${color}</span>`).join('')
+                            : '<span class="tag">色未記録</span>'}
+                        <span class="tag secondary">${stone.rarity || 'レア度不明'}</span>
+                    </div>
+                    
+                    <div class="note-content">
+                        ${stone.characteristics.appearance || '外観の記録がありません...'}
+                    </div>
+                    
+                    <div class="note-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">産地:</span>
+                            <span class="stat-value">${stone.origin || '不明'}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">相性:</span>
+                            <span class="stat-value">${stone.noroshiyaAffinity.primaryMatch || '未調査'}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 鳥の詳細表示
+        function showBirdDetail(birdId) {
+            const bird = BirdsDB.getById(birdId);
+            if (!bird) return;
+            
+            document.getElementById('modal-title').textContent = `${bird.name} の詳細ノート`;
+            const modalBody = document.getElementById('modal-body');
+            
+            modalBody.innerHTML = `
+                <div class="detail-section">
+                    <div class="section-title">基本情報</div>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">学名</div>
+                            <div class="detail-value">${bird.scientificName || '未記録'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">分類</div>
+                            <div class="detail-value">${bird.family || '未分類'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">サイズ</div>
+                            <div class="detail-value">${bird.size || '未測定'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">生息地</div>
+                            <div class="detail-value">${bird.habitat || '未確認'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="section-title">観察ノート</div>
+                    <div class="detail-text"><strong>外見:</strong> ${bird.characteristics.appearance || '記録なし'}</div>
+                    <div class="detail-text"><strong>鳴き声:</strong> ${bird.characteristics.voice || '記録なし'}</div>
+                    <div class="detail-text"><strong>行動:</strong> ${bird.characteristics.behavior || '記録なし'}</div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="section-title">生態メモ</div>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">活動時間</div>
+                            <div class="detail-value">${bird.lifeStyle.activity || '未観察'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">食性</div>
+                            <div class="detail-value">${bird.lifeStyle.diet || '未調査'}</div>
+                        </div>
+                    </div>
+                    <div class="detail-text"><strong>社会性:</strong> ${bird.lifeStyle.socialBehavior || '記録なし'}</div>
+                    <div class="detail-text"><strong>営巣:</strong> ${bird.lifeStyle.nestingHabits || '記録なし'}</div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="section-title">性格分析</div>
+                    <div class="detail-text">${bird.personality.general || '分析中...'}</div>
+                    <div class="detail-text"><strong>人との関わり:</strong> ${bird.personality.humanInteraction || '記録なし'}</div>
+                    <div class="detail-text"><strong>知能レベル:</strong> ${bird.personality.intelligence || '未評価'}</div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="section-title">狼煙屋モデル適用メモ</div>
+                    <div class="detail-text"><strong>適合タイプ:</strong> ${Array.isArray(bird.noroshiyaTraits.suitableTypes) ? bird.noroshiyaTraits.suitableTypes.join(', ') : '未定義'}</div>
+                    <div class="detail-text"><strong>煙スタイル:</strong> ${bird.noroshiyaTraits.smokingStyle || '未設定'}</div>
+                    <div class="detail-text"><strong>コミュニケーション:</strong> ${bird.noroshiyaTraits.communicationStyle || '未設定'}</div>
+                </div>
+            `;
+            
+            document.getElementById('note-modal').style.display = 'block';
+        }
+
+        // 石の詳細表示
+        function showStoneDetail(stoneId) {
+            const stone = StonesDB.getById(stoneId);
+            if (!stone) return;
+            
+            document.getElementById('modal-title').textContent = `${stone.name} の詳細ノート`;
+            const modalBody = document.getElementById('modal-body');
+            
+            modalBody.innerHTML = `
+                <div class="detail-section">
+                    <div class="section-title">基本情報</div>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">タイプ</div>
+                            <div class="detail-value">${stone.type || '未分類'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">レアリティ</div>
+                            <div class="detail-value">${stone.rarity || '未評価'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">産地</div>
+                            <div class="detail-value">${stone.origin || '未確認'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">サイズ</div>
+                            <div class="detail-value">${stone.size || '未測定'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="section-title">色・形状メモ</div>
+                    <div class="detail-text"><strong>色:</strong> ${Array.isArray(stone.colors) ? stone.colors.join('、') : '未記録'}</div>
+                    <div class="detail-text"><strong>形状:</strong> ${stone.shape || '未記録'}</div>
+                    <div class="detail-text"><strong>質感:</strong> ${stone.texture || '未記録'}</div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="section-title">物理特性</div>
+                    <div class="detail-text"><strong>外観:</strong> ${stone.characteristics.appearance || '記録なし'}</div>
+                    <div class="detail-text"><strong>重量:</strong> ${stone.characteristics.weight || '未測定'}</div>
+                    <div class="detail-text"><strong>硬度:</strong> ${stone.characteristics.hardness || '未測定'}</div>
+                    <div class="detail-text"><strong>特殊特徴:</strong> ${stone.characteristics.specialFeatures || '特記事項なし'}</div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="section-title">狼煙屋適用研究</div>
+                    <div class="detail-text"><strong>相性狼煙屋:</strong> ${stone.noroshiyaAffinity.primaryMatch || '未調査'}</div>
+                    <div class="detail-text"><strong>相性理由:</strong> ${stone.noroshiyaAffinity.matchReason || '分析中'}</div>
+                    <div class="detail-text"><strong>特別反応:</strong> "${stone.noroshiyaAffinity.specialReaction || '未確認'}"</div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="section-title">発見記録</div>
+                    <div class="detail-text">
+                        ${stone.findingLocations && stone.findingLocations.length > 0 
+                            ? stone.findingLocations.map(loc => `• ${loc}`).join('<br>')
+                            : '発見場所未記録'}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('note-modal').style.display = 'block';
+        }
+
+        // 検索機能
+        function searchBirds(searchTerm) {
+            if (!searchTerm) {
+                displayBirds(currentBirds);
+                return;
+            }
+            
+            const filtered = currentBirds.filter(bird => 
+                bird.name.toLowerCase().includes(searchTerm) ||
+                (bird.scientificName && bird.scientificName.toLowerCase().includes(searchTerm)) ||
+                (bird.family && bird.family.toLowerCase().includes(searchTerm)) ||
+                (bird.characteristics.appearance && bird.characteristics.appearance.toLowerCase().includes(searchTerm))
+            );
+            
+            displayBirds(filtered);
+        }
+
+        function searchStones(searchTerm) {
+            if (!searchTerm) {
+                displayStones(currentStones);
+                return;
+            }
+            
+            const filtered = currentStones.filter(stone => 
+                stone.name.toLowerCase().includes(searchTerm) ||
+                (stone.colors && stone.colors.some(color => color.toLowerCase().includes(searchTerm))) ||
+                (stone.characteristics.appearance && stone.characteristics.appearance.toLowerCase().includes(searchTerm))
+            );
+            
+            displayStones(filtered);
+        }
+
+        // モーダル閉じる
+        function closeModal() {
+            document.getElementById('note-modal').style.display = 'none';
+        }
+
+        // モーダル外クリックで閉じる
+        window.onclick = function(event) {
+            const modal = document.getElementById('note-modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

@@ -43,15 +43,18 @@ function updateConnectionStatus(status) {
     switch(status) {
         case 'connected':
             statusEl.classList.add('status-connected');
-            statusEl.textContent = '✅ データベース接続中';
+            statusEl.textContent = '✅ クラウド保存モード';
+            statusEl.title = 'データはSupabaseデータベースに保存されます';
             break;
         case 'disconnected':
             statusEl.classList.add('status-disconnected');
             statusEl.textContent = '❌ データベース接続エラー';
+            statusEl.title = 'データベースに接続できません';
             break;
         case 'local':
             statusEl.classList.add('status-local');
-            statusEl.textContent = '📱 ローカルストレージモード';
+            statusEl.textContent = '📱 ブラウザ保存モード';
+            statusEl.title = 'データはこのブラウザにのみ保存されます（他の端末と共有されません）';
             break;
     }
 }

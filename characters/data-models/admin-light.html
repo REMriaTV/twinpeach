@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>データ編集モード | 狼煙屋研究資料</title>
+    <title>鳥・石マスターデータ編集画面</title>
     <style>
         * {
             margin: 0;
@@ -12,12 +12,10 @@
         }
 
         body {
-            font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0a0a0a;
-            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 40px 20px;
-            line-height: 1.6;
+            padding: 20px;
         }
 
         .container {
@@ -27,104 +25,58 @@
 
         h1 {
             text-align: center;
-            color: #ffffff;
-            margin-bottom: 10px;
-            font-size: 2.5rem;
-            font-weight: 300;
-            letter-spacing: 0.1em;
-        }
-        
-        .subtitle {
-            text-align: center;
-            color: #666;
+            color: white;
             margin-bottom: 30px;
-            font-size: 0.95rem;
-            letter-spacing: 0.05em;
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .admin-notice {
-            background: rgba(212, 175, 55, 0.1);
-            color: #d4af37;
-            padding: 15px 25px;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            margin-bottom: 30px;
+            background: rgba(255, 193, 7, 0.9);
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
             text-align: center;
-            font-size: 0.9rem;
-            letter-spacing: 0.05em;
-        }
-        
-        .view-link-container {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .view-link {
-            display: inline-block;
-            padding: 12px 30px;
-            background: transparent;
-            color: #888;
-            text-decoration: none;
-            border: 1px solid #444;
-            font-weight: 300;
-            transition: all 0.3s;
-            letter-spacing: 0.1em;
-            font-size: 0.9rem;
-        }
-
-        .view-link:hover {
-            border-color: #888;
-            color: #fff;
+            font-weight: bold;
         }
 
         .tab-container {
-            background: #1a1a1a;
-            border: 1px solid #333;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
         .tabs {
             display: flex;
-            background: #0d0d0d;
-            border-bottom: 1px solid #333;
+            background: #5a67d8;
         }
 
         .tab {
             flex: 1;
-            padding: 18px;
+            padding: 15px;
             text-align: center;
             cursor: pointer;
-            color: #888;
-            font-weight: 300;
+            color: white;
+            font-weight: bold;
             transition: all 0.3s;
             border: none;
             background: none;
-            font-size: 0.95rem;
-            letter-spacing: 0.05em;
-            position: relative;
+            font-size: 1rem;
         }
 
         .tab:hover {
-            color: #fff;
+            background: rgba(255,255,255,0.1);
         }
 
         .tab.active {
-            color: #fff;
-            background: #1a1a1a;
-        }
-        
-        .tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: #d4af37;
+            background: white;
+            color: #5a67d8;
         }
 
         .content {
-            padding: 30px;
+            padding: 20px;
             min-height: 600px;
         }
 
@@ -132,73 +84,61 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 10px;
         }
 
         .search-box {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             flex: 1;
             min-width: 300px;
         }
 
         .search-input {
             flex: 1;
-            padding: 12px 20px;
-            border: 1px solid #333;
-            font-size: 0.95rem;
-            background: #0d0d0d;
-            color: #fff;
-        }
-        
-        .search-input:focus {
-            outline: none;
-            border-color: #d4af37;
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
         }
 
         .btn {
-            padding: 12px 25px;
+            padding: 10px 20px;
             border: none;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 300;
+            font-weight: bold;
             transition: all 0.3s;
-            font-size: 0.9rem;
-            letter-spacing: 0.05em;
+            font-size: 0.95rem;
         }
 
         .btn-primary {
-            background: transparent;
-            color: #d4af37;
-            border: 1px solid #d4af37;
+            background: #5a67d8;
+            color: white;
         }
 
         .btn-primary:hover {
-            background: #d4af37;
-            color: #000;
+            background: #4c51bf;
         }
 
         .btn-success {
-            background: transparent;
-            color: #48bb78;
-            border: 1px solid #48bb78;
+            background: #48bb78;
+            color: white;
         }
 
         .btn-success:hover {
-            background: #48bb78;
-            color: #000;
+            background: #38a169;
         }
 
         .btn-danger {
-            background: transparent;
-            color: #f56565;
-            border: 1px solid #f56565;
+            background: #f56565;
+            color: white;
         }
 
         .btn-danger:hover {
-            background: #f56565;
-            color: #000;
+            background: #e53e3e;
         }
 
         .data-table {
@@ -208,34 +148,30 @@
         }
 
         .data-table th {
-            background: #0d0d0d;
-            padding: 15px;
+            background: #f7fafc;
+            padding: 12px;
             text-align: left;
-            font-weight: 300;
-            color: #888;
-            border-bottom: 1px solid #333;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
+            font-weight: bold;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
         }
 
         .data-table td {
-            padding: 15px;
-            border-bottom: 1px solid #222;
-            color: #ccc;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
         .data-table tr:hover {
-            background: rgba(212, 175, 55, 0.05);
+            background: #f7fafc;
         }
 
         .action-buttons {
             display: flex;
-            gap: 8px;
+            gap: 5px;
         }
 
         .btn-sm {
-            padding: 6px 15px;
+            padding: 5px 10px;
             font-size: 0.85rem;
         }
 
@@ -246,22 +182,21 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.5);
             z-index: 1000;
             overflow: auto;
         }
 
         .form-content {
-            background: #1a1a1a;
+            background: white;
             margin: 20px auto;
-            padding: 40px;
+            padding: 30px;
             width: 90%;
             max-width: 800px;
-            border: 1px solid #333;
+            border-radius: 15px;
             animation: slideIn 0.3s;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
         }
 
         @keyframes slideIn {
@@ -279,31 +214,28 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .form-header h2 {
-            color: #fff;
-            font-weight: 300;
-            letter-spacing: 0.05em;
+            color: #2d3748;
         }
 
         .close-modal {
             font-size: 28px;
-            font-weight: 300;
+            font-weight: bold;
             cursor: pointer;
-            color: #666;
-            transition: color 0.3s;
+            color: #a0aec0;
         }
 
         .close-modal:hover {
-            color: #fff;
+            color: #4a5568;
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
+            gap: 20px;
         }
 
         .form-group {
@@ -316,21 +248,18 @@
         }
 
         .form-label {
-            font-weight: 300;
-            color: #888;
-            margin-bottom: 8px;
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 5px;
             font-size: 0.9rem;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
         }
 
         .form-input,
         .form-textarea,
         .form-select {
-            padding: 12px 15px;
-            border: 1px solid #333;
-            background: #0d0d0d;
-            color: #fff;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
             font-size: 1rem;
             transition: border-color 0.3s;
         }
@@ -339,30 +268,19 @@
         .form-textarea:focus,
         .form-select:focus {
             outline: none;
-            border-color: #d4af37;
+            border-color: #5a67d8;
         }
 
         .form-textarea {
             min-height: 100px;
             resize: vertical;
         }
-        
-        .form-select {
-            cursor: pointer;
-        }
-        
-        .form-select option {
-            background: #1a1a1a;
-            color: #fff;
-        }
 
         .form-actions {
             display: flex;
             justify-content: flex-end;
-            gap: 15px;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #333;
+            gap: 10px;
+            margin-top: 30px;
         }
 
         .tag-input-container {
@@ -372,62 +290,54 @@
         .tag-list {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
+            gap: 5px;
+            margin-top: 5px;
         }
 
         .tag {
             display: inline-flex;
             align-items: center;
-            padding: 6px 15px;
-            background: transparent;
-            border: 1px solid #444;
+            padding: 5px 10px;
+            background: #e2e8f0;
+            border-radius: 15px;
             font-size: 0.85rem;
-            color: #aaa;
-            transition: all 0.3s;
-        }
-        
-        .tag:hover {
-            border-color: #d4af37;
-            color: #d4af37;
         }
 
         .tag-remove {
-            margin-left: 8px;
+            margin-left: 5px;
             cursor: pointer;
-            color: #666;
-            transition: color 0.3s;
+            color: #718096;
         }
 
         .tag-remove:hover {
-            color: #f56565;
+            color: #2d3748;
         }
 
         .loading {
             text-align: center;
             padding: 50px;
-            color: #666;
+            color: #718096;
         }
 
         .error {
-            background: rgba(248, 215, 218, 0.1);
-            color: #f56565;
-            padding: 20px;
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
             margin-bottom: 20px;
-            border: 1px solid rgba(245, 101, 101, 0.3);
         }
 
         .success {
-            background: rgba(198, 246, 213, 0.1);
-            color: #48bb78;
-            padding: 20px;
+            background: #c6f6d5;
+            color: #276749;
+            padding: 15px;
+            border-radius: 8px;
             margin-bottom: 20px;
-            border: 1px solid rgba(72, 187, 120, 0.3);
         }
 
         @media (max-width: 768px) {
             h1 {
-                font-size: 1.8rem;
+                font-size: 1.5rem;
             }
             
             .action-bar {
@@ -444,7 +354,7 @@
             }
             
             .form-content {
-                padding: 25px;
+                padding: 20px;
             }
         }
 
@@ -452,80 +362,61 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            padding: 12px 25px;
+            padding: 10px 20px;
+            border-radius: 20px;
             font-size: 0.85rem;
-            font-weight: 300;
+            font-weight: bold;
             z-index: 999;
-            letter-spacing: 0.05em;
-            border: 1px solid;
         }
 
         .status-connected {
-            background: rgba(72, 187, 120, 0.1);
-            color: #48bb78;
-            border-color: rgba(72, 187, 120, 0.3);
+            background: #48bb78;
+            color: white;
         }
 
         .status-disconnected {
-            background: rgba(245, 101, 101, 0.1);
-            color: #f56565;
-            border-color: rgba(245, 101, 101, 0.3);
+            background: #f56565;
+            color: white;
         }
 
         .status-local {
-            background: rgba(237, 137, 54, 0.1);
-            color: #ed8936;
-            border-color: rgba(237, 137, 54, 0.3);
+            background: #ed8936;
+            color: white;
         }
-        
-        /* スクロールバーのスタイリング */
-        ::-webkit-scrollbar {
-            width: 10px;
+
+        .view-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #48bb78;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s;
         }
-        
-        ::-webkit-scrollbar-track {
-            background: #0d0d0d;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #333;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #444;
-        }
-        
-        /* フォームのスクロールバー */
-        .form-content::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .form-content::-webkit-scrollbar-track {
-            background: #1a1a1a;
-        }
-        
-        .form-content::-webkit-scrollbar-thumb {
-            background: #444;
+
+        .view-link:hover {
+            background: #38a169;
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>データ編集モード</h1>
-        <p class="subtitle">狼煙屋研究資料庫</p>
+        <h1>🐦 鳥・💎 石マスターデータ編集画面</h1>
         
         <div class="admin-notice">
-            ⚠️ 管理者専用 - データの編集は慎重に行ってください
+            ⚠️ 管理者専用画面 - データの編集は慎重に行ってください
         </div>
         
-        <div class="view-link-container">
-            <a href="index.html" class="view-link">← 閲覧モードに戻る</a>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="index.html" class="view-link">👀 閲覧画面へ戻る</a>
         </div>
         
         <div class="tab-container">
             <div class="tabs">
-                <button class="tab active" onclick="showTab('birds')">鳥類データベース</button>
-                <button class="tab" onclick="showTab('stones')">鉱物データベース</button>
+                <button class="tab active" onclick="showTab('birds')">🐦 鳥データベース</button>
+                <button class="tab" onclick="showTab('stones')">💎 火打石データベース</button>
             </div>
             
             <div class="content">
@@ -536,7 +427,7 @@
                             <input type="text" class="search-input" id="bird-search" placeholder="鳥の名前で検索...">
                             <button class="btn btn-primary" onclick="searchBirds()">検索</button>
                         </div>
-                        <button class="btn btn-success" onclick="showBirdForm()">＋ 新規追加</button>
+                        <button class="btn btn-success" onclick="showBirdForm()">➕ 新しい鳥を追加</button>
                     </div>
                     <div id="birds-list">
                         <div class="loading">データを読み込み中...</div>
@@ -550,7 +441,7 @@
                             <input type="text" class="search-input" id="stone-search" placeholder="石の名前や特徴で検索...">
                             <button class="btn btn-primary" onclick="searchStones()">検索</button>
                         </div>
-                        <button class="btn btn-success" onclick="showStoneForm()">＋ 新規追加</button>
+                        <button class="btn btn-success" onclick="showStoneForm()">➕ 新しい石を追加</button>
                     </div>
                     <div id="stones-list">
                         <div class="loading">データを読み込み中...</div>
@@ -832,7 +723,7 @@
 
     <!-- 接続状態表示 -->
     <div id="connection-status" class="connection-status status-local" title="データはブラウザに保存されます">
-        📱 ブラウザ保存モード
+        📱 ローカルストレージモード
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

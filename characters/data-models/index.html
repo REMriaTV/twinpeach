@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鳥・石マスターデータベース | 狼煙屋研究資料</title>
+    <title>狼煙屋モデル生物研究データベース</title>
     <style>
         * {
             margin: 0;
@@ -12,116 +12,146 @@
         }
 
         body {
-            font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #1a1a1a;
-            color: #e0e0e0;
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fafafa;
+            color: #333;
             min-height: 100vh;
-            padding: 40px 20px;
-            line-height: 1.6;
+            padding: 20px;
+            line-height: 1.7;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .header {
+            background: #f8f9fa;
+            padding: 40px;
+            border-bottom: 1px solid #e9ecef;
         }
 
         h1 {
-            text-align: center;
-            color: #ffffff;
+            font-size: 2rem;
+            font-weight: 500;
+            color: #212529;
             margin-bottom: 10px;
-            font-size: 2.5rem;
-            font-weight: 300;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.02em;
         }
         
         .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 40px;
-            font-size: 0.95rem;
-            letter-spacing: 0.05em;
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
         }
         
-        .header-line {
-            width: 100px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #d4af37, transparent);
-            margin: 0 auto 40px;
+        .metadata {
+            font-size: 0.9rem;
+            color: #868e96;
         }
         
         .admin-link-container {
-            text-align: center;
-            margin-bottom: 40px;
+            padding: 20px 40px;
+            background: #fff;
+            border-bottom: 1px solid #e9ecef;
         }
 
         .admin-link {
-            display: inline-block;
-            padding: 12px 30px;
-            background: transparent;
-            color: #d4af37;
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
             text-decoration: none;
-            border: 1px solid #d4af37;
-            font-weight: 300;
-            transition: all 0.3s;
-            letter-spacing: 0.1em;
-            font-size: 0.9rem;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
         }
 
         .admin-link:hover {
-            background: #d4af37;
-            color: #000;
-        }
-
-        .tab-container {
-            background: #2a2a2a;
-            border: 1px solid #444;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background: #0056b3;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .tabs {
             display: flex;
-            background: #1a1a1a;
-            border-bottom: 1px solid #444;
+            background: #fff;
+            border-bottom: 1px solid #dee2e6;
+            padding: 0 40px;
         }
 
         .tab {
-            flex: 1;
-            padding: 18px;
-            text-align: center;
+            padding: 20px 30px;
             cursor: pointer;
-            color: #888;
-            font-weight: 300;
-            transition: all 0.3s;
+            color: #495057;
+            font-weight: 500;
+            transition: all 0.2s;
             border: none;
             background: none;
-            font-size: 0.95rem;
-            letter-spacing: 0.05em;
+            font-size: 1rem;
             position: relative;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -1px;
         }
 
         .tab:hover {
-            color: #fff;
+            color: #212529;
         }
 
         .tab.active {
-            color: #fff;
-            background: #2a2a2a;
-        }
-        
-        .tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: #d4af37;
+            color: #007bff;
+            border-bottom-color: #007bff;
         }
 
         .content {
-            padding: 30px;
+            padding: 40px;
             min-height: 500px;
+        }
+
+        .search-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 15px;
+            max-width: 600px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+
+        .search-button {
+            padding: 10px 25px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .search-button:hover {
+            background: #5a6268;
         }
 
         .data-grid {
@@ -130,113 +160,65 @@
         }
 
         .data-card {
-            background: #2a2a2a;
+            background: #fff;
             padding: 25px;
-            border: 1px solid #444;
-            transition: all 0.3s;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            transition: all 0.2s;
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .data-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, transparent, rgba(212, 175, 55, 0.05));
-            opacity: 0;
-            transition: opacity 0.3s;
         }
 
         .data-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             transform: translateY(-2px);
-            border-color: #d4af37;
-        }
-        
-        .data-card:hover::before {
-            opacity: 1;
         }
 
-        .bird-card h3, .stone-card h3 {
-            color: #fff;
+        .data-card h3 {
+            color: #212529;
+            margin-bottom: 5px;
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        .scientific-name {
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.95rem;
             margin-bottom: 15px;
-            font-weight: 300;
-            font-size: 1.3rem;
-            letter-spacing: 0.03em;
         }
 
-        .bird-info, .stone-info {
-            display: grid;
-            gap: 10px;
+        .data-table {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .data-row {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f3f5;
+        }
+
+        .data-label {
+            flex: 0 0 120px;
+            font-weight: 500;
+            color: #495057;
             font-size: 0.9rem;
         }
 
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #333;
-        }
-
-        .info-label {
-            font-weight: 400;
-            color: #888;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .info-value {
-            color: #ccc;
-            text-align: right;
+        .data-value {
+            flex: 1;
+            color: #212529;
+            font-size: 0.9rem;
         }
 
         .characteristics {
             margin-top: 15px;
             padding: 15px;
-            background: #1a1a1a;
-            border-left: 2px solid #d4af37;
+            background: #f8f9fa;
+            border-radius: 4px;
             font-size: 0.9rem;
-            color: #bbb;
-        }
-
-        .search-box {
-            margin-bottom: 30px;
-            display: flex;
-            gap: 15px;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 12px 20px;
-            border: 1px solid #444;
-            font-size: 0.95rem;
-            background: #1a1a1a;
-            color: #fff;
-        }
-        
-        .search-input:focus {
-            outline: none;
-            border-color: #d4af37;
-        }
-
-        .search-button {
-            padding: 12px 30px;
-            background: transparent;
-            color: #d4af37;
-            border: 1px solid #d4af37;
-            cursor: pointer;
-            font-weight: 300;
-            transition: all 0.3s;
-            letter-spacing: 0.05em;
-        }
-
-        .search-button:hover {
-            background: #d4af37;
-            color: #000;
+            line-height: 1.6;
+            color: #495057;
         }
 
         .detail-modal {
@@ -246,25 +228,25 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.5);
             z-index: 1000;
             overflow: auto;
         }
 
         .modal-content {
-            background: #2a2a2a;
-            margin: 50px auto;
-            padding: 40px;
+            background: white;
+            margin: 30px auto;
+            padding: 0;
             width: 90%;
-            max-width: 700px;
-            border: 1px solid #444;
+            max-width: 800px;
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             animation: slideIn 0.3s;
-            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
         }
 
         @keyframes slideIn {
             from {
-                transform: translateY(-50px);
+                transform: translateY(-30px);
                 opacity: 0;
             }
             to {
@@ -273,84 +255,107 @@
             }
         }
 
-        .modal-content h2 {
-            color: #fff;
-            font-weight: 300;
-            margin-bottom: 10px;
-            font-size: 2rem;
+        .modal-header {
+            background: #f8f9fa;
+            padding: 25px 30px;
+            border-bottom: 1px solid #dee2e6;
+            position: relative;
         }
-        
-        .modal-content > p {
-            color: #666;
-            margin-bottom: 30px;
-            font-style: italic;
+
+        .modal-header h2 {
+            color: #212529;
+            font-weight: 500;
+            margin: 0;
+            font-size: 1.5rem;
         }
 
         .close-modal {
-            float: right;
+            position: absolute;
+            right: 20px;
+            top: 20px;
             font-size: 28px;
             font-weight: 300;
             cursor: pointer;
-            color: #666;
-            transition: color 0.3s;
+            color: #6c757d;
+            line-height: 1;
+            padding: 5px;
         }
 
         .close-modal:hover {
-            color: #fff;
+            color: #212529;
+        }
+
+        .modal-body {
+            padding: 30px;
+            max-height: 70vh;
+            overflow-y: auto;
         }
 
         .detail-section {
-            margin: 30px 0;
+            margin-bottom: 30px;
         }
 
         .detail-section h3 {
-            color: #fff;
+            color: #212529;
             margin-bottom: 15px;
-            border-bottom: 1px solid #444;
+            font-size: 1.1rem;
+            font-weight: 500;
             padding-bottom: 10px;
-            font-weight: 300;
-            letter-spacing: 0.05em;
+            border-bottom: 2px solid #e9ecef;
         }
         
         .detail-section p {
-            color: #ccc;
+            color: #495057;
             line-height: 1.8;
             margin-bottom: 10px;
         }
         
         .detail-section strong {
-            color: #d4af37;
-            font-weight: 400;
+            color: #212529;
+            font-weight: 500;
         }
 
         .tag {
             display: inline-block;
-            padding: 5px 15px;
-            margin: 3px;
-            background: transparent;
-            border: 1px solid #555;
+            padding: 4px 12px;
+            margin: 2px;
+            background: #e9ecef;
+            border-radius: 3px;
             font-size: 0.85rem;
-            color: #ccc;
-            transition: all 0.3s;
-        }
-        
-        .tag:hover {
-            border-color: #d4af37;
-            color: #d4af37;
+            color: #495057;
         }
 
-        .color-tag {
-            border: 1px solid #666;
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #6c757d;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
         }
 
         @media (max-width: 768px) {
+            .container {
+                box-shadow: none;
+            }
+            
             h1 {
-                font-size: 1.8rem;
+                font-size: 1.5rem;
+            }
+            
+            .tabs {
+                padding: 0 20px;
             }
             
             .tab {
-                font-size: 0.85rem;
-                padding: 15px 5px;
+                padding: 15px 20px;
+                font-size: 0.9rem;
             }
             
             .content {
@@ -358,81 +363,73 @@
             }
             
             .modal-content {
-                margin: 20px auto;
-                padding: 25px;
+                margin: 0;
+                height: 100%;
+                max-width: 100%;
+                border-radius: 0;
             }
         }
 
-        .loading {
-            text-align: center;
-            padding: 50px;
-            color: #888;
-        }
-
-        .error {
-            background: rgba(248, 215, 218, 0.1);
-            color: #f56565;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(245, 101, 101, 0.3);
-        }
-        
-        /* スクロールバーのスタイリング */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #1a1a1a;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #555;
-            border-radius: 0;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #666;
+        /* 印刷用スタイル */
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .container {
+                box-shadow: none;
+            }
+            
+            .admin-link-container,
+            .search-section {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>狼煙屋研究資料庫</h1>
-        <p class="subtitle">鳥類・鉱物データベース</p>
-        <div class="header-line"></div>
-        
-        <div class="admin-link-container">
-            <a href="admin.html" class="admin-link">✏️ データ編集モード</a>
+        <div class="header">
+            <h1>狼煙屋モデル生物研究データベース</h1>
+            <p class="subtitle">Noroshiya Model Organism Research Database</p>
+            <p class="metadata">最終更新: <span id="last-updated">2024年1月</span> | データ件数: 鳥類 5種・鉱物 6種</p>
         </div>
         
-        <div class="tab-container">
-            <div class="tabs">
-                <button class="tab active" onclick="showTab('birds')">鳥類データベース</button>
-                <button class="tab" onclick="showTab('stones')">鉱物データベース</button>
-            </div>
-            
-            <div class="content">
-                <!-- 鳥データベースタブ -->
-                <div id="birds-tab" class="tab-content">
+        <div class="admin-link-container">
+            <a href="admin.html" class="admin-link">📝 データベース編集</a>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('birds')">鳥類 (Aves)</button>
+            <button class="tab" onclick="showTab('stones')">鉱物 (Minerals)</button>
+        </div>
+        
+        <div class="content">
+            <!-- 鳥データベースタブ -->
+            <div id="birds-tab" class="tab-content">
+                <div class="search-section">
+                    <h3 style="margin-bottom: 15px; font-size: 1.1rem; color: #212529;">検索</h3>
                     <div class="search-box">
-                        <input type="text" class="search-input" id="bird-search" placeholder="鳥の名前で検索...">
+                        <input type="text" class="search-input" id="bird-search" placeholder="名前、学名、科名で検索...">
                         <button class="search-button" onclick="searchBirds()">検索</button>
                     </div>
-                    <div id="birds-grid" class="data-grid">
-                        <div class="loading">データを読み込み中...</div>
-                    </div>
                 </div>
-                
-                <!-- 火打石データベースタブ -->
-                <div id="stones-tab" class="tab-content" style="display: none;">
+                <div id="birds-grid" class="data-grid">
+                    <div class="loading">データを読み込み中...</div>
+                </div>
+            </div>
+            
+            <!-- 火打石データベースタブ -->
+            <div id="stones-tab" class="tab-content" style="display: none;">
+                <div class="search-section">
+                    <h3 style="margin-bottom: 15px; font-size: 1.1rem; color: #212529;">検索</h3>
                     <div class="search-box">
-                        <input type="text" class="search-input" id="stone-search" placeholder="石の名前や特徴で検索...">
+                        <input type="text" class="search-input" id="stone-search" placeholder="名前、色、特徴で検索...">
                         <button class="search-button" onclick="searchStones()">検索</button>
                     </div>
-                    <div id="stones-grid" class="data-grid">
-                        <div class="loading">データを読み込み中...</div>
-                    </div>
+                </div>
+                <div id="stones-grid" class="data-grid">
+                    <div class="loading">データを読み込み中...</div>
                 </div>
             </div>
         </div>
@@ -441,13 +438,361 @@
     <!-- 詳細モーダル -->
     <div id="detail-modal" class="detail-modal">
         <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <div id="modal-body"></div>
+            <div class="modal-header">
+                <h2 id="modal-title">詳細情報</h2>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
         </div>
     </div>
 
     <script src="birds-database.js"></script>
     <script src="stones-database.js"></script>
-    <script src="data-manager.js"></script>
+    <script>
+        // カスタムdata-manager（アカデミックスタイル用）
+        let currentTab = 'birds';
+        let currentBirds = [];
+        let currentStones = [];
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBirdsData();
+            loadStonesData();
+            updateLastUpdated();
+        });
+
+        // 最終更新日を設定
+        function updateLastUpdated() {
+            const now = new Date();
+            const formatted = now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日';
+            document.getElementById('last-updated').textContent = formatted;
+        }
+
+        // タブ切り替え
+        function showTab(tab) {
+            currentTab = tab;
+            
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('birds-tab').style.display = tab === 'birds' ? 'block' : 'none';
+            document.getElementById('stones-tab').style.display = tab === 'stones' ? 'block' : 'none';
+        }
+
+        // 鳥データの読み込みと表示
+        function loadBirdsData() {
+            try {
+                currentBirds = BirdsDB.getAll();
+                displayBirds(currentBirds);
+            } catch (error) {
+                document.getElementById('birds-grid').innerHTML = '<div class="error">データの読み込みに失敗しました。</div>';
+            }
+        }
+
+        // 鳥データの表示（アカデミックスタイル）
+        function displayBirds(birds) {
+            const grid = document.getElementById('birds-grid');
+            
+            if (birds.length === 0) {
+                grid.innerHTML = '<div class="loading">データが見つかりません。</div>';
+                return;
+            }
+            
+            grid.innerHTML = birds.map(bird => `
+                <div class="data-card" onclick="showBirdDetail('${bird.id}')">
+                    <h3>${bird.name}</h3>
+                    <p class="scientific-name">${bird.scientificName || '-'}</p>
+                    <div class="data-table">
+                        <div class="data-row">
+                            <span class="data-label">分類</span>
+                            <span class="data-value">${bird.family || '-'}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">サイズ</span>
+                            <span class="data-value">${bird.size || '-'}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">生息環境</span>
+                            <span class="data-value">${bird.habitat || '-'}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">適合タイプ</span>
+                            <span class="data-value">${Array.isArray(bird.noroshiyaTraits.suitableTypes) ? bird.noroshiyaTraits.suitableTypes.join(', ') : '-'}</span>
+                        </div>
+                    </div>
+                    <div class="characteristics">
+                        ${bird.characteristics.appearance || '-'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 石データの読み込みと表示
+        function loadStonesData() {
+            try {
+                currentStones = StonesDB.getAll();
+                displayStones(currentStones);
+            } catch (error) {
+                document.getElementById('stones-grid').innerHTML = '<div class="error">データの読み込みに失敗しました。</div>';
+            }
+        }
+
+        // 石データの表示（アカデミックスタイル）
+        function displayStones(stones) {
+            const grid = document.getElementById('stones-grid');
+            
+            if (stones.length === 0) {
+                grid.innerHTML = '<div class="loading">データが見つかりません。</div>';
+                return;
+            }
+            
+            grid.innerHTML = stones.map(stone => `
+                <div class="data-card" onclick="showStoneDetail('${stone.id}')">
+                    <h3>${stone.name}</h3>
+                    <p class="scientific-name">${stone.type || '-'}</p>
+                    <div class="data-table">
+                        <div class="data-row">
+                            <span class="data-label">色</span>
+                            <span class="data-value">${Array.isArray(stone.colors) ? stone.colors.join('、') : '-'}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">サイズ</span>
+                            <span class="data-value">${stone.size || '-'}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">産地</span>
+                            <span class="data-value">${stone.origin || '-'}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">レアリティ</span>
+                            <span class="data-value">${stone.rarity || '-'}</span>
+                        </div>
+                    </div>
+                    <div class="characteristics">
+                        ${stone.characteristics.appearance || '-'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 鳥の詳細表示
+        function showBirdDetail(birdId) {
+            const bird = BirdsDB.getById(birdId);
+            if (!bird) return;
+            
+            document.getElementById('modal-title').textContent = bird.name;
+            const modalBody = document.getElementById('modal-body');
+            
+            modalBody.innerHTML = `
+                <p style="font-style: italic; color: #6c757d; margin-bottom: 20px;">${bird.scientificName || ''} - ${bird.family || ''}</p>
+                
+                <div class="detail-section">
+                    <h3>基本情報</h3>
+                    <div class="data-table">
+                        <div class="data-row">
+                            <span class="data-label">サイズ</span>
+                            <span class="data-value">${bird.size || '-'}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">生息地</span>
+                            <span class="data-value">${bird.habitat || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>形態的特徴</h3>
+                    <p><strong>外見:</strong> ${bird.characteristics.appearance || '-'}</p>
+                    <p><strong>鳴き声:</strong> ${bird.characteristics.voice || '-'}</p>
+                    <p><strong>行動:</strong> ${bird.characteristics.behavior || '-'}</p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>生態</h3>
+                    <p><strong>活動時間:</strong> ${bird.lifeStyle.activity || '-'}</p>
+                    <p><strong>食性:</strong> ${bird.lifeStyle.diet || '-'}</p>
+                    <p><strong>社会性:</strong> ${bird.lifeStyle.socialBehavior || '-'}</p>
+                    <p><strong>営巣習慣:</strong> ${bird.lifeStyle.nestingHabits || '-'}</p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>行動特性</h3>
+                    <p>${bird.personality.general || '-'}</p>
+                    <p><strong>人との関わり:</strong> ${bird.personality.humanInteraction || '-'}</p>
+                    <p><strong>知能:</strong> ${bird.personality.intelligence || '-'}</p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>季節変動</h3>
+                    <p><strong>春:</strong> ${bird.seasonalBehavior.spring || '-'}</p>
+                    <p><strong>夏:</strong> ${bird.seasonalBehavior.summer || '-'}</p>
+                    <p><strong>秋:</strong> ${bird.seasonalBehavior.autumn || '-'}</p>
+                    <p><strong>冬:</strong> ${bird.seasonalBehavior.winter || '-'}</p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>文化的意義</h3>
+                    <p><strong>文化的象徴:</strong> ${bird.symbolism.cultural || '-'}</p>
+                    <p><strong>精神的象徴:</strong> ${bird.symbolism.spiritual || '-'}</p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>狼煙屋モデルとしての特性</h3>
+                    <p><strong>適合タイプ:</strong> ${Array.isArray(bird.noroshiyaTraits.suitableTypes) ? bird.noroshiyaTraits.suitableTypes.join(', ') : '-'}</p>
+                    <p><strong>煙のスタイル:</strong> ${bird.noroshiyaTraits.smokingStyle || '-'}</p>
+                    <p><strong>コミュニケーション特性:</strong> ${bird.noroshiyaTraits.communicationStyle || '-'}</p>
+                </div>
+            `;
+            
+            document.getElementById('detail-modal').style.display = 'block';
+        }
+
+        // 石の詳細表示
+        function showStoneDetail(stoneId) {
+            const stone = StonesDB.getById(stoneId);
+            if (!stone) return;
+            
+            document.getElementById('modal-title').textContent = stone.name;
+            const modalBody = document.getElementById('modal-body');
+            
+            modalBody.innerHTML = `
+                <p style="color: #6c757d; margin-bottom: 20px;">${stone.type || ''} - レアリティ: ${stone.rarity || '-'}</p>
+                
+                <div class="detail-section">
+                    <h3>基本情報</h3>
+                    <div class="data-table">
+                        <div class="data-row">
+                            <span class="data-label">色</span>
+                            <span class="data-value">
+                                ${Array.isArray(stone.colors) ? stone.colors.map(color => `<span class="tag">${color}</span>`).join('') : '-'}
+                            </span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">サイズ</span>
+                            <span class="data-value">${stone.size || '-'}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">形状</span>
+                            <span class="data-value">${stone.shape || '-'}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">質感</span>
+                            <span class="data-value">${stone.texture || '-'}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">産地</span>
+                            <span class="data-value">${stone.origin || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>物理的特性</h3>
+                    <p><strong>外観:</strong> ${stone.characteristics.appearance || '-'}</p>
+                    <p><strong>重さ:</strong> ${stone.characteristics.weight || '-'}</p>
+                    <p><strong>硬さ:</strong> ${stone.characteristics.hardness || '-'}</p>
+                    <p><strong>特殊な特徴:</strong> ${stone.characteristics.specialFeatures || '-'}</p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>元素的性質</h3>
+                    <p><strong>元素:</strong> ${stone.elementalProperties.element || '-'}</p>
+                    <p><strong>エネルギー:</strong> ${stone.elementalProperties.energy || '-'}</p>
+                    <p><strong>共鳴:</strong> ${stone.elementalProperties.resonance || '-'}</p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>発見場所</h3>
+                    <ul>
+                        ${stone.findingLocations ? stone.findingLocations.map(loc => `<li>${loc}</li>`).join('') : '<li>-</li>'}
+                    </ul>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>識別キーワード</h3>
+                    <p>
+                        ${Array.isArray(stone.matchingKeywords) ? stone.matchingKeywords.map(keyword => `<span class="tag">${keyword}</span>`).join('') : '-'}
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>狼煙屋との相性</h3>
+                    <p><strong>相性の良い狼煙屋:</strong> ${stone.noroshiyaAffinity.primaryMatch || '-'}</p>
+                    <p><strong>相性の理由:</strong> ${stone.noroshiyaAffinity.matchReason || '-'}</p>
+                    <p><strong>特別な反応:</strong> "${stone.noroshiyaAffinity.specialReaction || '-'}"</p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>民俗学的背景</h3>
+                    <p><strong>言い伝え:</strong> ${stone.folklore.legend || '-'}</p>
+                    <p><strong>伝統的使用法:</strong> ${stone.folklore.usage || '-'}</p>
+                </div>
+            `;
+            
+            document.getElementById('detail-modal').style.display = 'block';
+        }
+
+        // モーダルを閉じる
+        function closeModal() {
+            document.getElementById('detail-modal').style.display = 'none';
+        }
+
+        // モーダル外クリックで閉じる
+        window.onclick = function(event) {
+            const modal = document.getElementById('detail-modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // 鳥の検索
+        function searchBirds() {
+            const searchTerm = document.getElementById('bird-search').value.toLowerCase();
+            
+            if (!searchTerm) {
+                displayBirds(currentBirds);
+                return;
+            }
+            
+            const filtered = currentBirds.filter(bird => 
+                bird.name.toLowerCase().includes(searchTerm) ||
+                (bird.scientificName && bird.scientificName.toLowerCase().includes(searchTerm)) ||
+                (bird.family && bird.family.toLowerCase().includes(searchTerm)) ||
+                (bird.habitat && bird.habitat.toLowerCase().includes(searchTerm))
+            );
+            
+            displayBirds(filtered);
+        }
+
+        // 石の検索
+        function searchStones() {
+            const searchTerm = document.getElementById('stone-search').value.toLowerCase();
+            
+            if (!searchTerm) {
+                displayStones(currentStones);
+                return;
+            }
+            
+            const filtered = currentStones.filter(stone => 
+                stone.name.toLowerCase().includes(searchTerm) ||
+                (stone.colors && stone.colors.some(color => color.toLowerCase().includes(searchTerm))) ||
+                (stone.characteristics.appearance && stone.characteristics.appearance.toLowerCase().includes(searchTerm)) ||
+                (stone.matchingKeywords && stone.matchingKeywords.some(keyword => keyword.includes(searchTerm)))
+            );
+            
+            displayStones(filtered);
+        }
+
+        // Enterキーで検索
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('bird-search').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchBirds();
+            });
+            
+            document.getElementById('stone-search').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchStones();
+            });
+        });
+    </script>
 </body>
 </html>

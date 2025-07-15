@@ -35,6 +35,17 @@
             position: fixed;
             height: 100vh;
             z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
         }
 
         .sidebar-header {
@@ -124,6 +135,12 @@
             display: flex;
             flex-direction: column;
         }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+        }
 
         .content-header {
             background: white;
@@ -132,6 +149,45 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .mobile-menu-btn {
+            display: block;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 6px;
+            color: #374151;
+            margin-right: 8px;
+        }
+        
+        .mobile-menu-btn:hover {
+            background: #f3f2ef;
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-menu-btn {
+                display: none !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block !important;
+                visibility: visible !important;
+            }
+            
+            .content-header {
+                padding: 16px 20px;
+            }
         }
 
         .content-title {
@@ -751,7 +807,10 @@
         <!-- メインコンテンツ -->
         <div class="main-content">
             <div class="content-header">
-                <h1 class="content-title" id="content-title">鳥類データ編集</h1>
+                <div class="header-left">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()" id="mobile-menu-btn">☰</button>
+                    <h1 class="content-title" id="content-title">鳥類データ編集</h1>
+                </div>
                 <div class="admin-notice">
                     <span>⚠️</span>
                     管理者専用 - データの編集は慎重に行ってください

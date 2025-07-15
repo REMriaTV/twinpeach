@@ -14,6 +14,15 @@ let editingStone = null;
 
 // 初期化
 document.addEventListener('DOMContentLoaded', async () => {
+    // モバイルメニューボタンの表示を強制
+    const isMobile = window.innerWidth <= 768;
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    if (isMobile && menuBtn) {
+        menuBtn.style.display = 'block';
+        menuBtn.style.visibility = 'visible';
+        console.log('モバイルメニューボタンを表示しました');
+    }
+    
     // Supabase接続を試みる
     try {
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -123,12 +132,24 @@ function showTab(tab) {
     currentTab = tab;
     
     // タブボタンの状態を更新
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
     event.target.classList.add('active');
     
     // コンテンツの表示切り替え
     document.getElementById('birds-tab').style.display = tab === 'birds' ? 'block' : 'none';
     document.getElementById('stones-tab').style.display = tab === 'stones' ? 'block' : 'none';
+    
+    // タイトル更新
+    const titleEl = document.getElementById('content-title');
+    if (titleEl) {
+        titleEl.textContent = tab === 'birds' ? '鳥類データ編集' : '石データ編集';
+    }
+    
+    // モバイルでサイドバーを閉じる
+    if (window.innerWidth <= 768) {
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.classList.remove('open');
+    }
 }
 
 // 鳥データの表示（テーブル形式）
@@ -925,3 +946,22 @@ function removeStonePhoto(photoId) {
 function viewPhoto(dataUrl) {
     window.open(dataUrl, '_blank');
 }
+
+// モバイルメニューの切り替え
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('open');
+}
+
+// サイドバー外をクリックしたら閉じる
+document.addEventListener('click', (e) => {
+    const sidebar = document.querySelector('.sidebar');
+    const menuBtn = document.querySelector('.mobile-menu-btn');
+    
+    if (window.innerWidth <= 768 && 
+        !sidebar.contains(e.target) && 
+        !menuBtn.contains(e.target) && 
+        sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+    }
+});

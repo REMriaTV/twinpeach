@@ -236,32 +236,32 @@ function showBirdForm(bird = null) {
         form.id.value = bird.id;
         form.id.disabled = true; // IDは編集不可
         form.name.value = bird.name || '';
-        form.scientific_name.value = bird.scientific_name || '';
+        form.scientific_name.value = bird.scientificName || '';
         form.family.value = bird.family || '';
         form.size.value = bird.size || '';
         form.habitat.value = bird.habitat || '';
-        form.appearance.value = bird.appearance || '';
-        form.voice.value = bird.voice || '';
-        form.behavior.value = bird.behavior || '';
-        form.activity.value = bird.activity || '';
-        form.diet.value = bird.diet || '';
-        form.social_behavior.value = bird.social_behavior || '';
-        form.nesting_habits.value = bird.nesting_habits || '';
-        form.personality_general.value = bird.personality_general || '';
-        form.human_interaction.value = bird.human_interaction || '';
-        form.intelligence.value = bird.intelligence || '';
-        form.seasonal_spring.value = bird.seasonal_spring || '';
-        form.seasonal_summer.value = bird.seasonal_summer || '';
-        form.seasonal_autumn.value = bird.seasonal_autumn || '';
-        form.seasonal_winter.value = bird.seasonal_winter || '';
-        form.symbolism_cultural.value = bird.symbolism_cultural || '';
-        form.symbolism_spiritual.value = bird.symbolism_spiritual || '';
-        form.noroshiya_smoking_style.value = bird.noroshiya_smoking_style || '';
-        form.noroshiya_communication_style.value = bird.noroshiya_communication_style || '';
+        form.appearance.value = bird.characteristics?.appearance || '';
+        form.voice.value = bird.characteristics?.voice || '';
+        form.behavior.value = bird.characteristics?.behavior || '';
+        form.activity.value = bird.lifeStyle?.activity || '';
+        form.diet.value = bird.lifeStyle?.diet || '';
+        form.social_behavior.value = bird.lifeStyle?.socialBehavior || '';
+        form.nesting_habits.value = bird.lifeStyle?.nestingHabits || '';
+        form.personality_general.value = bird.personality?.general || '';
+        form.human_interaction.value = bird.personality?.humanInteraction || '';
+        form.intelligence.value = bird.personality?.intelligence || '';
+        form.seasonal_spring.value = bird.seasonalBehavior?.spring || '';
+        form.seasonal_summer.value = bird.seasonalBehavior?.summer || '';
+        form.seasonal_autumn.value = bird.seasonalBehavior?.autumn || '';
+        form.seasonal_winter.value = bird.seasonalBehavior?.winter || '';
+        form.symbolism_cultural.value = bird.symbolism?.cultural || '';
+        form.symbolism_spiritual.value = bird.symbolism?.spiritual || '';
+        form.noroshiya_smoking_style.value = bird.noroshiyaTraits?.smokingStyle || '';
+        form.noroshiya_communication_style.value = bird.noroshiyaTraits?.communicationStyle || '';
         
         // タグの復元
-        if (Array.isArray(bird.noroshiya_suitable_types)) {
-            bird.noroshiya_suitable_types.forEach(type => {
+        if (bird.noroshiyaTraits?.suitableTypes && Array.isArray(bird.noroshiyaTraits.suitableTypes)) {
+            bird.noroshiyaTraits.suitableTypes.forEach(type => {
                 addTagToList('bird-suitable-types-tags', type);
             });
         }
@@ -317,18 +317,18 @@ function showStoneForm(stone = null) {
         form.texture.value = stone.texture || '';
         form.origin.value = stone.origin || '';
         form.rarity.value = stone.rarity || '';
-        form.appearance.value = stone.appearance || '';
-        form.weight.value = stone.weight || '';
-        form.hardness.value = stone.hardness || '';
-        form.special_features.value = stone.special_features || '';
-        form.elemental_element.value = stone.elemental_element || '';
-        form.elemental_energy.value = stone.elemental_energy || '';
-        form.elemental_resonance.value = stone.elemental_resonance || '';
-        form.noroshiya_primary_match.value = stone.noroshiya_primary_match || '';
-        form.noroshiya_match_reason.value = stone.noroshiya_match_reason || '';
-        form.noroshiya_special_reaction.value = stone.noroshiya_special_reaction || '';
-        form.folklore_legend.value = stone.folklore_legend || '';
-        form.folklore_usage.value = stone.folklore_usage || '';
+        form.appearance.value = stone.characteristics?.appearance || '';
+        form.weight.value = stone.characteristics?.weight || '';
+        form.hardness.value = stone.characteristics?.hardness || '';
+        form.special_features.value = stone.characteristics?.specialFeatures || '';
+        form.elemental_element.value = stone.elementalProperties?.element || '';
+        form.elemental_energy.value = stone.elementalProperties?.energy || '';
+        form.elemental_resonance.value = stone.elementalProperties?.resonance || '';
+        form.noroshiya_primary_match.value = stone.noroshiyaAffinity?.primaryMatch || '';
+        form.noroshiya_match_reason.value = stone.noroshiyaAffinity?.matchReason || '';
+        form.noroshiya_special_reaction.value = stone.noroshiyaAffinity?.specialReaction || '';
+        form.folklore_legend.value = stone.folklore?.legend || '';
+        form.folklore_usage.value = stone.folklore?.usage || '';
         
         // タグの復元
         if (Array.isArray(stone.colors)) {
@@ -336,16 +336,13 @@ function showStoneForm(stone = null) {
                 addTagToList('stone-colors-tags', color);
             });
         }
-        if (stone.finding_locations) {
-            const locations = Array.isArray(stone.finding_locations) ? 
-                stone.finding_locations : 
-                (stone.finding_locations.locations || []);
-            locations.forEach(loc => {
+        if (stone.findingLocations && Array.isArray(stone.findingLocations)) {
+            stone.findingLocations.forEach(loc => {
                 addTagToList('stone-locations-tags', loc);
             });
         }
-        if (Array.isArray(stone.matching_keywords)) {
-            stone.matching_keywords.forEach(keyword => {
+        if (stone.matchingKeywords && Array.isArray(stone.matchingKeywords)) {
+            stone.matchingKeywords.forEach(keyword => {
                 addTagToList('stone-keywords-tags', keyword);
             });
         }
@@ -455,29 +452,41 @@ async function saveBird(event) {
     const birdData = {
         id: form.id.value,
         name: form.name.value,
-        scientific_name: form.scientific_name.value,
+        scientificName: form.scientific_name.value,
         family: form.family.value,
         size: form.size.value,
         habitat: form.habitat.value,
-        appearance: form.appearance.value,
-        voice: form.voice.value,
-        behavior: form.behavior.value,
-        activity: form.activity.value,
-        diet: form.diet.value,
-        social_behavior: form.social_behavior.value,
-        nesting_habits: form.nesting_habits.value,
-        personality_general: form.personality_general.value,
-        human_interaction: form.human_interaction.value,
-        intelligence: form.intelligence.value,
-        seasonal_spring: form.seasonal_spring.value,
-        seasonal_summer: form.seasonal_summer.value,
-        seasonal_autumn: form.seasonal_autumn.value,
-        seasonal_winter: form.seasonal_winter.value,
-        symbolism_cultural: form.symbolism_cultural.value,
-        symbolism_spiritual: form.symbolism_spiritual.value,
-        noroshiya_suitable_types: suitableTypes,
-        noroshiya_smoking_style: form.noroshiya_smoking_style.value,
-        noroshiya_communication_style: form.noroshiya_communication_style.value,
+        characteristics: {
+            appearance: form.appearance.value,
+            voice: form.voice.value,
+            behavior: form.behavior.value
+        },
+        lifeStyle: {
+            activity: form.activity.value,
+            diet: form.diet.value,
+            socialBehavior: form.social_behavior.value,
+            nestingHabits: form.nesting_habits.value
+        },
+        personality: {
+            general: form.personality_general.value,
+            humanInteraction: form.human_interaction.value,
+            intelligence: form.intelligence.value
+        },
+        seasonalBehavior: {
+            spring: form.seasonal_spring.value,
+            summer: form.seasonal_summer.value,
+            autumn: form.seasonal_autumn.value,
+            winter: form.seasonal_winter.value
+        },
+        symbolism: {
+            cultural: form.symbolism_cultural.value,
+            spiritual: form.symbolism_spiritual.value
+        },
+        noroshiyaTraits: {
+            suitableTypes: suitableTypes,
+            smokingStyle: form.noroshiya_smoking_style.value,
+            communicationStyle: form.noroshiya_communication_style.value
+        },
         recordings: temporaryRecordings // 録音データを追加
     };
     
@@ -546,20 +555,28 @@ async function saveStone(event) {
         texture: form.texture.value,
         origin: form.origin.value,
         rarity: form.rarity.value,
-        appearance: form.appearance.value,
-        weight: form.weight.value,
-        hardness: form.hardness.value,
-        special_features: form.special_features.value,
-        elemental_element: form.elemental_element.value,
-        elemental_energy: form.elemental_energy.value,
-        elemental_resonance: form.elemental_resonance.value,
-        finding_locations: isSupabaseConnected ? { locations } : locations,
-        matching_keywords: keywords,
-        noroshiya_primary_match: form.noroshiya_primary_match.value,
-        noroshiya_match_reason: form.noroshiya_match_reason.value,
-        noroshiya_special_reaction: form.noroshiya_special_reaction.value,
-        folklore_legend: form.folklore_legend.value,
-        folklore_usage: form.folklore_usage.value,
+        characteristics: {
+            appearance: form.appearance.value,
+            weight: form.weight.value,
+            hardness: form.hardness.value,
+            specialFeatures: form.special_features.value
+        },
+        elementalProperties: {
+            element: form.elemental_element.value,
+            energy: form.elemental_energy.value,
+            resonance: form.elemental_resonance.value
+        },
+        findingLocations: locations,
+        matchingKeywords: keywords,
+        noroshiyaAffinity: {
+            primaryMatch: form.noroshiya_primary_match.value,
+            matchReason: form.noroshiya_match_reason.value,
+            specialReaction: form.noroshiya_special_reaction.value
+        },
+        folklore: {
+            legend: form.folklore_legend.value,
+            usage: form.folklore_usage.value
+        },
         photos: temporaryStonePhotos // 写真データを追加
     };
     

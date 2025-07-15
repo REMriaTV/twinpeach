@@ -39,7 +39,8 @@ const birdsDatabase = [
             suitableTypes: ["好奇心旺盛でピュアタイプ"],
             smokingStyle: "軽やかで素早い",
             communicationStyle: "シンプルで分かりやすい"
-        }
+        },
+        recordings: []  // 録音・動画データの配列
     },
     {
         id: "bird_002",
@@ -78,7 +79,8 @@ const birdsDatabase = [
             suitableTypes: ["心配性の少しオタクタイプ"],
             smokingStyle: "計画的で効率的",
             communicationStyle: "複雑で暗号的"
-        }
+        },
+        recordings: []
     },
     {
         id: "bird_003",
@@ -117,7 +119,8 @@ const birdsDatabase = [
             suitableTypes: ["ちょっとめんどくさいけど愛着の湧くタイプ"],
             smokingStyle: "ゆったりとマイペース",
             communicationStyle: "繰り返しが多い"
-        }
+        },
+        recordings: []
     },
     {
         id: "bird_004",
@@ -156,7 +159,8 @@ const birdsDatabase = [
             suitableTypes: ["芸術家タイプ（未設定）"],
             smokingStyle: "優雅で美しい",
             communicationStyle: "詩的で繊細"
-        }
+        },
+        recordings: []
     },
     {
         id: "bird_005",
@@ -195,7 +199,8 @@ const birdsDatabase = [
             suitableTypes: ["夜型の哲学者タイプ（未設定）"],
             smokingStyle: "静かで神秘的",
             communicationStyle: "深遠で謎めいている"
-        }
+        },
+        recordings: []
     }
 ];
 

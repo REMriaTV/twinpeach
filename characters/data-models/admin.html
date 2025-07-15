@@ -531,6 +531,73 @@
             border-color: #fde68a;
             background: #fef3c7;
         }
+        
+        /* 録音・動画アップロード */
+        .recordings-section {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        
+        .file-upload-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .file-upload-hint {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .recordings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .recording-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            gap: 12px;
+        }
+        
+        .recording-item .file-icon {
+            font-size: 24px;
+        }
+        
+        .recording-item .file-info {
+            flex: 1;
+        }
+        
+        .recording-item .file-name {
+            font-weight: 500;
+            color: #1f2937;
+            font-size: 14px;
+        }
+        
+        .recording-item .file-details {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+        
+        .recording-item .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .recording-item audio,
+        .recording-item video {
+            max-width: 300px;
+            height: 40px;
+        }
 
         /* レスポンシブ */
         @media (max-width: 1024px) {
@@ -797,6 +864,21 @@
                         <div class="form-group full-width">
                             <label class="form-label">コミュニケーションスタイル</label>
                             <input type="text" class="form-input" name="noroshiya_communication_style">
+                        </div>
+                        
+                        <!-- 録音・動画セクション -->
+                        <div class="form-group full-width">
+                            <label class="form-label">録音・動画ファイル</label>
+                            <div class="recordings-section">
+                                <div class="file-upload-area">
+                                    <input type="file" id="bird-recording-upload" accept="audio/*,video/*" multiple style="display: none;">
+                                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('bird-recording-upload').click()">
+                                        📼 ファイルを選択
+                                    </button>
+                                    <span class="file-upload-hint">音声（MP3, WAV等）または動画（MP4, MOV等）</span>
+                                </div>
+                                <div id="bird-recordings-list" class="recordings-list"></div>
+                            </div>
                         </div>
                     </div>
                 </form>

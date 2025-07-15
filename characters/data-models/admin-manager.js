@@ -224,6 +224,11 @@ function showBirdForm(bird = null) {
     // フォームをリセット
     form.reset();
     document.getElementById('bird-suitable-types-tags').innerHTML = '';
+    document.getElementById('bird-recordings-list').innerHTML = '';
+    
+    // ファイルアップロードイベントリスナーを設定
+    const uploadInput = document.getElementById('bird-recording-upload');
+    uploadInput.onchange = handleBirdRecordingUpload;
     
     if (bird) {
         title.textContent = '鳥データを編集';
@@ -260,9 +265,16 @@ function showBirdForm(bird = null) {
                 addTagToList('bird-suitable-types-tags', type);
             });
         }
+        
+        // 録音ファイルを表示
+        if (bird.recordings && Array.isArray(bird.recordings)) {
+            temporaryRecordings = [...bird.recordings]; // 既存の録音を一時配列にコピー
+            displayBirdRecordings(bird.recordings);
+        }
     } else {
         title.textContent = '新しい鳥を追加';
         form.id.disabled = false;
+        temporaryRecordings = []; // 新規追加時は一時配列をクリア
     }
     
     document.getElementById('bird-form-modal').style.display = 'block';
@@ -453,7 +465,8 @@ async function saveBird(event) {
         symbolism_spiritual: form.symbolism_spiritual.value,
         noroshiya_suitable_types: suitableTypes,
         noroshiya_smoking_style: form.noroshiya_smoking_style.value,
-        noroshiya_communication_style: form.noroshiya_communication_style.value
+        noroshiya_communication_style: form.noroshiya_communication_style.value,
+        recordings: temporaryRecordings // 録音データを追加
     };
     
     try {
@@ -645,6 +658,7 @@ async function deleteStone(stoneId) {
 function closeBirdForm() {
     document.getElementById('bird-form-modal').style.display = 'none';
     editingBird = null;
+    temporaryRecordings = []; // 一時録音データをクリア
 }
 
 function closeStoneForm() {
@@ -718,3 +732,89 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') searchStones();
     });
 });
+
+// 録音ファイル管理
+let temporaryRecordings = []; // アップロード中の一時的な録音データ
+
+// 録音ファイルのアップロード処理
+function handleBirdRecordingUpload(event) {
+    const files = event.target.files;
+    
+    for (let file of files) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const recording = {
+                id: `recording_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                fileName: file.name,
+                fileType: file.type,
+                fileSize: file.size,
+                dataUrl: e.target.result,
+                uploadedAt: new Date().toISOString(),
+                type: file.type.startsWith('audio/') ? 'audio' : 'video',
+                metadata: {
+                    recordedDate: '',
+                    location: '',
+                    voiceType: '',
+                    notes: ''
+                }
+            };
+            
+            temporaryRecordings.push(recording);
+            displayBirdRecordings([...temporaryRecordings]);
+        };
+        
+        reader.readAsDataURL(file);
+    }
+    
+    // 入力をリセット
+    event.target.value = '';
+}
+
+// 録音ファイルの表示
+function displayBirdRecordings(recordings) {
+    const listEl = document.getElementById('bird-recordings-list');
+    
+    if (!recordings || recordings.length === 0) {
+        listEl.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 12px;">録音・動画はまだありません</div>';
+        return;
+    }
+    
+    listEl.innerHTML = recordings.map(rec => `
+        <div class="recording-item">
+            <div class="file-icon">${rec.type === 'audio' ? '🎵' : '🎬'}</div>
+            <div class="file-info">
+                <div class="file-name">${rec.fileName}</div>
+                <div class="file-details">
+                    ${formatFileSize(rec.fileSize)} • ${new Date(rec.uploadedAt).toLocaleDateString('ja-JP')}
+                </div>
+            </div>
+            ${rec.type === 'audio' ? 
+                `<audio controls src="${rec.dataUrl}"></audio>` :
+                `<video controls src="${rec.dataUrl}" style="max-height: 100px;"></video>`
+            }
+            <div class="file-actions">
+                <button class="btn btn-sm btn-secondary" onclick="editRecordingMetadata('${rec.id}')">📝</button>
+                <button class="btn btn-sm btn-danger" onclick="removeRecording('${rec.id}')">🗑️</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ファイルサイズのフォーマット
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+    return Math.round(bytes / (1024 * 1024) * 10) / 10 + ' MB';
+}
+
+// 録音の削除
+function removeRecording(recordingId) {
+    temporaryRecordings = temporaryRecordings.filter(rec => rec.id !== recordingId);
+    displayBirdRecordings(temporaryRecordings);
+}
+
+// 録音メタデータの編集（今後実装）
+function editRecordingMetadata(recordingId) {
+    alert('録音の詳細情報編集機能は今後実装予定です');
+}

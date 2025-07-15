@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { data, error } = await supabase.from('stones').select('id').limit(1);
         if (!error) {
             isSupabaseConnected = true;
-            updateConnectionStatus('connected');
+            // updateConnectionStatus('connected'); // 表示削除
             loadDataFromSupabase();
         } else {
             throw error;
@@ -48,33 +48,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.log('Supabase接続エラー、ローカルストレージを使用します:', error);
         isSupabaseConnected = false;
-        updateConnectionStatus('local');
+        // updateConnectionStatus('local'); // 表示削除
         loadDataFromLocal();
     }
 });
 
-// 接続状態の更新
+// 接続状態の更新（未使用）
 function updateConnectionStatus(status) {
-    const statusEl = document.getElementById('connection-status');
-    statusEl.className = 'connection-status';
-    
-    switch(status) {
-        case 'connected':
-            statusEl.classList.add('status-connected');
-            statusEl.textContent = '✅ クラウド保存モード';
-            statusEl.title = 'データはSupabaseデータベースに保存されます';
-            break;
-        case 'disconnected':
-            statusEl.classList.add('status-disconnected');
-            statusEl.textContent = '❌ データベース接続エラー';
-            statusEl.title = 'データベースに接続できません';
-            break;
-        case 'local':
-            statusEl.classList.add('status-local');
-            statusEl.textContent = '📱 ブラウザ保存モード';
-            statusEl.title = 'データはこのブラウザにのみ保存されます（他の端末と共有されません）';
-            break;
-    }
+    // 表示を削除したため何もしない
 }
 
 // Supabaseからデータを読み込み

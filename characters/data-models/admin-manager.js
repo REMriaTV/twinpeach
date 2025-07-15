@@ -190,7 +190,7 @@ function displayBirds(birds) {
                         <td>${bird.family || '-'}</td>
                         <td>${bird.size || '-'}</td>
                         <td>${Array.isArray(bird.noroshiya_suitable_types) ? bird.noroshiya_suitable_types.join(', ') : '-'}</td>
-                        <td>
+                        <td style="min-width: 150px;">
                             <div class="action-buttons">
                                 <button class="btn btn-primary btn-sm" onclick="editBird('${bird.id}')">編集</button>
                                 <button class="btn btn-danger btn-sm" onclick="deleteBird('${bird.id}')">削除</button>
@@ -232,7 +232,7 @@ function displayStones(stones) {
                         <td>${stone.size || '-'}</td>
                         <td>${stone.rarity || '-'}</td>
                         <td>${stone.noroshiya_primary_match || '-'}</td>
-                        <td>
+                        <td style="min-width: 150px;">
                             <div class="action-buttons">
                                 <button class="btn btn-primary btn-sm" onclick="editStone('${stone.id}')">編集</button>
                                 <button class="btn btn-danger btn-sm" onclick="deleteStone('${stone.id}')">削除</button>

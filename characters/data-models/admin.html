@@ -329,7 +329,7 @@
             font-size: 24px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             cursor: pointer;
-            z-index: 50;
+            z-index: 1000;
             transition: all 0.3s ease;
         }
         
@@ -340,14 +340,25 @@
         
         @media (max-width: 768px) {
             .mobile-add-btn {
-                display: flex;
+                display: flex !important;
                 align-items: center;
                 justify-content: center;
             }
             
-            /* デスクトップ用の新規追加ボタンを非表示 */
+            /* スマホではアクションバーの新規追加ボタンを非表示 */
             .action-bar .btn-success {
                 display: none;
+            }
+            
+            /* スクロールヒントを表示 */
+            .data-list::after {
+                content: '→ スクロールして全体を見る';
+                display: block;
+                text-align: center;
+                color: #6b7280;
+                font-size: 12px;
+                padding: 8px;
+                margin-top: -8px;
             }
         }
 
@@ -811,8 +822,7 @@
             }
             
             /* テーブルのスマホ対応 */
-            #birds-list,
-            #stones-list {
+            .data-list {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
                 margin: 0 -16px;
@@ -820,14 +830,21 @@
             }
             
             .data-table {
-                min-width: 600px;
+                min-width: 700px;
                 font-size: 14px;
+                border-collapse: collapse;
             }
             
             .data-table th,
             .data-table td {
-                padding: 8px 12px;
+                padding: 10px 12px;
                 white-space: nowrap;
+            }
+            
+            .data-table th:last-child,
+            .data-table td:last-child {
+                min-width: 150px;
+                text-align: center;
             }
             
             /* ボタンの調整 */
@@ -847,6 +864,7 @@
                 display: flex;
                 flex-wrap: nowrap;
                 gap: 8px;
+                justify-content: center;
             }
             
             /* モーダルの調整 */
@@ -1319,7 +1337,7 @@
     <script src="stones-database.js"></script>
     <script src="admin-manager.js"></script>
     <!-- スマホ用新規追加ボタン -->
-    <button class="mobile-add-btn" onclick="currentTab === 'birds' ? showBirdForm() : showStoneForm()" title="新規追加">+</button>
+    <button class="mobile-add-btn" onclick="currentTab === 'birds' ? showBirdForm() : showStoneForm()" title="新規追加">＋</button>
 
 </body>
 </html>

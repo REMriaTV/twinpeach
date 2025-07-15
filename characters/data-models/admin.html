@@ -305,7 +305,118 @@
             background: #e5e7eb;
         }
 
-        /* カードグリッド */
+        /* シンプルリスト */
+        .data-simple-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            transition: all 0.15s ease;
+        }
+        
+        .list-item:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+        }
+        
+        .item-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            cursor: pointer;
+            min-width: 0; /* テキストのオーバーフローを防ぐ */
+        }
+        
+        .item-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+            flex: 1;
+        }
+        
+        .item-name {
+            font-weight: 600;
+            color: #111827;
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .item-meta {
+            color: #6b7280;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .item-sub {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .item-tag {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: 16px;
+        }
+        
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.15s ease;
+        }
+        
+        .btn-edit {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .btn-edit:hover {
+            background: #bfdbfe;
+        }
+        
+        .btn-delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .btn-delete:hover {
+            background: #fecaca;
+        }
+        
+        /* カードグリッド（未使用） */
         .data-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -929,22 +1040,39 @@
                 max-width: none;
             }
             
-            /* スマホ用カードグリッド */
-            .data-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
+            /* スマホ用リスト調整 */
+            .list-item {
+                padding: 10px 12px;
+                flex-wrap: wrap;
             }
             
-            .data-card {
-                padding: 16px;
+            .item-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                width: 100%;
             }
             
-            .card-title {
-                font-size: 16px;
+            .item-main {
+                width: 100%;
             }
             
-            .card-action {
+            .item-sub {
+                margin-bottom: 8px;
+            }
+            
+            .item-actions {
+                width: 100%;
+                justify-content: flex-end;
+                margin-left: 0;
+                margin-top: 8px;
                 padding-top: 8px;
+                border-top: 1px solid #e5e7eb;
+            }
+            
+            .btn-icon {
+                width: 44px;
+                height: 44px;
             }
             
             /* ボタンの調整 */

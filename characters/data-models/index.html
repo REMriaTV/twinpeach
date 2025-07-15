@@ -699,9 +699,17 @@
         // 鳥データの読み込み
         function loadBirdsData() {
             try {
-                currentBirds = BirdsDB.getAll();
+                // ローカルストレージから編集されたデータを読み込む
+                const savedBirds = localStorage.getItem('masterBirds');
+                if (savedBirds) {
+                    currentBirds = JSON.parse(savedBirds);
+                } else {
+                    // 保存されたデータがない場合は初期データを使用
+                    currentBirds = BirdsDB.getAll();
+                }
                 displayBirds(currentBirds);
             } catch (error) {
+                console.error('鳥データ読み込みエラー:', error);
                 document.getElementById('birds-grid').innerHTML = '<div class="empty-state">データの読み込みに失敗しました</div>';
             }
         }
@@ -709,9 +717,17 @@
         // 石データの読み込み
         function loadStonesData() {
             try {
-                currentStones = StonesDB.getAll();
+                // ローカルストレージから編集されたデータを読み込む
+                const savedStones = localStorage.getItem('masterStones');
+                if (savedStones) {
+                    currentStones = JSON.parse(savedStones);
+                } else {
+                    // 保存されたデータがない場合は初期データを使用
+                    currentStones = StonesDB.getAll();
+                }
                 displayStones(currentStones);
             } catch (error) {
+                console.error('石データ読み込みエラー:', error);
                 document.getElementById('stones-grid').innerHTML = '<div class="empty-state">データの読み込みに失敗しました</div>';
             }
         }

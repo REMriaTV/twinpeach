@@ -170,6 +170,7 @@ function displayBirds(birds) {
         return;
     }
     
+    // モバイル用とデスクトップ用で同じテーブル形式を使用
     listEl.innerHTML = `
         <table class="simple-table">
             <thead>
@@ -203,6 +204,7 @@ function displayStones(stones) {
         return;
     }
     
+    // モバイル用とデスクトップ用で同じテーブル形式を使用
     listEl.innerHTML = `
         <table class="simple-table">
             <thead>

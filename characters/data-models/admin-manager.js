@@ -14,11 +14,25 @@ let editingStone = null;
 
 // 初期化
 document.addEventListener('DOMContentLoaded', async () => {
-    // 一旦ローカルストレージのみで動作
-    console.log('ローカルストレージモードで起動');
-    isSupabaseConnected = false;
-    updateConnectionStatus('local');
-    loadDataFromLocal();
+    // Supabase接続を試みる
+    try {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // 接続テスト
+        const { data, error } = await supabase.from('stones').select('id').limit(1);
+        if (!error) {
+            isSupabaseConnected = true;
+            updateConnectionStatus('connected');
+            loadDataFromSupabase();
+        } else {
+            throw error;
+        }
+    } catch (error) {
+        console.log('Supabase接続エラー、ローカルストレージを使用します:', error);
+        isSupabaseConnected = false;
+        updateConnectionStatus('local');
+        loadDataFromLocal();
+    }
 });
 
 // 接続状態の更新

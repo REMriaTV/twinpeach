@@ -443,6 +443,7 @@ function addStoneKeyword(event) {
 // 鳥データの保存
 async function saveBird(event) {
     event.preventDefault();
+    console.log('saveBird関数が呼ばれました');
     const form = event.target;
     
     // タグからデータを収集
@@ -490,8 +491,11 @@ async function saveBird(event) {
         recordings: temporaryRecordings // 録音データを追加
     };
     
+    console.log('保存するデータ:', birdData);
+    
     try {
         if (isSupabaseConnected) {
+            console.log('Supabaseに保存します');
             // Supabaseに保存
             if (editingBird) {
                 const { error } = await supabase
@@ -506,6 +510,7 @@ async function saveBird(event) {
                 if (error) throw error;
             }
         } else {
+            console.log('ローカルストレージに保存します');
             // ローカルストレージに保存
             if (editingBird) {
                 const index = currentBirds.findIndex(b => b.id === birdData.id);
@@ -516,6 +521,7 @@ async function saveBird(event) {
             localStorage.setItem('masterBirds', JSON.stringify(currentBirds));
         }
         
+        console.log('保存成功');
         showMessage('保存しました', 'success');
         closeBirdForm();
         
@@ -527,8 +533,9 @@ async function saveBird(event) {
         }
         
     } catch (error) {
-        console.error('保存エラー:', error);
-        showMessage('保存に失敗しました', 'error');
+        console.error('保存エラー詳細:', error);
+        console.error('エラースタック:', error.stack);
+        showMessage('保存に失敗しました: ' + error.message, 'error');
     }
 }
 

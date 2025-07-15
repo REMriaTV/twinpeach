@@ -430,9 +430,10 @@
             display: flex;
             justify-content: flex-end;
             gap: 12px;
-            margin-top: 32px;
-            padding-top: 24px;
+            padding: 24px 32px;
             border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
+            border-radius: 0 0 16px 16px;
         }
 
         .tag-input-container {
@@ -677,8 +678,8 @@
                 <h2 id="bird-form-title">新しい鳥を追加</h2>
                 <button class="close-modal" onclick="closeBirdForm()">×</button>
             </div>
-            <form id="bird-form" onsubmit="saveBird(event)">
-                <div class="form-body">
+            <div class="form-body">
+                <form id="bird-form" onsubmit="saveBird(event)">
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label">ID *</label>
@@ -799,13 +800,12 @@
                             <input type="text" class="form-input" name="noroshiya_communication_style">
                         </div>
                     </div>
-                    
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="closeBirdForm()">キャンセル</button>
-                        <button type="submit" class="btn btn-success">保存</button>
-                    </div>
-                </div>
-            </form>
+                </form>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeBirdForm()">キャンセル</button>
+                <button type="submit" class="btn btn-success" form="bird-form">保存</button>
+            </div>
         </div>
     </div>
 
@@ -816,8 +816,8 @@
                 <h2 id="stone-form-title">新しい石を追加</h2>
                 <button class="close-modal" onclick="closeStoneForm()">×</button>
             </div>
-            <form id="stone-form" onsubmit="saveStone(event)">
-                <div class="form-body">
+            <div class="form-body">
+                <form id="stone-form" onsubmit="saveStone(event)">
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label">ID *</label>
@@ -934,13 +934,12 @@
                             <textarea class="form-textarea" name="folklore_usage"></textarea>
                         </div>
                     </div>
-                    
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="closeStoneForm()">キャンセル</button>
-                        <button type="submit" class="btn btn-success">保存</button>
-                    </div>
-                </div>
-            </form>
+                </form>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeStoneForm()">キャンセル</button>
+                <button type="submit" class="btn btn-success" form="stone-form">保存</button>
+            </div>
         </div>
     </div>
 

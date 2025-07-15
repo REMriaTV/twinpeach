@@ -414,6 +414,51 @@
             line-height: 1.6;
             margin-bottom: 12px;
         }
+        
+        /* 録音・動画表示 */
+        .recordings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .recording-item-view {
+            display: flex;
+            align-items: center;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            gap: 12px;
+        }
+        
+        .recording-icon {
+            font-size: 24px;
+        }
+        
+        .recording-info {
+            flex: 1;
+        }
+        
+        .recording-name {
+            font-weight: 500;
+            color: #1f2937;
+            font-size: 14px;
+        }
+        
+        .recording-date {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+        
+        .recording-player {
+            max-width: 280px;
+        }
+        
+        video.recording-player {
+            max-height: 150px;
+        }
 
         .loading {
             text-align: center;
@@ -785,6 +830,27 @@
                     <div class="detail-text"><strong>煙スタイル:</strong> ${bird.noroshiyaTraits.smokingStyle || '未設定'}</div>
                     <div class="detail-text"><strong>コミュニケーション:</strong> ${bird.noroshiyaTraits.communicationStyle || '未設定'}</div>
                 </div>
+                
+                ${bird.recordings && bird.recordings.length > 0 ? `
+                <div class="detail-section">
+                    <div class="section-title">録音・動画記録</div>
+                    <div class="recordings-list">
+                        ${bird.recordings.map(rec => `
+                            <div class="recording-item-view">
+                                <div class="recording-icon">${rec.type === 'audio' ? '🎵' : '🎬'}</div>
+                                <div class="recording-info">
+                                    <div class="recording-name">${rec.fileName}</div>
+                                    <div class="recording-date">${new Date(rec.uploadedAt).toLocaleDateString('ja-JP')}</div>
+                                </div>
+                                ${rec.type === 'audio' ? 
+                                    `<audio controls src="${rec.dataUrl}" class="recording-player"></audio>` :
+                                    `<video controls src="${rec.dataUrl}" class="recording-player"></video>`
+                                }
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
             `;
             
             document.getElementById('note-modal').style.display = 'block';

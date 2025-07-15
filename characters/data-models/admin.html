@@ -313,6 +313,43 @@
             overflow: hidden;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
+        
+        /* スマホ用の新規追加ボタン */
+        .mobile-add-btn {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #10b981;
+            color: white;
+            border: none;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            z-index: 50;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-add-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-add-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            /* デスクトップ用の新規追加ボタンを非表示 */
+            .action-bar .btn-success {
+                display: none;
+            }
+        }
 
         .data-table th {
             background: #f9fafb;
@@ -740,38 +777,153 @@
             }
             
             .content-header {
-                padding: 16px 20px;
-                flex-direction: column;
-                gap: 16px;
-                align-items: stretch;
+                padding: 16px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            
+            .header-left {
+                flex: 1;
+                min-width: 200px;
+            }
+            
+            .admin-notice {
+                width: 100%;
+                order: 3;
+                font-size: 12px;
+                padding: 8px 12px;
             }
             
             .content-body {
-                padding: 20px;
+                padding: 16px;
             }
             
             .action-bar {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 12px;
+                margin-bottom: 16px;
             }
             
             .search-container {
                 max-width: none;
             }
             
-            .form-content {
-                margin: 20px;
-                width: calc(100% - 40px);
-                max-height: calc(100vh - 40px);
+            /* テーブルのスマホ対応 */
+            #birds-list,
+            #stones-list {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -16px;
+                padding: 0 16px;
             }
             
-            .form-header,
+            .data-table {
+                min-width: 600px;
+                font-size: 14px;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 8px 12px;
+                white-space: nowrap;
+            }
+            
+            /* ボタンの調整 */
+            .btn {
+                padding: 10px 16px;
+                font-size: 14px;
+                min-height: 44px; /* iOSの推奨タップターゲットサイズ */
+            }
+            
+            .btn-sm {
+                padding: 8px 12px;
+                font-size: 12px;
+                min-height: 36px;
+            }
+            
+            .action-buttons {
+                display: flex;
+                flex-wrap: nowrap;
+                gap: 8px;
+            }
+            
+            /* モーダルの調整 */
+            .form-content {
+                margin: 10px;
+                width: calc(100% - 20px);
+                max-height: calc(100vh - 20px);
+            }
+            
+            .form-header {
+                padding: 16px;
+                position: sticky;
+                top: 0;
+                background: white;
+                z-index: 10;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            
             .form-body {
-                padding: 20px;
+                padding: 16px;
+                max-height: calc(100vh - 120px);
+                overflow-y: auto;
             }
             
             .form-grid {
                 grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .form-actions {
+                padding: 16px;
+                position: sticky;
+                bottom: 0;
+                background: white;
+                border-top: 1px solid #e5e7eb;
+                display: flex;
+                gap: 12px;
+                justify-content: flex-end;
+            }
+            
+            .form-actions .btn {
+                flex: 1;
+                max-width: 150px;
+            }
+            
+            /* タグのスタイル調整 */
+            .tag {
+                font-size: 12px;
+                padding: 3px 8px;
+            }
+            
+            .tag-list {
+                gap: 6px;
+            }
+            
+            /* 録音・写真セクション */
+            .recording-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .recording-item audio,
+            .recording-item video {
+                width: 100%;
+                max-width: none;
+            }
+            
+            .photos-list {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 8px;
+            }
+            
+            /* 接続状態表示 */
+            .connection-status {
+                font-size: 12px;
+                padding: 6px 10px;
             }
         }
     </style>
@@ -830,7 +982,7 @@
                             <button class="btn btn-success" onclick="showBirdForm()">＋ 新規追加</button>
                         </div>
                     </div>
-                    <div id="birds-list">
+                    <div id="birds-list" class="data-list">
                         <div class="loading">データを読み込み中...</div>
                     </div>
                 </div>
@@ -847,7 +999,7 @@
                             <button class="btn btn-success" onclick="showStoneForm()">＋ 新規追加</button>
                         </div>
                     </div>
-                    <div id="stones-list">
+                    <div id="stones-list" class="data-list">
                         <div class="loading">データを読み込み中...</div>
                     </div>
                 </div>
@@ -1166,5 +1318,8 @@
     <script src="birds-database.js"></script>
     <script src="stones-database.js"></script>
     <script src="admin-manager.js"></script>
+    <!-- スマホ用新規追加ボタン -->
+    <button class="mobile-add-btn" onclick="currentTab === 'birds' ? showBirdForm() : showStoneForm()" title="新規追加">+</button>
+
 </body>
 </html>

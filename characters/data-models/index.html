@@ -166,6 +166,7 @@
         }
         
         .mobile-menu-btn {
+            display: block;
             background: none;
             border: none;
             font-size: 24px;
@@ -182,7 +183,14 @@
         
         @media (min-width: 769px) {
             .mobile-menu-btn {
-                display: none;
+                display: none !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block !important;
+                visibility: visible !important;
             }
         }
 
@@ -720,6 +728,15 @@
 
         // 初期化
         document.addEventListener('DOMContentLoaded', async () => {
+            // モバイルメニューボタンの表示を強制
+            const isMobile = window.innerWidth <= 768;
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            if (isMobile && menuBtn) {
+                menuBtn.style.display = 'block';
+                menuBtn.style.visibility = 'visible';
+                console.log('モバイルメニューボタンを表示しました');
+            }
+            
             // Supabase接続を試みる
             try {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

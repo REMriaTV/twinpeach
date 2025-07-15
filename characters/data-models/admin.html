@@ -340,10 +340,20 @@
         .card-body,
         .item-controls,
         .action-button,
-        .delete-button,
-        .btn-edit,
-        .btn-delete {
+        .delete-button {
             display: none !important;
+        }
+        
+        /* 特定のボタンのみ非表示（保存ボタンは除外） */
+        .data-table .btn-edit,
+        .data-table .btn-delete {
+            display: none !important;
+        }
+        
+        /* 保存ボタンは確実に表示 */
+        .form-actions .btn-success {
+            display: inline-block !important;
+            pointer-events: auto !important;
         }
         
         .clickable-row {

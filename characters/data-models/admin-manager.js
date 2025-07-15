@@ -161,87 +161,101 @@ function showTab(tab) {
     }
 }
 
-// 鳥データの表示（テーブル形式）
+// 鳥データの表示（カード形式）
 function displayBirds(birds) {
     const listEl = document.getElementById('birds-list');
     
     if (birds.length === 0) {
-        listEl.innerHTML = '<div class="loading">データがありません</div>';
+        listEl.innerHTML = '<div class="empty-state">データがありません</div>';
         return;
     }
     
     listEl.innerHTML = `
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>名前</th>
-                    <th>学名</th>
-                    <th>科</th>
-                    <th>サイズ</th>
-                    <th>適合タイプ</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${birds.map(bird => `
-                    <tr>
-                        <td><strong>${bird.name}</strong></td>
-                        <td>${bird.scientific_name || '-'}</td>
-                        <td>${bird.family || '-'}</td>
-                        <td>${bird.size || '-'}</td>
-                        <td>${Array.isArray(bird.noroshiya_suitable_types) ? bird.noroshiya_suitable_types.join(', ') : '-'}</td>
-                        <td style="min-width: 150px;">
-                            <div class="action-buttons">
-                                <button class="btn btn-primary btn-sm" onclick="editBird('${bird.id}')">編集</button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteBird('${bird.id}')">削除</button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
+        <div class="data-grid">
+            ${birds.map(bird => `
+                <div class="data-card" onclick="editBird('${bird.id}')">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">${bird.name}</div>
+                            <div class="card-meta">${bird.scientific_name || '学名未記録'}</div>
+                        </div>
+                        <button class="delete-btn" onclick="event.stopPropagation(); deleteBird('${bird.id}')" title="削除">
+                            ×
+                        </button>
+                    </div>
+                    
+                    <div class="card-tags">
+                        <span class="tag primary">${bird.family || '科未分類'}</span>
+                        <span class="tag">${bird.size || 'サイズ不明'}</span>
+                        ${bird.noroshiya_suitable_types && bird.noroshiya_suitable_types.length > 0 
+                            ? `<span class="tag secondary">${bird.noroshiya_suitable_types[0]}</span>` 
+                            : ''}
+                    </div>
+                    
+                    <div class="card-content">
+                        ${bird.characteristics && bird.characteristics.appearance 
+                            ? bird.characteristics.appearance.substring(0, 100) + '...' 
+                            : '外見の記録がありません'}
+                    </div>
+                    
+                    <div class="card-action">
+                        <span class="edit-hint">タップして編集</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
     `;
 }
 
-// 石データの表示（テーブル形式）
+// 石データの表示（カード形式）
 function displayStones(stones) {
     const listEl = document.getElementById('stones-list');
     
     if (stones.length === 0) {
-        listEl.innerHTML = '<div class="loading">データがありません</div>';
+        listEl.innerHTML = '<div class="empty-state">データがありません</div>';
         return;
     }
     
     listEl.innerHTML = `
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>名前</th>
-                    <th>色</th>
-                    <th>サイズ</th>
-                    <th>レアリティ</th>
-                    <th>相性の良い狼煙屋</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${stones.map(stone => `
-                    <tr>
-                        <td><strong>${stone.name}</strong></td>
-                        <td>${Array.isArray(stone.colors) ? stone.colors.join(', ') : '-'}</td>
-                        <td>${stone.size || '-'}</td>
-                        <td>${stone.rarity || '-'}</td>
-                        <td>${stone.noroshiya_primary_match || '-'}</td>
-                        <td style="min-width: 150px;">
-                            <div class="action-buttons">
-                                <button class="btn btn-primary btn-sm" onclick="editStone('${stone.id}')">編集</button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteStone('${stone.id}')">削除</button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
+        <div class="data-grid">
+            ${stones.map(stone => `
+                <div class="data-card" onclick="editStone('${stone.id}')">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">${stone.name}</div>
+                            <div class="card-meta">${stone.type || 'タイプ未記録'}</div>
+                        </div>
+                        <button class="delete-btn" onclick="event.stopPropagation(); deleteStone('${stone.id}')" title="削除">
+                            ×
+                        </button>
+                    </div>
+                    
+                    <div class="card-tags">
+                        ${Array.isArray(stone.colors) && stone.colors.length > 0 
+                            ? stone.colors.slice(0, 3).map(color => `<span class="tag">${color}</span>`).join('')
+                            : '<span class="tag">色未記録</span>'}
+                        <span class="tag secondary">${stone.rarity || 'レア度不明'}</span>
+                    </div>
+                    
+                    <div class="card-content">
+                        ${stone.characteristics && stone.characteristics.appearance 
+                            ? stone.characteristics.appearance.substring(0, 100) + '...' 
+                            : '外観の記録がありません'}
+                    </div>
+                    
+                    <div class="card-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">相性:</span>
+                            <span class="stat-value">${stone.noroshiya_primary_match || '未調査'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-action">
+                        <span class="edit-hint">タップして編集</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
     `;
 }
 

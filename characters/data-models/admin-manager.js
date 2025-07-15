@@ -439,7 +439,6 @@ function addStoneKeyword(event) {
 async function saveBird(event) {
     event.preventDefault();
     console.log('saveBird関数が呼ばれました');
-    alert('saveBird関数が呼び出されました'); // デバッグ用
     const form = event.target;
     
     // タグからデータを収集
@@ -538,7 +537,6 @@ async function saveBird(event) {
 // 石データの保存
 async function saveStone(event) {
     event.preventDefault();
-    alert('saveStone関数が呼び出されました'); // デバッグ用
     const form = event.target;
     
     // タグからデータを収集

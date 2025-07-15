@@ -161,7 +161,7 @@ function showTab(tab) {
     }
 }
 
-// 鳥データの表示（シンプルリスト形式）
+// 鳥データの表示（シンプルテーブル形式）
 function displayBirds(birds) {
     const listEl = document.getElementById('birds-list');
     
@@ -171,34 +171,30 @@ function displayBirds(birds) {
     }
     
     listEl.innerHTML = `
-        <div class="data-simple-list">
-            ${birds.map(bird => `
-                <div class="list-item">
-                    <div class="item-info" onclick="editBird('${bird.id}')">
-                        <div class="item-main">
-                            <span class="item-name">${bird.name}</span>
-                            <span class="item-meta">${bird.scientific_name || ''}</span>
-                        </div>
-                        <div class="item-sub">
-                            <span class="item-tag">${bird.family || '科不明'}</span>
-                            <span class="item-tag">${bird.size || 'サイズ不明'}</span>
-                        </div>
-                    </div>
-                    <div class="item-actions">
-                        <button class="btn-icon btn-edit" onclick="editBird('${bird.id}')" title="編集">
-                            ✏️
-                        </button>
-                        <button class="btn-icon btn-delete" onclick="event.stopPropagation(); deleteBird('${bird.id}')" title="削除">
-                            🗑️
-                        </button>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
+        <table class="simple-table">
+            <thead>
+                <tr>
+                    <th>名前</th>
+                    <th>学名</th>
+                    <th>科</th>
+                    <th>サイズ</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${birds.map(bird => `
+                    <tr class="clickable-row" onclick="editBird('${bird.id}')">
+                        <td>${bird.name}</td>
+                        <td>${bird.scientific_name || ''}</td>
+                        <td>${bird.family || ''}</td>
+                        <td>${bird.size || ''}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
     `;
 }
 
-// 石データの表示（シンプルリスト形式）
+// 石データの表示（シンプルテーブル形式）
 function displayStones(stones) {
     const listEl = document.getElementById('stones-list');
     
@@ -208,32 +204,26 @@ function displayStones(stones) {
     }
     
     listEl.innerHTML = `
-        <div class="data-simple-list">
-            ${stones.map(stone => `
-                <div class="list-item">
-                    <div class="item-info" onclick="editStone('${stone.id}')">
-                        <div class="item-main">
-                            <span class="item-name">${stone.name}</span>
-                            <span class="item-meta">${stone.type || '火打石'}</span>
-                        </div>
-                        <div class="item-sub">
-                            ${Array.isArray(stone.colors) && stone.colors.length > 0 
-                                ? `<span class="item-tag">${stone.colors[0]}</span>`
-                                : '<span class="item-tag">色不明</span>'}
-                            <span class="item-tag">${stone.size || 'サイズ不明'}</span>
-                        </div>
-                    </div>
-                    <div class="item-actions">
-                        <button class="btn-icon btn-edit" onclick="editStone('${stone.id}')" title="編集">
-                            ✏️
-                        </button>
-                        <button class="btn-icon btn-delete" onclick="event.stopPropagation(); deleteStone('${stone.id}')" title="削除">
-                            🗑️
-                        </button>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
+        <table class="simple-table">
+            <thead>
+                <tr>
+                    <th>名前</th>
+                    <th>色</th>
+                    <th>サイズ</th>
+                    <th>レアリティ</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${stones.map(stone => `
+                    <tr class="clickable-row" onclick="editStone('${stone.id}')">
+                        <td>${stone.name}</td>
+                        <td>${Array.isArray(stone.colors) && stone.colors.length > 0 ? stone.colors[0] : ''}</td>
+                        <td>${stone.size || ''}</td>
+                        <td>${stone.rarity || ''}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
     `;
 }
 
@@ -653,7 +643,7 @@ async function saveStone(event) {
 
 // 鳥の削除
 async function deleteBird(birdId) {
-    if (!confirm('本当に削除しますか？')) return;
+    if (!confirm(`${birdId} を本当に削除しますか？`)) return;
     
     try {
         if (isSupabaseConnected) {
@@ -684,7 +674,7 @@ async function deleteBird(birdId) {
 
 // 石の削除
 async function deleteStone(stoneId) {
-    if (!confirm('本当に削除しますか？')) return;
+    if (!confirm(`${stoneId} を本当に削除しますか？`)) return;
     
     try {
         if (isSupabaseConnected) {
@@ -976,3 +966,33 @@ document.addEventListener('click', (e) => {
 
 // グローバルにtoggleSidebar関数を公開
 window.toggleSidebar = toggleSidebar;
+
+// 長押しで削除メニューを表示（オプション）
+let longPressTimer;
+let longPressTarget;
+
+function handleLongPress(e, type, id, name) {
+    e.preventDefault();
+    longPressTarget = {type, id, name};
+    
+    longPressTimer = setTimeout(() => {
+        if (confirm(`${name} を削除しますか？`)) {
+            if (type === 'bird') {
+                deleteBird(id);
+            } else {
+                deleteStone(id);
+            }
+        }
+    }, 800); // 0.8秒長押し
+}
+
+function cancelLongPress() {
+    if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+    }
+}
+
+// タッチイベントの設定
+document.addEventListener('touchend', cancelLongPress);
+document.addEventListener('touchmove', cancelLongPress);

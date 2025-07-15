@@ -35,6 +35,17 @@
             position: fixed;
             height: 100vh;
             z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
         }
 
         .sidebar-header {
@@ -124,6 +135,12 @@
             display: flex;
             flex-direction: column;
         }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+        }
 
         .content-header {
             background: white;
@@ -132,6 +149,32 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        
+        .mobile-menu-btn:hover {
+            background: #f3f2ef;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
         }
 
         .content-title {
@@ -611,7 +654,10 @@
         <!-- メインコンテンツ -->
         <div class="main-content">
             <div class="content-header">
-                <h1 class="content-title" id="content-title">鳥類ノート</h1>
+                <div class="header-left">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                    <h1 class="content-title" id="content-title">鳥類ノート</h1>
+                </div>
                 <div class="search-container">
                     <span class="search-icon">🔍</span>
                     <input type="text" class="search-input" id="search-input" placeholder="ノートを検索...">
@@ -656,11 +702,52 @@
         let currentBirds = [];
         let currentStones = [];
 
+        // Supabase設定
+        const SUPABASE_URL = 'https://roaucowddadmvxgzrvnu.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvYXVjb3dkZGFkbXZ4Z3pydm51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNDQxMDMsImV4cCI6MjA2NzgyMDEwM30.Tqs__X1JOfPiKsb5llj93jVLnyszF_ZrZjfp_UaIiNw';
+        
+        let supabase;
+        let isSupabaseConnected = false;
+
         // 初期化
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Supabase接続を試みる
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                // 接続テスト
+                const { data, error } = await supabase.from('stones').select('id').limit(1);
+                if (!error) {
+                    isSupabaseConnected = true;
+                    console.log('Supabase接続成功');
+                }
+            } catch (error) {
+                console.log('Supabase接続エラー、ローカルデータを使用します:', error);
+                isSupabaseConnected = false;
+            }
+            
             loadBirdsData();
             loadStonesData();
             setupSearch();
+        });
+        
+        // モバイルメニューの切り替え
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('open');
+        }
+        
+        // サイドバー外をクリックしたら閉じる
+        document.addEventListener('click', (e) => {
+            const sidebar = document.querySelector('.sidebar');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(e.target) && 
+                !menuBtn.contains(e.target) && 
+                sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
         });
 
         // タブ切り替え
@@ -697,15 +784,24 @@
         }
 
         // 鳥データの読み込み
-        function loadBirdsData() {
+        async function loadBirdsData() {
             try {
-                // ローカルストレージから編集されたデータを読み込む
-                const savedBirds = localStorage.getItem('masterBirds');
-                if (savedBirds) {
-                    currentBirds = JSON.parse(savedBirds);
+                if (isSupabaseConnected) {
+                    // Supabaseからデータを読み込む
+                    const { data, error } = await supabase.from('birds').select('*');
+                    if (!error && data) {
+                        currentBirds = data;
+                    } else {
+                        throw error;
+                    }
                 } else {
-                    // 保存されたデータがない場合は初期データを使用
-                    currentBirds = BirdsDB.getAll();
+                    // フォールバック: ローカルストレージまたは初期データ
+                    const savedBirds = localStorage.getItem('masterBirds');
+                    if (savedBirds) {
+                        currentBirds = JSON.parse(savedBirds);
+                    } else {
+                        currentBirds = BirdsDB.getAll();
+                    }
                 }
                 displayBirds(currentBirds);
             } catch (error) {
@@ -715,15 +811,24 @@
         }
 
         // 石データの読み込み
-        function loadStonesData() {
+        async function loadStonesData() {
             try {
-                // ローカルストレージから編集されたデータを読み込む
-                const savedStones = localStorage.getItem('masterStones');
-                if (savedStones) {
-                    currentStones = JSON.parse(savedStones);
+                if (isSupabaseConnected) {
+                    // Supabaseからデータを読み込む
+                    const { data, error } = await supabase.from('stones').select('*');
+                    if (!error && data) {
+                        currentStones = data;
+                    } else {
+                        throw error;
+                    }
                 } else {
-                    // 保存されたデータがない場合は初期データを使用
-                    currentStones = StonesDB.getAll();
+                    // フォールバック: ローカルストレージまたは初期データ
+                    const savedStones = localStorage.getItem('masterStones');
+                    if (savedStones) {
+                        currentStones = JSON.parse(savedStones);
+                    } else {
+                        currentStones = StonesDB.getAll();
+                    }
                 }
                 displayStones(currentStones);
             } catch (error) {
@@ -746,20 +851,20 @@
                     <div class="note-header">
                         <div>
                             <div class="note-title">${bird.name}</div>
-                            <div class="note-meta">${bird.scientificName || '学名未記録'}</div>
+                            <div class="note-meta">${bird.scientific_name || '学名未記録'}</div>
                         </div>
                     </div>
                     
                     <div class="note-tags">
                         <span class="tag primary">${bird.family || '科未分類'}</span>
                         <span class="tag">${bird.size || 'サイズ不明'}</span>
-                        ${bird.noroshiyaTraits.suitableTypes && bird.noroshiyaTraits.suitableTypes.length > 0 
-                            ? `<span class="tag secondary">${bird.noroshiyaTraits.suitableTypes[0]}</span>` 
+                        ${bird.noroshiya_suitable_types && bird.noroshiya_suitable_types.length > 0 
+                            ? `<span class="tag secondary">${bird.noroshiya_suitable_types[0]}</span>` 
                             : ''}
                     </div>
                     
                     <div class="note-content">
-                        ${bird.characteristics.appearance || '外見の記録がありません...'}
+                        ${bird.characteristics && bird.characteristics.appearance || '外見の記録がありません...'}
                     </div>
                     
                     <div class="note-stats">
@@ -769,7 +874,7 @@
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">活動:</span>
-                            <span class="stat-value">${bird.lifeStyle.activity || '不明'}</span>
+                            <span class="stat-value">${bird.lifeStyle && bird.lifeStyle.activity || '不明'}</span>
                         </div>
                     </div>
                 </div>
@@ -802,7 +907,7 @@
                     </div>
                     
                     <div class="note-content">
-                        ${stone.characteristics.appearance || '外観の記録がありません...'}
+                        ${stone.characteristics && stone.characteristics.appearance || '外観の記録がありません...'}
                     </div>
                     
                     <div class="note-stats">
@@ -812,7 +917,7 @@
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">相性:</span>
-                            <span class="stat-value">${stone.noroshiyaAffinity.primaryMatch || '未調査'}</span>
+                            <span class="stat-value">${stone.noroshiyaAffinity && stone.noroshiyaAffinity.primaryMatch || '未調査'}</span>
                         </div>
                     </div>
                 </div>

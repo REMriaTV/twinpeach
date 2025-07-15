@@ -947,8 +947,20 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// グローバルにtoggleSidebar関数を公開
+// グローバルに関数を公開
 window.toggleSidebar = toggleSidebar;
+window.saveBird = saveBird;
+window.saveStone = saveStone;
+window.editBird = editBird;
+window.editStone = editStone;
+window.deleteBird = deleteBird;
+window.deleteStone = deleteStone;
+window.closeBirdForm = closeBirdForm;
+window.closeStoneForm = closeStoneForm;
+window.addBirdRecording = addBirdRecording;
+window.removeBirdRecording = removeBirdRecording;
+window.addStonePhoto = addStonePhoto;
+window.removeStonePhoto = removeStonePhoto;
 
 // 長押しで削除メニューを表示（オプション）
 let longPressTimer;

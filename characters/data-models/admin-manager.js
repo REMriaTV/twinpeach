@@ -14,6 +14,8 @@ let editingStone = null;
 
 // 初期化
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('admin-manager.js が読み込まれました');
+    
     // モバイルメニューボタンの表示を強制
     const isMobile = window.innerWidth <= 768;
     const menuBtn = document.getElementById('mobile-menu-btn');
@@ -21,6 +23,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         menuBtn.style.display = 'block';
         menuBtn.style.visibility = 'visible';
         console.log('モバイルメニューボタンを表示しました');
+    }
+    
+    // toggleSidebar関数がグローバルに利用可能か確認
+    if (typeof toggleSidebar === 'function') {
+        console.log('toggleSidebar関数は利用可能です');
+    } else {
+        console.error('toggleSidebar関数が見つかりません');
     }
     
     // Supabase接続を試みる
@@ -949,8 +958,14 @@ function viewPhoto(dataUrl) {
 
 // モバイルメニューの切り替え
 function toggleSidebar() {
+    console.log('toggleSidebar関数が呼ばれました');
     const sidebar = document.querySelector('.sidebar');
-    sidebar.classList.toggle('open');
+    if (sidebar) {
+        sidebar.classList.toggle('open');
+        console.log('サイドバーの状態を変更しました:', sidebar.classList.contains('open'));
+    } else {
+        console.error('サイドバーが見つかりません');
+    }
 }
 
 // サイドバー外をクリックしたら閉じる
@@ -959,9 +974,13 @@ document.addEventListener('click', (e) => {
     const menuBtn = document.querySelector('.mobile-menu-btn');
     
     if (window.innerWidth <= 768 && 
+        sidebar && menuBtn &&
         !sidebar.contains(e.target) && 
         !menuBtn.contains(e.target) && 
         sidebar.classList.contains('open')) {
         sidebar.classList.remove('open');
     }
 });
+
+// グローバルにtoggleSidebar関数を公開
+window.toggleSidebar = toggleSidebar;

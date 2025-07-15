@@ -1166,36 +1166,5 @@
     <script src="birds-database.js"></script>
     <script src="stones-database.js"></script>
     <script src="admin-manager.js"></script>
-    <script>
-        // タブ切り替え
-        function showTab(tab) {
-            currentTab = tab;
-            
-            // ナビゲーションのアクティブ状態を更新
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // コンテンツの表示切り替え
-            document.getElementById('birds-tab').style.display = tab === 'birds' ? 'block' : 'none';
-            document.getElementById('stones-tab').style.display = tab === 'stones' ? 'block' : 'none';
-            
-            // タイトル更新
-            document.getElementById('content-title').textContent = tab === 'birds' ? '鳥類データ編集' : '鉱物データ編集';
-        }
-
-        // ページ読み込み時の初期化
-        document.addEventListener('DOMContentLoaded', () => {
-            // admin-manager.jsの関数が利用可能になるまで待つ
-            if (typeof loadBirdsData === 'function') {
-                loadBirdsData();
-                loadStonesData();
-            } else {
-                setTimeout(() => {
-                    loadBirdsData();
-                    loadStonesData();
-                }, 100);
-            }
-        });
-    </script>
 </body>
 </html>

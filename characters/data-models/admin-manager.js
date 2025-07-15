@@ -478,11 +478,9 @@ async function saveBird(event) {
             cultural: form.symbolism_cultural.value,
             spiritual: form.symbolism_spiritual.value
         },
-        noroshiyaTraits: {
-            suitableTypes: suitableTypes,
-            smokingStyle: form.noroshiya_smoking_style.value,
-            communicationStyle: form.noroshiya_communication_style.value
-        },
+        noroshiya_suitable_types: suitableTypes,
+        noroshiya_smoking_style: form.noroshiya_smoking_style.value,
+        noroshiya_communication_style: form.noroshiya_communication_style.value,
         recordings: temporaryRecordings // 録音データを追加
     };
     
@@ -497,12 +495,20 @@ async function saveBird(event) {
                     .from('birds')
                     .update(birdData)
                     .eq('id', birdData.id);
-                if (error) throw error;
+                if (error) {
+                    console.error('Supabase更新エラー:', error);
+                    console.error('保存エラー詳細:', JSON.stringify(error, null, 2));
+                    throw error;
+                }
             } else {
                 const { error } = await supabase
                     .from('birds')
                     .insert([birdData]);
-                if (error) throw error;
+                if (error) {
+                    console.error('Supabase挿入エラー:', error);
+                    console.error('保存エラー詳細:', JSON.stringify(error, null, 2));
+                    throw error;
+                }
             }
         } else {
             console.log('ローカルストレージに保存します');

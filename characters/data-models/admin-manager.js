@@ -299,6 +299,11 @@ function showStoneForm(stone = null) {
     document.getElementById('stone-colors-tags').innerHTML = '';
     document.getElementById('stone-locations-tags').innerHTML = '';
     document.getElementById('stone-keywords-tags').innerHTML = '';
+    document.getElementById('stone-photos-list').innerHTML = '';
+    
+    // ファイルアップロードイベントリスナーを設定
+    const uploadInput = document.getElementById('stone-photo-upload');
+    uploadInput.onchange = handleStonePhotoUpload;
     
     if (stone) {
         title.textContent = '石データを編集';
@@ -344,9 +349,16 @@ function showStoneForm(stone = null) {
                 addTagToList('stone-keywords-tags', keyword);
             });
         }
+        
+        // 写真を表示
+        if (stone.photos && Array.isArray(stone.photos)) {
+            temporaryStonePhotos = [...stone.photos]; // 既存の写真を一時配列にコピー
+            displayStonePhotos(stone.photos);
+        }
     } else {
         title.textContent = '新しい石を追加';
         form.id.disabled = false;
+        temporaryStonePhotos = []; // 新規追加時は一時配列をクリア
     }
     
     document.getElementById('stone-form-modal').style.display = 'block';
@@ -547,7 +559,8 @@ async function saveStone(event) {
         noroshiya_match_reason: form.noroshiya_match_reason.value,
         noroshiya_special_reaction: form.noroshiya_special_reaction.value,
         folklore_legend: form.folklore_legend.value,
-        folklore_usage: form.folklore_usage.value
+        folklore_usage: form.folklore_usage.value,
+        photos: temporaryStonePhotos // 写真データを追加
     };
     
     try {
@@ -664,6 +677,7 @@ function closeBirdForm() {
 function closeStoneForm() {
     document.getElementById('stone-form-modal').style.display = 'none';
     editingStone = null;
+    temporaryStonePhotos = []; // 一時写真データをクリア
 }
 
 // 検索機能
@@ -817,4 +831,68 @@ function removeRecording(recordingId) {
 // 録音メタデータの編集（今後実装）
 function editRecordingMetadata(recordingId) {
     alert('録音の詳細情報編集機能は今後実装予定です');
+}
+
+// 石の写真管理
+let temporaryStonePhotos = []; // アップロード中の一時的な写真データ
+
+// 石の写真アップロード処理
+function handleStonePhotoUpload(event) {
+    const files = event.target.files;
+    
+    for (let file of files) {
+        // 画像ファイルのみ処理
+        if (!file.type.startsWith('image/')) {
+            continue;
+        }
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const photo = {
+                id: `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                fileName: file.name,
+                fileType: file.type,
+                fileSize: file.size,
+                dataUrl: e.target.result,
+                uploadedAt: new Date().toISOString()
+            };
+            
+            temporaryStonePhotos.push(photo);
+            displayStonePhotos([...temporaryStonePhotos]);
+        };
+        
+        reader.readAsDataURL(file);
+    }
+    
+    // 入力をリセット
+    event.target.value = '';
+}
+
+// 石の写真表示
+function displayStonePhotos(photos) {
+    const listEl = document.getElementById('stone-photos-list');
+    
+    if (!photos || photos.length === 0) {
+        listEl.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 24px;">写真はまだありません</div>';
+        return;
+    }
+    
+    listEl.innerHTML = photos.map(photo => `
+        <div class="photo-item">
+            <img src="${photo.dataUrl}" alt="${photo.fileName}" onclick="viewPhoto('${photo.dataUrl}')">
+            <button class="photo-remove" onclick="removeStonePhoto('${photo.id}')">×</button>
+        </div>
+    `).join('');
+}
+
+// 写真の削除
+function removeStonePhoto(photoId) {
+    temporaryStonePhotos = temporaryStonePhotos.filter(photo => photo.id !== photoId);
+    displayStonePhotos(temporaryStonePhotos);
+}
+
+// 写真の拡大表示（簡易版）
+function viewPhoto(dataUrl) {
+    window.open(dataUrl, '_blank');
 }

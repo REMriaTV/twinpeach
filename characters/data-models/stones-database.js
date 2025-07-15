@@ -40,7 +40,8 @@ const stonesDatabase = [
         folklore: {
             legend: "朝一番に川で見つけた石は幸運をもたらすという",
             usage: "清めの儀式に使われることがある"
-        }
+        },
+        photos: []
     },
     {
         id: "stone_002",
@@ -80,7 +81,8 @@ const stonesDatabase = [
         folklore: {
             legend: "知恵を授ける石として古くから大切にされてきた",
             usage: "重要な決断の前に握ると良いとされる"
-        }
+        },
+        photos: []
     },
     {
         id: "stone_003",
@@ -120,7 +122,8 @@ const stonesDatabase = [
         folklore: {
             legend: "この石の上で昼寝をすると良い夢を見るという",
             usage: "枕元に置いて安眠のお守りにする"
-        }
+        },
+        photos: []
     },
     {
         id: "stone_004",
@@ -160,7 +163,8 @@ const stonesDatabase = [
         folklore: {
             legend: "恋する人が持つと想いが届くという言い伝えがある",
             usage: "大切な人への贈り物として"
-        }
+        },
+        photos: []
     },
     {
         id: "stone_005",
@@ -200,7 +204,8 @@ const stonesDatabase = [
         folklore: {
             legend: "月の満ち欠けと共に力が変化するとされる",
             usage: "夜の瞑想や占いに使用される"
-        }
+        },
+        photos: []
     },
     {
         id: "stone_006",
@@ -240,7 +245,8 @@ const stonesDatabase = [
         folklore: {
             legend: "七つの願いを叶える力があるという",
             usage: "人生の転機に拾うと良いとされる"
-        }
+        },
+        photos: []
     }
 ];
 

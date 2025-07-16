@@ -989,4 +989,4 @@ function cancelLongPress() {
 
 // タッチイベントの設定
 document.addEventListener('touchend', cancelLongPress);
-document.addEventListener('touchmove', cancelLongPress);
+document.addEventListener('touchmove', cancelLongPress);// Force deployment update 2025年 7月16日 水曜日 14時01分48秒 JST

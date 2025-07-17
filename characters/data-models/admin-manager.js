@@ -268,6 +268,10 @@ function showBirdForm(bird = null) {
         }
     } else {
         title.textContent = '新しい鳥を追加';
+        // ID自動生成
+        const timestamp = new Date().getTime();
+        const randomStr = Math.random().toString(36).substring(2, 6);
+        form.id.value = `bird_${timestamp}_${randomStr}`;
         form.id.disabled = false;
         temporaryRecordings = []; // 新規追加時は一時配列をクリア
     }
@@ -349,6 +353,10 @@ function showStoneForm(stone = null) {
         }
     } else {
         title.textContent = '新しい石を追加';
+        // ID自動生成
+        const timestamp = new Date().getTime();
+        const randomStr = Math.random().toString(36).substring(2, 6);
+        form.id.value = `stone_${timestamp}_${randomStr}`;
         form.id.disabled = false;
         temporaryStonePhotos = []; // 新規追加時は一時配列をクリア
     }
@@ -956,10 +964,10 @@ window.deleteBird = deleteBird;
 window.deleteStone = deleteStone;
 window.closeBirdForm = closeBirdForm;
 window.closeStoneForm = closeStoneForm;
-window.addBirdRecording = addBirdRecording;
-window.removeBirdRecording = removeBirdRecording;
-window.addStonePhoto = addStonePhoto;
+window.removeRecording = removeRecording;
 window.removeStonePhoto = removeStonePhoto;
+window.editRecordingMetadata = editRecordingMetadata;
+window.viewPhoto = viewPhoto;
 
 // 長押しで削除メニューを表示（オプション）
 let longPressTimer;

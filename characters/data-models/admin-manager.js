@@ -4,6 +4,10 @@
 const SUPABASE_URL = 'https://roaucowddadmvxgzrvnu.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvYXVjb3dkZGFkbXZ4Z3pydm51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNDQxMDMsImV4cCI6MjA2NzgyMDEwM30.Tqs__X1JOfPiKsb5llj93jVLnyszF_ZrZjfp_UaIiNw';
 
+// Storageバケット名
+const BIRD_RECORDINGS_BUCKET = 'bird-recordings';
+const STONE_PHOTOS_BUCKET = 'stone-photos';
+
 let supabase;
 let isSupabaseConnected = false;
 let currentTab = 'birds';
@@ -11,6 +15,52 @@ let currentBirds = [];
 let currentStones = [];
 let editingBird = null;
 let editingStone = null;
+
+// Supabase Storageへのファイルアップロード
+async function uploadToStorage(file, bucket, path) {
+    if (!isSupabaseConnected) {
+        console.warn('Supabase未接続のため、ファイルアップロードをスキップします');
+        return null;
+    }
+    
+    try {
+        // ファイルをアップロード
+        const { data, error } = await supabase.storage
+            .from(bucket)
+            .upload(path, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
+        
+        if (error) {
+            console.error('アップロードエラー:', error);
+            return null;
+        }
+        
+        // 公開URLを取得
+        const { data: { publicUrl } } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(path);
+        
+        return publicUrl;
+    } catch (error) {
+        console.error('ストレージエラー:', error);
+        return null;
+    }
+}
+
+// dataURLをBlobに変換
+function dataURLtoBlob(dataURL) {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+}
 
 // ID生成関数（001-999形式）
 function generateNextId(currentItems, prefix) {

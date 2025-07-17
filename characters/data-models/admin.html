@@ -1355,9 +1355,13 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="birds-database.js"></script>
-    <script src="stones-database.js"></script>
-    <script src="admin-manager.js"></script>
+    <script>
+        // キャッシュバスティング用のタイムスタンプ
+        const version = new Date().getTime();
+        document.write('<script src="birds-database.js?v=' + version + '"><\/script>');
+        document.write('<script src="stones-database.js?v=' + version + '"><\/script>');
+        document.write('<script src="admin-manager.js?v=' + version + '"><\/script>');
+    </script>
     <!-- スマホ用新規追加ボタン -->
     <button class="mobile-add-btn" onclick="currentTab === 'birds' ? showBirdForm() : showStoneForm()" title="新規追加">＋</button>
 

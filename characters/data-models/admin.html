@@ -1198,6 +1198,7 @@
                 </form>
             </div>
             <div class="form-actions">
+                <button type="button" class="btn btn-danger" onclick="if(editingBird && confirm('本当に削除しますか？')) { deleteBird(editingBird.id); closeBirdForm(); }" style="margin-right: auto;">削除</button>
                 <button type="button" class="btn btn-secondary" onclick="closeBirdForm()">キャンセル</button>
                 <button type="submit" class="btn btn-success" form="bird-form">保存</button>
             </div>
@@ -1347,6 +1348,7 @@
                 </form>
             </div>
             <div class="form-actions">
+                <button type="button" class="btn btn-danger" onclick="if(editingStone && confirm('本当に削除しますか？')) { deleteStone(editingStone.id); closeStoneForm(); }" style="margin-right: auto;">削除</button>
                 <button type="button" class="btn btn-secondary" onclick="closeStoneForm()">キャンセル</button>
                 <button type="submit" class="btn btn-success" form="stone-form">保存</button>
             </div>

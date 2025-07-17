@@ -12,6 +12,34 @@ let currentStones = [];
 let editingBird = null;
 let editingStone = null;
 
+// ID生成関数（001-999形式）
+function generateNextId(currentItems, prefix) {
+    // 既存のIDから番号部分を抽出
+    const existingNumbers = currentItems
+        .map(item => {
+            const match = item.id.match(new RegExp(`^${prefix}_(\\d{3})$`));
+            return match ? parseInt(match[1], 10) : 0;
+        })
+        .filter(num => num > 0);
+    
+    // 最大値を見つけて+1
+    const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
+    const nextNumber = maxNumber + 1;
+    
+    // 999を超える場合は空きを探す
+    if (nextNumber > 999) {
+        for (let i = 1; i <= 999; i++) {
+            if (!existingNumbers.includes(i)) {
+                return `${prefix}_${String(i).padStart(3, '0')}`;
+            }
+        }
+        // 空きがない場合はタイムスタンプを使用
+        return `${prefix}_${new Date().getTime()}`;
+    }
+    
+    return `${prefix}_${String(nextNumber).padStart(3, '0')}`;
+}
+
 // 初期化
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('admin-manager.js が読み込まれました');
@@ -65,7 +93,7 @@ async function loadDataFromSupabase() {
         const { data: birds, error: birdsError } = await supabase
             .from('birds')
             .select('*')
-            .order('name');
+            .order('id');
         
         if (birdsError) throw birdsError;
         currentBirds = birds || [];
@@ -74,7 +102,7 @@ async function loadDataFromSupabase() {
         const { data: stones, error: stonesError } = await supabase
             .from('stones')
             .select('*')
-            .order('name');
+            .order('id');
         
         if (stonesError) throw stonesError;
         currentStones = stones || [];
@@ -112,6 +140,10 @@ function loadDataFromLocal() {
         currentStones = stonesDatabase || [];
         localStorage.setItem('masterStones', JSON.stringify(currentStones));
     }
+    
+    // ID順でソート
+    currentBirds.sort((a, b) => a.id.localeCompare(b.id));
+    currentStones.sort((a, b) => a.id.localeCompare(b.id));
     
     displayBirds(currentBirds);
     displayStones(currentStones);
@@ -268,10 +300,9 @@ function showBirdForm(bird = null) {
         }
     } else {
         title.textContent = '新しい鳥を追加';
-        // ID自動生成
-        const timestamp = new Date().getTime();
-        const randomStr = Math.random().toString(36).substring(2, 6);
-        form.id.value = `bird_${timestamp}_${randomStr}`;
+        // ID自動生成（連番）
+        const nextId = generateNextId(currentBirds, 'bird');
+        form.id.value = nextId;
         form.id.disabled = false;
         temporaryRecordings = []; // 新規追加時は一時配列をクリア
     }
@@ -353,10 +384,9 @@ function showStoneForm(stone = null) {
         }
     } else {
         title.textContent = '新しい石を追加';
-        // ID自動生成
-        const timestamp = new Date().getTime();
-        const randomStr = Math.random().toString(36).substring(2, 6);
-        form.id.value = `stone_${timestamp}_${randomStr}`;
+        // ID自動生成（連番）
+        const nextId = generateNextId(currentStones, 'stone');
+        form.id.value = nextId;
         form.id.disabled = false;
         temporaryStonePhotos = []; // 新規追加時は一時配列をクリア
     }

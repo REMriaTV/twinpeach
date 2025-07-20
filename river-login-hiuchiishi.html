@@ -417,24 +417,6 @@
         
         <!-- メインコンテンツ -->
         <div class="main-content">
-            <div class="location-info">
-                <h2>📍 <span id="locationName">現在地</span></h2>
-                <div class="weather-info">
-                    <div class="weather-item">
-                        <div class="weather-icon" id="weatherIcon">☀️</div>
-                        <div class="weather-label" id="weatherLabel">晴れ</div>
-                    </div>
-                    <div class="weather-item">
-                        <div class="weather-icon">🌡️</div>
-                        <div class="weather-label"><span id="temperature">--</span>°C</div>
-                    </div>
-                    <div class="weather-item">
-                        <div class="weather-icon">🕐</div>
-                        <div class="weather-label" id="currentTime">--:--</div>
-                    </div>
-                </div>
-            </div>
-            
             <div class="dialogue-box" id="dialogueBox">
                 <div class="dialogue-text" id="dialogueText">
                     河原に綺麗な色の石が落ちている...<br>
@@ -842,12 +824,6 @@
             // 背景を変更
             document.body.style.background = weatherBackgrounds[weatherMain] || weatherBackgrounds['Clear'];
             
-            // 天候情報を更新
-            document.getElementById('locationName').textContent = weatherData.name || '現在地';
-            document.getElementById('weatherIcon').textContent = weatherIcons[weatherMain] || '🌤️';
-            document.getElementById('weatherLabel').textContent = weatherDesc;
-            document.getElementById('temperature').textContent = Math.round(weatherData.main.temp);
-            
             // 雨のエフェクトを追加
             if (weatherMain === 'Rain' || weatherMain === 'Drizzle' || weatherMain === 'Thunderstorm') {
                 createRainEffect();
@@ -882,12 +858,9 @@
             }
         }
         
-        // 現在時刻を更新
-        function updateTime() {
+        // 時間帯に応じた表示調整
+        function adjustTimeBasedDisplay() {
             const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            document.getElementById('currentTime').textContent = `${hours}:${minutes}`;
             
             // 時間帯に応じた空の色調整
             if (now.getHours() >= 18 || now.getHours() < 6) {
@@ -898,8 +871,7 @@
         // 初期化
         window.addEventListener('load', () => {
             getWeatherData();
-            updateTime();
-            setInterval(updateTime, 60000); // 1分ごとに更新
+            adjustTimeBasedDisplay();
             generateStones();
         });
     </script>

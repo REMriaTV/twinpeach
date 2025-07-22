@@ -212,10 +212,11 @@
         /* 石のエリア */
         .stones-area {
             position: absolute;
-            bottom: 30%;
+            bottom: 35%;
             width: 100%;
-            height: 25%;
-            z-index: 15;
+            height: 20%;
+            z-index: 30; /* より高いz-indexに変更 */
+            pointer-events: auto; /* クリック可能にする */
         }
         
         .stone {
@@ -223,6 +224,7 @@
             cursor: pointer;
             transition: transform 0.3s ease;
             filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+            z-index: 31; /* 石も高いz-indexを設定 */
         }
         
         .stone:hover {
@@ -283,7 +285,7 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             min-height: 150px;
             position: relative;
-            top: -50px; /* 上にずらして石が見えるように */
+            top: -100px; /* さらに上にずらして石が見えるように */
         }
         
         .dialogue-text {
@@ -551,6 +553,7 @@
                 stone.style.backgroundColor = stoneData.color;
                 stone.style.left = Math.random() * 90 + 5 + '%';
                 stone.style.top = Math.random() * 80 + 10 + '%';
+                stone.style.border = '1px solid rgba(0,0,0,0.3)'; // デバッグ用の境界線
                 
                 // 形状に応じたスタイル
                 if (stoneData.shape === 'round') {

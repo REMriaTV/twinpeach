@@ -38,6 +38,9 @@ CREATE TABLE IF NOT EXISTS birds (
     noroshiya_smoking_style TEXT,
     noroshiya_communication_style TEXT,
     
+    -- 録音データ（Storage URL）
+    recording_urls JSONB,
+    
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -80,6 +83,9 @@ CREATE TABLE IF NOT EXISTS stones (
     folklore_legend TEXT,
     folklore_usage TEXT,
     
+    -- 写真データ（Storage URL）
+    photo_urls JSONB,
+    
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -98,6 +104,13 @@ CREATE TRIGGER update_birds_updated_at BEFORE UPDATE ON birds
 
 CREATE TRIGGER update_stones_updated_at BEFORE UPDATE ON stones
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- 既存のテーブルに新しいカラムを追加（2025-07-17）
+-- 録音URL用カラムを追加
+ALTER TABLE birds ADD COLUMN IF NOT EXISTS recording_urls JSONB;
+
+-- 写真URL用カラムを追加
+ALTER TABLE stones ADD COLUMN IF NOT EXISTS photo_urls JSONB;
 
 -- 初期データを挿入（必要に応じて実行）
 -- ここに初期データのINSERT文を追加

@@ -533,6 +533,38 @@ async function saveBird(event) {
     const suitableTypes = Array.from(document.querySelectorAll('#bird-suitable-types-tags .tag'))
         .map(tag => tag.textContent.replace('×', '').trim());
     
+    // 録音ファイルをStorageにアップロード
+    const recordingUrls = [];
+    if (temporaryRecordings.length > 0 && isSupabaseConnected) {
+        showMessage('録音ファイルをアップロード中...', 'info');
+        
+        for (const recording of temporaryRecordings) {
+            try {
+                // dataURLをBlobに変換
+                const blob = dataURLtoBlob(recording.dataUrl);
+                
+                // ファイル名を生成（bird_id/timestamp_filename）
+                const timestamp = new Date().getTime();
+                const fileName = `${form.id.value}/${timestamp}_${recording.fileName}`;
+                
+                // Storageにアップロード
+                const url = await uploadToStorage(blob, BIRD_RECORDINGS_BUCKET, fileName);
+                
+                if (url) {
+                    recordingUrls.push({
+                        url: url,
+                        fileName: recording.fileName,
+                        uploadedAt: recording.uploadedAt,
+                        type: recording.type,
+                        metadata: recording.metadata
+                    });
+                }
+            } catch (error) {
+                console.error('録音アップロードエラー:', error);
+            }
+        }
+    }
+    
     const birdData = {
         id: form.id.value,
         name: form.name.value,
@@ -564,8 +596,9 @@ async function saveBird(event) {
         // 狼煙屋特性（フラット構造）
         noroshiya_suitable_types: suitableTypes,
         noroshiya_smoking_style: form.noroshiya_smoking_style.value,
-        noroshiya_communication_style: form.noroshiya_communication_style.value
-        // 録音データは今回除外（Supabaseスキーマにないため）
+        noroshiya_communication_style: form.noroshiya_communication_style.value,
+        // 録音URLを追加（Storageに保存済みの場合）
+        recording_urls: recordingUrls.length > 0 ? recordingUrls : null
     };
     
     console.log('保存するデータ:', birdData);
@@ -637,6 +670,36 @@ async function saveStone(event) {
     const keywords = Array.from(document.querySelectorAll('#stone-keywords-tags .tag'))
         .map(tag => tag.textContent.replace('×', '').trim());
     
+    // 写真ファイルをStorageにアップロード
+    const photoUrls = [];
+    if (temporaryStonePhotos.length > 0 && isSupabaseConnected) {
+        showMessage('写真をアップロード中...', 'info');
+        
+        for (const photo of temporaryStonePhotos) {
+            try {
+                // dataURLをBlobに変換
+                const blob = dataURLtoBlob(photo.dataUrl);
+                
+                // ファイル名を生成（stone_id/timestamp_filename）
+                const timestamp = new Date().getTime();
+                const fileName = `${form.id.value}/${timestamp}_${photo.fileName}`;
+                
+                // Storageにアップロード
+                const url = await uploadToStorage(blob, STONE_PHOTOS_BUCKET, fileName);
+                
+                if (url) {
+                    photoUrls.push({
+                        url: url,
+                        fileName: photo.fileName,
+                        uploadedAt: photo.uploadedAt
+                    });
+                }
+            } catch (error) {
+                console.error('写真アップロードエラー:', error);
+            }
+        }
+    }
+    
     const stoneData = {
         id: form.id.value,
         name: form.name.value,
@@ -665,8 +728,9 @@ async function saveStone(event) {
         noroshiya_special_reaction: form.noroshiya_special_reaction.value,
         // 伝承（フラット構造）
         folklore_legend: form.folklore_legend.value,
-        folklore_usage: form.folklore_usage.value
-        // 写真データは今回除外（Supabaseスキーマにないため）
+        folklore_usage: form.folklore_usage.value,
+        // 写真URLを追加（Storageに保存済みの場合）
+        photo_urls: photoUrls.length > 0 ? photoUrls : null
     };
     
     try {

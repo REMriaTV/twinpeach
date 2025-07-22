@@ -284,9 +284,11 @@
             margin: 0 auto;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             min-height: 150px;
-            position: relative;
-            top: -100px; /* さらに上にずらして石が見えるように */
-            z-index: 35; /* 石より高いz-indexで手前に表示 */
+            position: absolute !important;
+            top: 10% !important; /* 画面上部（空の位置）に配置 */
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            z-index: 100 !important; /* 確実に最前面に */
         }
         
         .dialogue-text {

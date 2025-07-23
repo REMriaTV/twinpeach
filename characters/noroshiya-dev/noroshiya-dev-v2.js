@@ -20,8 +20,15 @@ let currentStoneId = null;
 document.addEventListener('DOMContentLoaded', async () => {
     // タブ切り替え
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            switchTab(e.target.dataset.tab);
+        btn.addEventListener('click', async (e) => {
+            const tab = e.target.dataset.tab;
+            switchTab(tab);
+            
+            if (tab === 'birds' && birdsList.length === 0) {
+                await loadBirdsData();
+            } else if (tab === 'stones' && stonesList.length === 0) {
+                await loadStonesData();
+            }
         });
     });
     
@@ -29,6 +36,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('noroshiya-form').addEventListener('submit', (e) => {
         e.preventDefault();
         saveNoroshiya();
+    });
+    
+    document.getElementById('bird-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveBird();
+    });
+    
+    document.getElementById('stone-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveStone();
     });
     
     // カラーピッカーとカラーコードの連動
@@ -253,10 +270,299 @@ function cancelEdit() {
     }
 }
 
+// 鳥データ読み込み
+async function loadBirdsData() {
+    try {
+        const { data, error } = await supabase
+            .from('birds')
+            .select('*')
+            .order('id', { ascending: true });
+        
+        if (error) throw error;
+        
+        birdsList = data || [];
+        displayBirdsList();
+        
+        if (birdsList.length > 0) {
+            selectBird(birdsList[0].id);
+        }
+    } catch (error) {
+        console.error('鳥データの読み込みエラー:', error);
+    }
+}
+
+// 鳥リスト表示
+function displayBirdsList() {
+    const listEl = document.getElementById('birds-list');
+    listEl.innerHTML = '';
+    
+    birdsList.forEach(bird => {
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        card.onclick = () => selectBird(bird.id);
+        
+        if (bird.id === currentBirdId) {
+            card.classList.add('active');
+        }
+        
+        card.innerHTML = `
+            <div class="name">${bird.name}</div>
+            <div class="details">${bird.size} / ${bird.habitat}</div>
+        `;
+        
+        listEl.appendChild(card);
+    });
+}
+
+// 鳥選択
+function selectBird(id) {
+    currentBirdId = id;
+    const bird = birdsList.find(b => b.id === id);
+    
+    if (!bird) return;
+    
+    document.getElementById('bird-id').value = bird.id;
+    document.getElementById('bird-name').value = bird.name || '';
+    document.getElementById('bird-scientific-name').value = bird.scientific_name || '';
+    document.getElementById('bird-size').value = bird.size || '';
+    document.getElementById('bird-habitat').value = bird.habitat || '';
+    document.getElementById('bird-characteristics').value = bird.characteristics || '';
+    document.getElementById('bird-behavior').value = bird.behavior || '';
+    document.getElementById('bird-call').value = bird.call_description || '';
+    document.getElementById('bird-symbolism').value = bird.symbolism || '';
+    document.getElementById('bird-season').value = bird.season || '';
+    document.getElementById('bird-rarity').value = bird.rarity || 'common';
+    
+    displayBirdsList();
+}
+
+// 新規鳥追加
+function addNewBird() {
+    const newId = 'bird_' + String(birdsList.length + 1).padStart(3, '0');
+    const newBird = {
+        id: newId,
+        name: '',
+        scientific_name: '',
+        size: '',
+        habitat: '',
+        characteristics: '',
+        behavior: '',
+        call_description: '',
+        symbolism: '',
+        season: '',
+        rarity: 'common'
+    };
+    
+    birdsList.push(newBird);
+    displayBirdsList();
+    selectBird(newId);
+}
+
+// 鳥保存
+async function saveBird() {
+    if (!currentBirdId) return;
+    
+    const formData = {
+        id: currentBirdId,
+        name: document.getElementById('bird-name').value,
+        scientific_name: document.getElementById('bird-scientific-name').value,
+        size: document.getElementById('bird-size').value,
+        habitat: document.getElementById('bird-habitat').value,
+        characteristics: document.getElementById('bird-characteristics').value,
+        behavior: document.getElementById('bird-behavior').value,
+        call_description: document.getElementById('bird-call').value,
+        symbolism: document.getElementById('bird-symbolism').value,
+        season: document.getElementById('bird-season').value,
+        rarity: document.getElementById('bird-rarity').value
+    };
+    
+    try {
+        const { error } = await supabase
+            .from('birds')
+            .upsert(formData);
+        
+        if (error) throw error;
+        
+        const index = birdsList.findIndex(b => b.id === currentBirdId);
+        if (index !== -1) {
+            birdsList[index] = formData;
+        }
+        
+        displayBirdsList();
+        alert('保存しました！');
+    } catch (error) {
+        console.error('保存エラー:', error);
+        alert('保存に失敗しました: ' + error.message);
+    }
+}
+
+// 石データ読み込み
+async function loadStonesData() {
+    try {
+        const { data, error } = await supabase
+            .from('stones')
+            .select('*')
+            .order('id', { ascending: true });
+        
+        if (error) throw error;
+        
+        stonesList = data || [];
+        displayStonesList();
+        
+        if (stonesList.length > 0) {
+            selectStone(stonesList[0].id);
+        }
+    } catch (error) {
+        console.error('石データの読み込みエラー:', error);
+    }
+}
+
+// 石リスト表示
+function displayStonesList() {
+    const listEl = document.getElementById('stones-list');
+    listEl.innerHTML = '';
+    
+    stonesList.forEach(stone => {
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        card.onclick = () => selectStone(stone.id);
+        
+        if (stone.id === currentStoneId) {
+            card.classList.add('active');
+        }
+        
+        const colors = stone.colors || {};
+        const colorText = [colors.primary, colors.secondary].filter(c => c).join('・');
+        
+        card.innerHTML = `
+            <div class="name">${stone.name}</div>
+            <div class="details">${colorText} / ${stone.type || ''}</div>
+        `;
+        
+        listEl.appendChild(card);
+    });
+}
+
+// 石選択
+function selectStone(id) {
+    currentStoneId = id;
+    const stone = stonesList.find(s => s.id === id);
+    
+    if (!stone) return;
+    
+    const colors = stone.colors || {};
+    
+    document.getElementById('stone-id').value = stone.id;
+    document.getElementById('stone-name').value = stone.name || '';
+    document.getElementById('stone-type').value = stone.type || '';
+    document.getElementById('stone-hiuchiishi').value = stone.is_hiuchiishi ? 'true' : 'false';
+    document.getElementById('stone-color-primary').value = colors.primary || '';
+    document.getElementById('stone-color-secondary').value = colors.secondary || '';
+    document.getElementById('stone-pattern').value = colors.pattern || '';
+    document.getElementById('stone-hardness').value = stone.hardness || '';
+    document.getElementById('stone-size').value = stone.size_range || '';
+    document.getElementById('stone-texture').value = stone.texture || 'ツルツル';
+    document.getElementById('stone-transparency').value = stone.transparency || '不透明';
+    document.getElementById('stone-features').value = stone.special_features || '';
+    document.getElementById('stone-locations').value = stone.found_locations || '';
+    document.getElementById('stone-rarity').value = stone.rarity || 'common';
+    document.getElementById('stone-ng-keywords').value = (stone.ng_keywords || []).join(', ');
+    
+    displayStonesList();
+}
+
+// 新規石追加
+function addNewStone() {
+    const newId = 'stone_' + String(stonesList.length + 1).padStart(3, '0');
+    const newStone = {
+        id: newId,
+        name: '',
+        type: '',
+        colors: { primary: '', secondary: '', pattern: '' },
+        hardness: 7.0,
+        size_range: '',
+        texture: 'ツルツル',
+        transparency: '不透明',
+        special_features: '',
+        found_locations: '',
+        rarity: 'common',
+        is_hiuchiishi: true,
+        ng_keywords: []
+    };
+    
+    stonesList.push(newStone);
+    displayStonesList();
+    selectStone(newId);
+}
+
+// 石保存
+async function saveStone() {
+    if (!currentStoneId) return;
+    
+    const formData = {
+        id: currentStoneId,
+        name: document.getElementById('stone-name').value,
+        type: document.getElementById('stone-type').value,
+        colors: {
+            primary: document.getElementById('stone-color-primary').value,
+            secondary: document.getElementById('stone-color-secondary').value || null,
+            pattern: document.getElementById('stone-pattern').value || null
+        },
+        hardness: parseFloat(document.getElementById('stone-hardness').value) || null,
+        size_range: document.getElementById('stone-size').value,
+        texture: document.getElementById('stone-texture').value,
+        transparency: document.getElementById('stone-transparency').value,
+        special_features: document.getElementById('stone-features').value,
+        found_locations: document.getElementById('stone-locations').value,
+        rarity: document.getElementById('stone-rarity').value,
+        is_hiuchiishi: document.getElementById('stone-hiuchiishi').value === 'true',
+        ng_keywords: document.getElementById('stone-ng-keywords').value.split(',').map(s => s.trim()).filter(s => s)
+    };
+    
+    try {
+        const { error } = await supabase
+            .from('stones')
+            .upsert(formData);
+        
+        if (error) throw error;
+        
+        const index = stonesList.findIndex(s => s.id === currentStoneId);
+        if (index !== -1) {
+            stonesList[index] = formData;
+        }
+        
+        displayStonesList();
+        alert('保存しました！');
+    } catch (error) {
+        console.error('保存エラー:', error);
+        alert('保存に失敗しました: ' + error.message);
+    }
+}
+
+// キャンセル関数
+function cancelBirdEdit() {
+    if (currentBirdId) {
+        selectBird(currentBirdId);
+    }
+}
+
+function cancelStoneEdit() {
+    if (currentStoneId) {
+        selectStone(currentStoneId);
+    }
+}
+
+
 // グローバル関数として公開
 window.addNewNoroshiya = addNewNoroshiya;
-window.addNewBird = () => alert('鳥データベースは準備中です');
-window.addNewStone = () => alert('石データベースは準備中です');
+window.addNewBird = addNewBird;
+window.addNewStone = addNewStone;
 window.selectNoroshiya = selectNoroshiya;
+window.selectBird = selectBird;
+window.selectStone = selectStone;
 window.saveNoroshiya = saveNoroshiya;
+window.saveBird = saveBird;
+window.saveStone = saveStone;
 window.cancelEdit = cancelEdit;
+window.cancelBirdEdit = cancelBirdEdit;
+window.cancelStoneEdit = cancelStoneEdit;

@@ -519,10 +519,77 @@
             </div>
             
             <div class="main-content">
-                <div class="empty-state">
-                    <h3>鳥データベース</h3>
-                    <p>狼煙屋のモチーフとなる鳥の情報を管理します</p>
-                </div>
+                <form id="bird-form">
+                    <div class="form-section">
+                        <h2>基本情報</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>ID</label>
+                                <input type="text" id="bird-id" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>鳥の名前</label>
+                                <input type="text" id="bird-name" placeholder="例: スズメ、メジロ">
+                            </div>
+                            <div class="form-group">
+                                <label>学名</label>
+                                <input type="text" id="bird-scientific-name" placeholder="Passer montanus">
+                            </div>
+                            <div class="form-group">
+                                <label>大きさ</label>
+                                <input type="text" id="bird-size" placeholder="約14cm">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>生態情報</h2>
+                        <div class="form-group">
+                            <label>生息地</label>
+                            <input type="text" id="bird-habitat" placeholder="人里、公園、農地">
+                        </div>
+                        <div class="form-group">
+                            <label>特徴</label>
+                            <textarea id="bird-characteristics" placeholder="茶色の羽毛に白い頬、小柄で丸い体型"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>行動</label>
+                            <textarea id="bird-behavior" placeholder="群れで行動、地面で跳ねながら餌を探す"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>鳴き声</label>
+                            <input type="text" id="bird-call" placeholder="チュンチュン">
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>その他</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>象徴・意味</label>
+                                <input type="text" id="bird-symbolism" placeholder="親しみやすさ、日常">
+                            </div>
+                            <div class="form-group">
+                                <label>季節</label>
+                                <input type="text" id="bird-season" placeholder="通年">
+                            </div>
+                            <div class="form-group">
+                                <label>レア度</label>
+                                <select id="bird-rarity">
+                                    <option value="common">よく見る</option>
+                                    <option value="uncommon">たまに見る</option>
+                                    <option value="rare">めったに見ない</option>
+                                    <option value="very_rare">非常に珍しい</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="save-section">
+                        <button type="button" class="cancel-btn" onclick="cancelBirdEdit()">キャンセル</button>
+                        <button type="submit" class="save-btn">保存</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -541,10 +608,137 @@
             </div>
             
             <div class="main-content">
-                <div class="empty-state">
-                    <h3>石データベース</h3>
-                    <p>火打石の種類と特徴を管理します</p>
-                </div>
+                <form id="stone-form">
+                    <div class="form-section">
+                        <h2>基本情報</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>ID</label>
+                                <input type="text" id="stone-id" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>石の名前</label>
+                                <input type="text" id="stone-name" placeholder="例: 赤チャート、透明石英">
+                            </div>
+                            <div class="form-group">
+                                <label>石の種類</label>
+                                <input type="text" id="stone-type" placeholder="チャート、石英、ジャスパーなど">
+                            </div>
+                            <div class="form-group">
+                                <label>火打石として使える</label>
+                                <select id="stone-hiuchiishi">
+                                    <option value="true">はい</option>
+                                    <option value="false">いいえ</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>色の設定</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>主な色</label>
+                                <select id="stone-color-primary">
+                                    <option value="">選択してください</option>
+                                    <option value="赤い">赤い</option>
+                                    <option value="透明">透明</option>
+                                    <option value="白い">白い</option>
+                                    <option value="黒い">黒い</option>
+                                    <option value="青い">青い</option>
+                                    <option value="茶色い">茶色い</option>
+                                    <option value="オレンジ">オレンジ</option>
+                                    <option value="緑">緑</option>
+                                    <option value="紫">紫</option>
+                                    <option value="黄色い">黄色い</option>
+                                    <option value="灰色">灰色</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>副次的な色</label>
+                                <select id="stone-color-secondary">
+                                    <option value="">なし</option>
+                                    <option value="赤い">赤い</option>
+                                    <option value="透明">透明</option>
+                                    <option value="白い">白い</option>
+                                    <option value="黒い">黒い</option>
+                                    <option value="青い">青い</option>
+                                    <option value="茶色い">茶色い</option>
+                                    <option value="オレンジ">オレンジ</option>
+                                    <option value="緑">緑</option>
+                                    <option value="紫">紫</option>
+                                    <option value="黄色い">黄色い</option>
+                                    <option value="灰色">灰色</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>模様</label>
+                                <input type="text" id="stone-pattern" placeholder="縞模様、まだら、無地など">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>物理的特性</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>硬度（モース硬度 1-10）</label>
+                                <input type="number" id="stone-hardness" min="1" max="10" step="0.5" placeholder="7.0">
+                            </div>
+                            <div class="form-group">
+                                <label>大きさの範囲</label>
+                                <input type="text" id="stone-size" placeholder="親指大〜握りこぶし大">
+                            </div>
+                            <div class="form-group">
+                                <label>質感</label>
+                                <select id="stone-texture">
+                                    <option value="ツルツル">ツルツル</option>
+                                    <option value="ザラザラ">ザラザラ</option>
+                                    <option value="ゴツゴツ">ゴツゴツ</option>
+                                    <option value="すべすべ">すべすべ</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>透明度</label>
+                                <select id="stone-transparency">
+                                    <option value="不透明">不透明</option>
+                                    <option value="半透明">半透明</option>
+                                    <option value="透明">透明</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>その他の情報</h2>
+                        <div class="form-group">
+                            <label>特別な特徴</label>
+                            <textarea id="stone-features" placeholder="鉄分により赤く染まっている、割ると鋭い刃物になるなど"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>見つかる場所</label>
+                            <input type="text" id="stone-locations" placeholder="河原、山地、海岸など">
+                        </div>
+                        <div class="form-group">
+                            <label>レア度</label>
+                            <select id="stone-rarity">
+                                <option value="common">よく見つかる</option>
+                                <option value="uncommon">たまに見つかる</option>
+                                <option value="rare">めったに見つからない</option>
+                                <option value="very_rare">非常に珍しい</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>NGキーワード（この石を除外する言葉、カンマ区切り）</label>
+                            <input type="text" id="stone-ng-keywords" placeholder="柔らかい, ザラザラ, もろい">
+                        </div>
+                    </div>
+                    
+                    <div class="save-section">
+                        <button type="button" class="cancel-btn" onclick="cancelStoneEdit()">キャンセル</button>
+                        <button type="submit" class="save-btn">保存</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

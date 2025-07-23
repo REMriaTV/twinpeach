@@ -290,6 +290,15 @@
             background: #d5d5d5;
         }
         
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+        
         /* 空状態 */
         .empty-state {
             text-align: center;
@@ -497,6 +506,7 @@
                     </div>
                     
                     <div class="save-section">
+                        <button type="button" class="delete-btn" onclick="deleteNoroshiya()">削除</button>
                         <button type="button" class="cancel-btn" onclick="cancelEdit()">キャンセル</button>
                         <button type="submit" class="save-btn">保存</button>
                     </div>
@@ -586,6 +596,7 @@
                     </div>
                     
                     <div class="save-section">
+                        <button type="button" class="delete-btn" onclick="deleteBird()">削除</button>
                         <button type="button" class="cancel-btn" onclick="cancelBirdEdit()">キャンセル</button>
                         <button type="submit" class="save-btn">保存</button>
                     </div>
@@ -735,6 +746,7 @@
                     </div>
                     
                     <div class="save-section">
+                        <button type="button" class="delete-btn" onclick="deleteStone()">削除</button>
                         <button type="button" class="cancel-btn" onclick="cancelStoneEdit()">キャンセル</button>
                         <button type="submit" class="save-btn">保存</button>
                     </div>

@@ -553,6 +553,115 @@ function cancelStoneEdit() {
 }
 
 
+// 削除機能
+async function deleteNoroshiya() {
+    if (!currentNoroshiyaId) return;
+    
+    const noroshiya = noroshiyaList.find(n => n.id === currentNoroshiyaId);
+    if (!noroshiya) return;
+    
+    if (!confirm(`本当に「${noroshiya.color_name}の狼煙屋」を削除しますか？\nこの操作は取り消せません。`)) {
+        return;
+    }
+    
+    try {
+        const { error } = await supabase
+            .from('noroshiya_characters')
+            .delete()
+            .eq('id', currentNoroshiyaId);
+        
+        if (error) throw error;
+        
+        // リストから削除
+        noroshiyaList = noroshiyaList.filter(n => n.id !== currentNoroshiyaId);
+        localStorage.setItem('noroshiya-dev-data', JSON.stringify(noroshiyaList));
+        
+        // 次のアイテムを選択
+        if (noroshiyaList.length > 0) {
+            selectNoroshiya(noroshiyaList[0].id);
+        } else {
+            currentNoroshiyaId = null;
+            document.getElementById('noroshiya-form').reset();
+        }
+        
+        displayNoroshiyaList();
+        alert('削除しました。');
+    } catch (error) {
+        console.error('削除エラー:', error);
+        alert('削除に失敗しました: ' + error.message);
+    }
+}
+
+async function deleteBird() {
+    if (!currentBirdId) return;
+    
+    const bird = birdsList.find(b => b.id === currentBirdId);
+    if (!bird) return;
+    
+    if (!confirm(`本当に「${bird.name}」を削除しますか？\nこの操作は取り消せません。`)) {
+        return;
+    }
+    
+    try {
+        const { error } = await supabase
+            .from('birds')
+            .delete()
+            .eq('id', currentBirdId);
+        
+        if (error) throw error;
+        
+        birdsList = birdsList.filter(b => b.id !== currentBirdId);
+        
+        if (birdsList.length > 0) {
+            selectBird(birdsList[0].id);
+        } else {
+            currentBirdId = null;
+            document.getElementById('bird-form').reset();
+        }
+        
+        displayBirdsList();
+        alert('削除しました。');
+    } catch (error) {
+        console.error('削除エラー:', error);
+        alert('削除に失敗しました: ' + error.message);
+    }
+}
+
+async function deleteStone() {
+    if (!currentStoneId) return;
+    
+    const stone = stonesList.find(s => s.id === currentStoneId);
+    if (!stone) return;
+    
+    if (!confirm(`本当に「${stone.name}」を削除しますか？\nこの操作は取り消せません。`)) {
+        return;
+    }
+    
+    try {
+        const { error } = await supabase
+            .from('stones')
+            .delete()
+            .eq('id', currentStoneId);
+        
+        if (error) throw error;
+        
+        stonesList = stonesList.filter(s => s.id !== currentStoneId);
+        
+        if (stonesList.length > 0) {
+            selectStone(stonesList[0].id);
+        } else {
+            currentStoneId = null;
+            document.getElementById('stone-form').reset();
+        }
+        
+        displayStonesList();
+        alert('削除しました。');
+    } catch (error) {
+        console.error('削除エラー:', error);
+        alert('削除に失敗しました: ' + error.message);
+    }
+}
+
 // グローバル関数として公開
 window.addNewNoroshiya = addNewNoroshiya;
 window.addNewBird = addNewBird;
@@ -566,3 +675,6 @@ window.saveStone = saveStone;
 window.cancelEdit = cancelEdit;
 window.cancelBirdEdit = cancelBirdEdit;
 window.cancelStoneEdit = cancelStoneEdit;
+window.deleteNoroshiya = deleteNoroshiya;
+window.deleteBird = deleteBird;
+window.deleteStone = deleteStone;

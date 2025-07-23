@@ -508,12 +508,12 @@
             try {
                 const { data, error } = await supabase
                     .from('stones')
-                    .select('*')
-                    .eq('is_hiuchiishi', true);
+                    .select('*'); // 全ての石を取得（火打石以外も含む）
                 
                 if (error) throw error;
                 
                 if (data && data.length > 0) {
+                    console.log('データベースから読み込んだ石データ:', data);
                     // データベースの石データを使用
                     stoneTypes = data.map(stone => ({
                         id: stone.id,
@@ -523,8 +523,10 @@
                         image_url: stone.image_url,
                         texture: stone.texture,
                         rarity: stone.rarity || 'common',
+                        is_hiuchiishi: stone.is_hiuchiishi, // 火打石フラグも保持
                         dbData: stone // 元のデータも保持
                     }));
+                    console.log('処理後のstoneTypes:', stoneTypes);
                 }
                 
                 // データがない場合はデフォルトを使用
@@ -577,32 +579,54 @@
             // ランダムに10-15個の石を配置
             const stoneCount = 10 + Math.floor(Math.random() * 6);
             
+            // デフォルトの石の種類（CSS図形用）
+            const defaultStones = [
+                { color: '#4ECDC4', size: 'medium', shape: 'flat' },
+                { color: '#95E1D3', size: 'small', shape: 'sharp' },
+                { color: '#2D3436', size: 'large', shape: 'rough' },
+                { color: '#FDCB6E', size: 'medium', shape: 'smooth' },
+                { color: '#6C5CE7', size: 'small', shape: 'square' },
+                { color: '#FFF', size: 'medium', shape: 'round' },
+                { color: '#A29BFE', size: 'large', shape: 'flat' },
+                { color: '#74B9FF', size: 'small', shape: 'round' }
+            ];
+            
+            // データベースから画像付きの石を1つ選択（ランダムに）
+            let selectedDbStone = null;
+            if (stoneTypes.length > 0 && stoneTypes.some(s => s.image_url)) {
+                const stonesWithImages = stoneTypes.filter(s => s.image_url);
+                selectedDbStone = stonesWithImages[Math.floor(Math.random() * stonesWithImages.length)];
+            }
+            
+            // 1つ目の石をデータベースの石にするかどうかを決める
+            const dbStonePosition = selectedDbStone ? Math.floor(Math.random() * stoneCount) : -1;
+            
             for (let i = 0; i < stoneCount; i++) {
-                const stoneData = stoneTypes[Math.floor(Math.random() * stoneTypes.length)];
-                
-                // 石の要素を作成
-                if (stoneData.image_url) {
-                    // 画像がある場合
+                if (i === dbStonePosition && selectedDbStone) {
+                    // データベースから画像付きの石を1つだけ配置
                     const stone = document.createElement('img');
                     stone.className = 'stone';
-                    stone.src = stoneData.image_url;
-                    stone.alt = stoneData.name || '石';
+                    stone.src = selectedDbStone.image_url;
+                    stone.alt = selectedDbStone.name || '石';
                     
                     // サイズ設定
-                    const baseSize = Math.random() * 20 + 30; // 30-50pxのランダムサイズ
+                    const baseSize = Math.random() * 20 + 50; // 50-70pxのランダムサイズ
                     stone.style.width = baseSize + 'px';
-                    stone.style.height = 'auto';
+                    stone.style.height = baseSize + 'px';
+                    stone.style.objectFit = 'contain';
                     
                     // 位置設定
-                    stone.style.left = Math.random() * 90 + 5 + '%';
-                    stone.style.top = Math.random() * 80 + 10 + '%';
+                    stone.style.left = Math.random() * 85 + 5 + '%';
+                    stone.style.top = Math.random() * 70 + 15 + '%';
                     
-                    stone.dataset.stoneData = JSON.stringify(stoneData);
+                    stone.dataset.stoneData = JSON.stringify(selectedDbStone);
+                    stone.dataset.isSpecial = 'true';
                     stone.style.display = 'block';
                     
                     stonesArea.appendChild(stone);
                 } else {
-                    // 画像がない場合は従来の方法
+                    // CSS図形の石
+                    const stoneData = defaultStones[Math.floor(Math.random() * defaultStones.length)];
                     const stone = document.createElement('div');
                     stone.className = 'stone';
                     
@@ -624,6 +648,10 @@
                         stone.style.clipPath = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
                     } else if (stoneData.shape === 'square') {
                         stone.style.borderRadius = '10%';
+                    } else if (stoneData.shape === 'rough') {
+                        stone.style.clipPath = 'polygon(20% 0%, 80% 10%, 100% 40%, 90% 90%, 40% 100%, 0% 80%, 10% 30%)';
+                    } else if (stoneData.shape === 'smooth') {
+                        stone.style.borderRadius = '40% 60% 70% 30% / 60% 40% 60% 40%';
                     }
                     
                     stone.dataset.stoneData = JSON.stringify(stoneData);

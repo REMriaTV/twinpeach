@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await loadBirdsData();
             } else if (tab === 'stones' && stonesList.length === 0) {
                 await loadStonesData();
+            } else if (tab === 'noroshiya' && noroshiyaList.length === 0) {
+                await loadNoroshiyaData();
             }
         });
     });
@@ -62,8 +64,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
     
-    // データ読み込み
-    await loadNoroshiyaData();
+    // データ読み込み（最初は石タブ）
+    await loadStonesData();
 });
 
 // タブ切り替え

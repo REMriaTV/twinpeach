@@ -157,6 +157,15 @@
             color: #666;
         }
         
+        .item-card .item-image {
+            width: 40px;
+            height: 40px;
+            float: right;
+            border-radius: 4px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+        }
+        
         /* メインコンテンツ（フォーム） */
         .main-content {
             flex: 1;
@@ -309,6 +318,53 @@
         .empty-state h3 {
             font-size: 1.2rem;
             margin-bottom: 0.5rem;
+        }
+        
+        /* 画像プレビュー */
+        .image-preview {
+            width: 200px;
+            height: 200px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            margin: 0 auto 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .image-preview .placeholder {
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        .image-upload-btn {
+            display: block;
+            width: 200px;
+            margin: 0 auto;
+            padding: 0.5rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .image-upload-btn:hover {
+            background: #2980b9;
+        }
+        
+        input[type="file"] {
+            display: none;
         }
         
         /* レスポンシブ */
@@ -620,6 +676,15 @@
             
             <div class="main-content">
                 <form id="stone-form">
+                    <!-- 画像プレビューエリア -->
+                    <div class="image-preview" id="stone-image-preview">
+                        <div class="placeholder">画像なし</div>
+                    </div>
+                    <button type="button" class="image-upload-btn" onclick="document.getElementById('stone-image-input').click()">
+                        画像を選択
+                    </button>
+                    <input type="file" id="stone-image-input" accept="image/*" onchange="handleStoneImageSelect(event)">
+                    
                     <div class="form-section">
                         <h2>基本情報</h2>
                         <div class="form-grid">

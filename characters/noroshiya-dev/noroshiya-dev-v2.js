@@ -15,6 +15,7 @@ let stonesList = [];
 let currentNoroshiyaId = null;
 let currentBirdId = null;
 let currentStoneId = null;
+let currentStoneImage = null; // 現在選択中の石の画像
 
 // 初期化
 document.addEventListener('DOMContentLoaded', async () => {
@@ -437,6 +438,7 @@ function displayStonesList() {
         const colorText = [colors.primary, colors.secondary].filter(c => c).join('・');
         
         card.innerHTML = `
+            ${stone.image_url ? `<img src="${stone.image_url}" alt="${stone.name}" class="item-image">` : ''}
             <div class="name">${stone.name}</div>
             <div class="details">${colorText} / ${stone.type || ''}</div>
         `;
@@ -470,6 +472,16 @@ function selectStone(id) {
     document.getElementById('stone-rarity').value = stone.rarity || 'common';
     document.getElementById('stone-ng-keywords').value = (stone.ng_keywords || []).join(', ');
     
+    // 画像プレビューを更新
+    const previewEl = document.getElementById('stone-image-preview');
+    if (stone.image_url) {
+        previewEl.innerHTML = `<img src="${stone.image_url}" alt="${stone.name}">`;
+        currentStoneImage = stone.image_url;
+    } else {
+        previewEl.innerHTML = '<div class="placeholder">画像なし</div>';
+        currentStoneImage = null;
+    }
+    
     displayStonesList();
 }
 
@@ -489,8 +501,13 @@ function addNewStone() {
         found_locations: '',
         rarity: 'common',
         is_hiuchiishi: true,
-        ng_keywords: []
+        ng_keywords: [],
+        image_url: null
     };
+    
+    // 画像プレビューをクリア
+    document.getElementById('stone-image-preview').innerHTML = '<div class="placeholder">画像なし</div>';
+    currentStoneImage = null;
     
     stonesList.push(newStone);
     displayStonesList();
@@ -664,6 +681,75 @@ async function deleteStone() {
     }
 }
 
+// 画像選択処理
+async function handleStoneImageSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // ファイルサイズチェック（5MB以下）
+    if (file.size > 5 * 1024 * 1024) {
+        alert('画像サイズは5MB以下にしてください。');
+        return;
+    }
+    
+    // 画像プレビュー表示
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const previewEl = document.getElementById('stone-image-preview');
+        previewEl.innerHTML = `<img src="${e.target.result}" alt="プレビュー">`;
+        currentStoneImage = e.target.result; // Base64データとして保存
+    };
+    reader.readAsDataURL(file);
+}
+
+// 石保存（画像対応版に更新）
+async function saveStoneWithImage() {
+    if (!currentStoneId) return;
+    
+    const formData = {
+        id: currentStoneId,
+        name: document.getElementById('stone-name').value,
+        type: document.getElementById('stone-type').value,
+        colors: {
+            primary: document.getElementById('stone-color-primary').value,
+            secondary: document.getElementById('stone-color-secondary').value || null,
+            pattern: document.getElementById('stone-pattern').value || null
+        },
+        hardness: parseFloat(document.getElementById('stone-hardness').value) || null,
+        size_range: document.getElementById('stone-size').value,
+        texture: document.getElementById('stone-texture').value,
+        transparency: document.getElementById('stone-transparency').value,
+        special_features: document.getElementById('stone-features').value,
+        found_locations: document.getElementById('stone-locations').value,
+        rarity: document.getElementById('stone-rarity').value,
+        is_hiuchiishi: document.getElementById('stone-hiuchiishi').value === 'true',
+        ng_keywords: document.getElementById('stone-ng-keywords').value.split(',').map(s => s.trim()).filter(s => s),
+        image_url: currentStoneImage // 画像データを追加
+    };
+    
+    try {
+        const { error } = await supabase
+            .from('stones')
+            .upsert(formData);
+        
+        if (error) throw error;
+        
+        const index = stonesList.findIndex(s => s.id === currentStoneId);
+        if (index !== -1) {
+            stonesList[index] = formData;
+        }
+        
+        displayStonesList();
+        alert('保存しました！');
+    } catch (error) {
+        console.error('保存エラー:', error);
+        alert('保存に失敗しました: ' + error.message);
+    }
+}
+
+// saveStone関数を新しいものに置き換え
+window.saveStone = saveStoneWithImage;
+
 // グローバル関数として公開
 window.addNewNoroshiya = addNewNoroshiya;
 window.addNewBird = addNewBird;
@@ -673,10 +759,11 @@ window.selectBird = selectBird;
 window.selectStone = selectStone;
 window.saveNoroshiya = saveNoroshiya;
 window.saveBird = saveBird;
-window.saveStone = saveStone;
+window.saveStone = saveStoneWithImage;
 window.cancelEdit = cancelEdit;
 window.cancelBirdEdit = cancelBirdEdit;
 window.cancelStoneEdit = cancelStoneEdit;
 window.deleteNoroshiya = deleteNoroshiya;
 window.deleteBird = deleteBird;
 window.deleteStone = deleteStone;
+window.handleStoneImageSelect = handleStoneImageSelect;

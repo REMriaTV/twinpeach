@@ -500,17 +500,50 @@
             }
         };
         
-        // 石のデータ
-        const stoneTypes = [
-            { color: '#FF6B6B', size: 'large', shape: 'round' },
-            { color: '#4ECDC4', size: 'medium', shape: 'flat' },
-            { color: '#95E1D3', size: 'small', shape: 'sharp' },
-            { color: '#2D3436', size: 'large', shape: 'rough' },
-            { color: '#FDCB6E', size: 'medium', shape: 'smooth' },
-            { color: '#6C5CE7', size: 'small', shape: 'square' },
-            { color: '#FFF', size: 'medium', shape: 'round' },
-            { color: '#A29BFE', size: 'large', shape: 'flat' }
-        ];
+        // 石のデータ（データベースから取得）
+        let stoneTypes = [];
+        
+        // データベースから石データを読み込む
+        async function loadStonesFromDatabase() {
+            try {
+                const { data, error } = await supabase
+                    .from('stones')
+                    .select('*')
+                    .eq('is_hiuchiishi', true);
+                
+                if (error) throw error;
+                
+                if (data && data.length > 0) {
+                    // データベースの石データを使用
+                    stoneTypes = data.map(stone => ({
+                        id: stone.id,
+                        name: stone.name,
+                        color: stone.colors?.primary || '#808080',
+                        size: stone.size_range || 'medium',
+                        image_url: stone.image_url,
+                        texture: stone.texture,
+                        rarity: stone.rarity || 'common',
+                        dbData: stone // 元のデータも保持
+                    }));
+                }
+                
+                // データがない場合はデフォルトを使用
+                if (stoneTypes.length === 0) {
+                    stoneTypes = [
+                        { color: '#FF6B6B', size: 'large', shape: 'round' },
+                        { color: '#4ECDC4', size: 'medium', shape: 'flat' },
+                        { color: '#95E1D3', size: 'small', shape: 'sharp' },
+                        { color: '#2D3436', size: 'large', shape: 'rough' },
+                        { color: '#FDCB6E', size: 'medium', shape: 'smooth' },
+                        { color: '#6C5CE7', size: 'small', shape: 'square' },
+                        { color: '#FFF', size: 'medium', shape: 'round' },
+                        { color: '#A29BFE', size: 'large', shape: 'flat' }
+                    ];
+                }
+            } catch (error) {
+                console.error('石データの読み込みエラー:', error);
+            }
+        }
         
         // 天候に応じた背景色
         const weatherBackgrounds = {
@@ -545,35 +578,59 @@
             const stoneCount = 10 + Math.floor(Math.random() * 6);
             
             for (let i = 0; i < stoneCount; i++) {
-                const stone = document.createElement('div');
-                stone.className = 'stone';
                 const stoneData = stoneTypes[Math.floor(Math.random() * stoneTypes.length)];
                 
-                // 石のスタイル設定
-                const size = stoneData.size === 'large' ? 40 : stoneData.size === 'medium' ? 25 : 15;
-                stone.style.width = size + 'px';
-                stone.style.height = size * 0.8 + 'px';
-                stone.style.backgroundColor = stoneData.color;
-                stone.style.left = Math.random() * 90 + 5 + '%';
-                stone.style.top = Math.random() * 80 + 10 + '%';
-                stone.style.border = '1px solid rgba(0,0,0,0.3)'; // デバッグ用の境界線
-                
-                // 形状に応じたスタイル
-                if (stoneData.shape === 'round') {
-                    stone.style.borderRadius = '50%';
-                } else if (stoneData.shape === 'flat') {
-                    stone.style.borderRadius = '30%';
-                    stone.style.transform = 'scaleY(0.6)';
-                } else if (stoneData.shape === 'sharp') {
-                    stone.style.clipPath = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
-                } else if (stoneData.shape === 'square') {
-                    stone.style.borderRadius = '10%';
+                // 石の要素を作成
+                if (stoneData.image_url) {
+                    // 画像がある場合
+                    const stone = document.createElement('img');
+                    stone.className = 'stone';
+                    stone.src = stoneData.image_url;
+                    stone.alt = stoneData.name || '石';
+                    
+                    // サイズ設定
+                    const baseSize = Math.random() * 20 + 30; // 30-50pxのランダムサイズ
+                    stone.style.width = baseSize + 'px';
+                    stone.style.height = 'auto';
+                    
+                    // 位置設定
+                    stone.style.left = Math.random() * 90 + 5 + '%';
+                    stone.style.top = Math.random() * 80 + 10 + '%';
+                    
+                    stone.dataset.stoneData = JSON.stringify(stoneData);
+                    stone.style.display = 'block';
+                    
+                    stonesArea.appendChild(stone);
+                } else {
+                    // 画像がない場合は従来の方法
+                    const stone = document.createElement('div');
+                    stone.className = 'stone';
+                    
+                    // 石のスタイル設定
+                    const size = stoneData.size === 'large' ? 40 : stoneData.size === 'medium' ? 25 : 15;
+                    stone.style.width = size + 'px';
+                    stone.style.height = size * 0.8 + 'px';
+                    stone.style.backgroundColor = stoneData.color;
+                    stone.style.left = Math.random() * 90 + 5 + '%';
+                    stone.style.top = Math.random() * 80 + 10 + '%';
+                    
+                    // 形状に応じたスタイル
+                    if (stoneData.shape === 'round') {
+                        stone.style.borderRadius = '50%';
+                    } else if (stoneData.shape === 'flat') {
+                        stone.style.borderRadius = '30%';
+                        stone.style.transform = 'scaleY(0.6)';
+                    } else if (stoneData.shape === 'sharp') {
+                        stone.style.clipPath = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
+                    } else if (stoneData.shape === 'square') {
+                        stone.style.borderRadius = '10%';
+                    }
+                    
+                    stone.dataset.stoneData = JSON.stringify(stoneData);
+                    stone.style.display = 'block';
+                    
+                    stonesArea.appendChild(stone);
                 }
-                
-                stone.dataset.stoneData = JSON.stringify(stoneData);
-                stone.style.display = 'block'; // 最初から表示
-                
-                stonesArea.appendChild(stone);
             }
         }
         
@@ -963,7 +1020,10 @@
         }
         
         // 初期化
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
+            // 石データを先に読み込む
+            await loadStonesFromDatabase();
+            
             getWeatherData();
             adjustTimeBasedDisplay();
             generateStones();

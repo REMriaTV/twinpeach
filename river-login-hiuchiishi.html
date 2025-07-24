@@ -442,6 +442,8 @@
             border-radius: 20px;
             padding: 40px;
             max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             z-index: 100;
             display: none;
@@ -1239,16 +1241,13 @@
             `;
             
             // お調子者の狼煙屋のセリフ
-            const greeting = `おぉ〜！！ナンダナンダ、キレイナ石ジャナイカ〜www<br>
-                            ワタシ、ソレ見テタヨ〜（笑）<br>
-                            イヤァ、マジデ イイ石 拾ッタネ！！`;
+            const greeting = `おぉ〜！！キレイナ石ジャナイカ〜www<br>
+                            ワタシ、ソレ見テタヨ〜（笑）`;
             
             const middleMessage = `アハハハ、火打石ダヨソレ〜！<br>
-                                ワカッテタ？ワカッテナカッタデショ〜？www<br>
                                 デモネ、ソレガイインダヨ〜`;
             
-            const finalMessage = `ネェネェ、一緒ニ狼煙アゲナイ？<br>
-                               タノシイヨ〜、ゼッタイ楽シイヨ〜！<br>
+            const finalMessage = `一緒ニ狼煙アゲナイ？<br>
                                （実ハ、チョット寂シカッタンダ...）`;
             
             document.getElementById('noroshiyaIcon').innerHTML = yuragiFx;

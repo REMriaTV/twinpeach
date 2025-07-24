@@ -1369,19 +1369,15 @@
         
         // 出会い完了
         function completeEncounter() {
-            if (selectedNoroshiya) {
-                // 選択情報を保存
-                localStorage.setItem('selectedNoroshiya', selectedNoroshiya);
-                localStorage.setItem('noroshiyaData', JSON.stringify(noroshiyaTypes[selectedNoroshiya]));
-                localStorage.setItem('userLocation', JSON.stringify({
-                    name: weatherData.name,
-                    weather: weatherData.weather[0].main,
-                    temp: weatherData.main.temp
-                }));
-                
-                // 狼煙場ネットワークへ遷移
-                window.location.href = 'field-scroll-final.html';
-            }
+            // 選択情報を保存（現在は固定の狼煙屋）
+            localStorage.setItem('selectedNoroshiya', 'chagare');
+            localStorage.setItem('noroshiyaData', JSON.stringify({
+                name: '茶枯色の狼煙屋',
+                type: 'cheerful'
+            }));
+            
+            // 狼煙場ネットワークへ遷移
+            window.location.href = 'field-scroll-final.html';
         }
         
         // 現在地の天候を取得

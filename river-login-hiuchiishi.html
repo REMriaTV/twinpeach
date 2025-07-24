@@ -1061,12 +1061,16 @@
             try {
                 const matchedNoroshiya = await findBestMatchNoroshiya(fullDescription);
                 
-                // すぐに狼煙屋を表示
-                showNoroshiya(matchedNoroshiya);
+                // 2秒後に狼煙屋を表示
+                setTimeout(() => {
+                    showNoroshiya(matchedNoroshiya);
+                }, 2000);
             } catch (error) {
                 console.error('狼煙屋マッチングエラー:', error);
                 // エラーが発生してもデフォルトの狼煙屋を表示
-                showNoroshiya(null);
+                setTimeout(() => {
+                    showNoroshiya(null);
+                }, 2000);
             }
         }
         

@@ -576,9 +576,6 @@
             const stonesArea = document.getElementById('stonesArea');
             stonesArea.innerHTML = '';
             
-            // ランダムに10-15個の石を配置
-            const stoneCount = 10 + Math.floor(Math.random() * 6);
-            
             // デフォルトの石の種類（CSS図形用）
             const defaultStones = [
                 { color: '#4ECDC4', size: 'medium', shape: 'flat' },
@@ -591,23 +588,29 @@
                 { color: '#74B9FF', size: 'small', shape: 'round' }
             ];
             
-            // データベースから画像付きの石を1つ選択（ランダムに）
-            let selectedDbStone = null;
-            if (stoneTypes.length > 0 && stoneTypes.some(s => s.image_url)) {
-                const stonesWithImages = stoneTypes.filter(s => s.image_url);
-                selectedDbStone = stonesWithImages[Math.floor(Math.random() * stonesWithImages.length)];
-            }
+            // デバッグ: 石の数を確認
+            console.log('=== 石の配置開始 ===');
+            console.log('stoneTypes配列の長さ:', stoneTypes.length);
+            console.log('stoneTypes内容:', stoneTypes);
             
-            // 1つ目の石をデータベースの石にするかどうかを決める
-            const dbStonePosition = selectedDbStone ? Math.floor(Math.random() * stoneCount) : -1;
+            // データベースの石から表示する数を決定（最低でも75%は表示）
+            const minStonesToShow = Math.ceil(stoneTypes.length * 0.75);
+            const stonesToShow = minStonesToShow + Math.floor(Math.random() * (stoneTypes.length - minStonesToShow + 1));
+            console.log(`${stoneTypes.length}個中${stonesToShow}個の石を表示します`);
             
-            for (let i = 0; i < stoneCount; i++) {
-                if (i === dbStonePosition && selectedDbStone) {
-                    // データベースから画像付きの石を1つだけ配置
+            // ランダムに石を選択
+            const shuffledStones = [...stoneTypes].sort(() => Math.random() - 0.5);
+            const selectedStones = shuffledStones.slice(0, stonesToShow);
+            
+            // 選択された石を配置
+            selectedStones.forEach((dbStone, index) => {
+                console.log(`石${index + 1}を配置中:`, dbStone.name, dbStone.id);
+                if (dbStone.image_url) {
+                    // 画像付きの石
                     const stone = document.createElement('img');
                     stone.className = 'stone';
-                    stone.src = selectedDbStone.image_url;
-                    stone.alt = selectedDbStone.name || '石';
+                    stone.src = dbStone.image_url;
+                    stone.alt = dbStone.name || '石';
                     
                     // サイズ設定
                     const baseSize = Math.random() * 20 + 50; // 50-70pxのランダムサイズ
@@ -615,50 +618,83 @@
                     stone.style.height = baseSize + 'px';
                     stone.style.objectFit = 'contain';
                     
-                    // 位置設定
-                    stone.style.left = Math.random() * 85 + 5 + '%';
-                    stone.style.top = Math.random() * 70 + 15 + '%';
+                    // 位置設定（重ならないように分散）
+                    const gridX = index % 5;
+                    const gridY = Math.floor(index / 5);
+                    const baseLeft = gridX * 18 + 5;
+                    const baseTop = gridY * 25 + 15;
                     
-                    stone.dataset.stoneData = JSON.stringify(selectedDbStone);
+                    stone.style.left = (baseLeft + Math.random() * 10) + '%';
+                    stone.style.top = (baseTop + Math.random() * 15) + '%';
+                    
+                    stone.dataset.stoneData = JSON.stringify(dbStone);
                     stone.dataset.isSpecial = 'true';
                     stone.style.display = 'block';
                     
                     stonesArea.appendChild(stone);
                 } else {
-                    // CSS図形の石
-                    const stoneData = defaultStones[Math.floor(Math.random() * defaultStones.length)];
+                    // 画像がない場合はデフォルトの色で表示
                     const stone = document.createElement('div');
                     stone.className = 'stone';
                     
-                    // 石のスタイル設定
-                    const size = stoneData.size === 'large' ? 40 : stoneData.size === 'medium' ? 25 : 15;
+                    const size = 35; // データベースの石は中サイズ固定
                     stone.style.width = size + 'px';
                     stone.style.height = size * 0.8 + 'px';
-                    stone.style.backgroundColor = stoneData.color;
-                    stone.style.left = Math.random() * 90 + 5 + '%';
-                    stone.style.top = Math.random() * 80 + 10 + '%';
+                    stone.style.backgroundColor = dbStone.color || '#808080';
+                    stone.style.borderRadius = '40%';
+                    stone.style.border = '2px solid rgba(255,255,255,0.3)'; // データベースの石を区別
                     
-                    // 形状に応じたスタイル
-                    if (stoneData.shape === 'round') {
-                        stone.style.borderRadius = '50%';
-                    } else if (stoneData.shape === 'flat') {
-                        stone.style.borderRadius = '30%';
-                        stone.style.transform = 'scaleY(0.6)';
-                    } else if (stoneData.shape === 'sharp') {
-                        stone.style.clipPath = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
-                    } else if (stoneData.shape === 'square') {
-                        stone.style.borderRadius = '10%';
-                    } else if (stoneData.shape === 'rough') {
-                        stone.style.clipPath = 'polygon(20% 0%, 80% 10%, 100% 40%, 90% 90%, 40% 100%, 0% 80%, 10% 30%)';
-                    } else if (stoneData.shape === 'smooth') {
-                        stone.style.borderRadius = '40% 60% 70% 30% / 60% 40% 60% 40%';
-                    }
+                    // 位置設定（ランダム）
+                    stone.style.left = Math.random() * 85 + 5 + '%';
+                    stone.style.top = Math.random() * 70 + 15 + '%';
                     
-                    stone.dataset.stoneData = JSON.stringify(stoneData);
+                    stone.dataset.stoneData = JSON.stringify(dbStone);
+                    stone.dataset.isSpecial = 'true';
                     stone.style.display = 'block';
                     
                     stonesArea.appendChild(stone);
                 }
+            });
+            
+            console.log('=== データベースの石の配置完了 ===');
+            
+            // 追加でランダムに5-10個のCSS石を配置
+            const additionalStoneCount = 5 + Math.floor(Math.random() * 6);
+            
+            for (let i = 0; i < additionalStoneCount; i++) {
+                // CSS図形の石
+                const stoneData = defaultStones[Math.floor(Math.random() * defaultStones.length)];
+                const stone = document.createElement('div');
+                stone.className = 'stone';
+                
+                // 石のスタイル設定
+                const size = stoneData.size === 'large' ? 40 : stoneData.size === 'medium' ? 25 : 15;
+                stone.style.width = size + 'px';
+                stone.style.height = size * 0.8 + 'px';
+                stone.style.backgroundColor = stoneData.color;
+                stone.style.left = Math.random() * 90 + 5 + '%';
+                stone.style.top = Math.random() * 80 + 10 + '%';
+                
+                // 形状に応じたスタイル
+                if (stoneData.shape === 'round') {
+                    stone.style.borderRadius = '50%';
+                } else if (stoneData.shape === 'flat') {
+                    stone.style.borderRadius = '30%';
+                    stone.style.transform = 'scaleY(0.6)';
+                } else if (stoneData.shape === 'sharp') {
+                    stone.style.clipPath = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
+                } else if (stoneData.shape === 'square') {
+                    stone.style.borderRadius = '10%';
+                } else if (stoneData.shape === 'rough') {
+                    stone.style.clipPath = 'polygon(20% 0%, 80% 10%, 100% 40%, 90% 90%, 40% 100%, 0% 80%, 10% 30%)';
+                } else if (stoneData.shape === 'smooth') {
+                    stone.style.borderRadius = '40% 60% 70% 30% / 60% 40% 60% 40%';
+                }
+                
+                stone.dataset.stoneData = JSON.stringify(stoneData);
+                stone.style.display = 'block';
+                
+                stonesArea.appendChild(stone);
             }
         }
         

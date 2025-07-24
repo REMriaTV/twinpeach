@@ -468,6 +468,11 @@
             font-family: monospace; /* カタカナを強調 */
         }
         
+        .noroshiya-actions {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
         /* ローディング */
         .loading {
             position: fixed;
@@ -670,13 +675,15 @@
     <div class="noroshiya-entrance" id="noroshiyaEntrance">
         <div class="noroshiya-icon-large" id="noroshiyaIcon"></div>
         <div class="noroshiya-message" id="noroshiyaMessage"></div>
-        <button class="dialogue-button" onclick="completeEncounter()">
-            狼煙場へ進む
-        </button>
-        <div style="margin-top: 20px; text-align: center;">
-            <a href="about-noroshiya.html" style="color: #4ecdc4; text-decoration: none; font-size: 14px;">
-                狼煙屋とは？ →
-            </a>
+        <div class="noroshiya-actions" id="noroshiyaActions" style="opacity: 0; transition: opacity 1s ease;">
+            <button class="dialogue-button" onclick="completeEncounter()">
+                狼煙場へ進む
+            </button>
+            <div style="margin-top: 20px; text-align: center;">
+                <a href="about-noroshiya.html" style="color: #4ecdc4; text-decoration: none; font-size: 14px;">
+                    狼煙屋とは？ →
+                </a>
+            </div>
         </div>
     </div>
     
@@ -1233,6 +1240,12 @@
         function showNoroshiya(noroshiyaData) {
             const entrance = document.getElementById('noroshiyaEntrance');
             
+            // ボタンを最初は非表示にリセット
+            const actionsEl = document.getElementById('noroshiyaActions');
+            if (actionsEl) {
+                actionsEl.style.opacity = '0';
+            }
+            
             // サンプル：お調子者の狼煙屋
             // ゆらぎを表現するアニメーション（波紋のような円）
             const yuragiFx = `
@@ -1274,8 +1287,12 @@
             
             entrance.style.display = 'block';
             
-            // タイピングアニメーション
-            typeWriter(fullText, messageEl, 35); // 35ms間隔で表示
+            // タイピングアニメーション（終了後にボタンを表示）
+            typeWriter(fullText, messageEl, 35, function() {
+                // ボタンをフェードイン
+                const actionsEl = document.getElementById('noroshiyaActions');
+                actionsEl.style.opacity = '1';
+            });
         }
         
         // デフォルトの狼煙屋表示
@@ -1438,7 +1455,7 @@
         }
         
         // タイピングアニメーション関数
-        function typeWriter(text, element, speed = 50) {
+        function typeWriter(text, element, speed = 50, callback) {
             let index = 0;
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = text;
@@ -1464,6 +1481,11 @@
                     }
                     
                     setTimeout(type, speed);
+                } else {
+                    // タイピング終了時にコールバックを実行
+                    if (callback) {
+                        setTimeout(callback, 300); // 少し間を置いてから実行
+                    }
                 }
             }
             

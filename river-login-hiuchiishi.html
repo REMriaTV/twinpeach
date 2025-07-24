@@ -1051,18 +1051,26 @@
             
             // 石の説明と惹かれた理由を組み合わせる
             let fullDescription = '';
-            if (selectedStone.name) {
+            if (selectedStone && selectedStone.name) {
                 fullDescription = selectedStone.name + '。' + attraction;
             } else {
                 fullDescription = attraction;
             }
             
             // Supabaseから狼煙屋データを取得してマッチング
-            const matchedNoroshiya = await findBestMatchNoroshiya(fullDescription);
-            
-            setTimeout(() => {
-                showNoroshiya(matchedNoroshiya);
-            }, 2000);
+            try {
+                const matchedNoroshiya = await findBestMatchNoroshiya(fullDescription);
+                
+                setTimeout(() => {
+                    showNoroshiya(matchedNoroshiya);
+                }, 2000);
+            } catch (error) {
+                console.error('狼煙屋マッチングエラー:', error);
+                // エラーが発生してもデフォルトの狼煙屋を表示
+                setTimeout(() => {
+                    showNoroshiya(null);
+                }, 2000);
+            }
         }
         
         // 石を拾う（テキスト解析）

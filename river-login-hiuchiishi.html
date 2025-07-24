@@ -1044,7 +1044,7 @@
             closeStoneModal();
             
             // ダイアログボックスを更新
-            document.getElementById('dialogueText').innerHTML = 'あなたが拾ったのはどうやら火打石のようです...<br><br>狼煙屋を探しています...';
+            document.getElementById('dialogueText').innerHTML = '綺麗な筋の石<br>赤い艶の石<br>梅干しの石<br><br>あなたが拾ったのはどうやら火打石のようです...';
             document.getElementById('dialogueActions').innerHTML = '';
             
             // 石の説明と惹かれた理由を組み合わせる
@@ -1222,42 +1222,41 @@
         function showNoroshiya(noroshiyaData) {
             const entrance = document.getElementById('noroshiyaEntrance');
             
-            // 新しいデータ構造を使用する場合
-            if (noroshiyaData && noroshiyaData.color_name) {
-                // 色の丸を表示（色見本として）
-                const colorDot = `<span style="display: inline-block; width: 20px; height: 20px; background-color: ${noroshiyaData.color_code}; border-radius: 50%; margin-right: 10px;"></span>`;
-                
-                // セリフを取得
-                const greeting = noroshiyaData.dialogues?.hiuchiishi?.['初回出会い時'] || 'ヨロシク！';
-                const finalMessage = noroshiyaData.dialogues?.hiuchiishi?.['再会時'] || 'マタ会オウ！';
-                
-                // 狼煙屋の説明
-                const description = `${noroshiyaData.color_name}の狼煙屋`;
-                
-                document.getElementById('noroshiyaIcon').innerHTML = colorDot;
-                document.getElementById('noroshiyaMessage').innerHTML = 
-                    `「${greeting}」<br><br>` +
-                    `${description}が現れた！<br><br>` +
-                    `「${finalMessage}」`;
-                
-                // データを保存
-                localStorage.setItem('selectedNoroshiyaData', JSON.stringify(noroshiyaData));
-            } else if (noroshiyaData && noroshiyaData.type) {
-                // 古いデフォルトデータを使用
-                const type = noroshiyaData.type || 'pure';
-                const noroshiya = noroshiyaTypes[type];
-                
-                document.getElementById('noroshiyaIcon').textContent = noroshiya.icon;
-                document.getElementById('noroshiyaMessage').innerHTML = 
-                    `「${noroshiya.greeting}」<br><br>` +
-                    `${noroshiya.name}の狼煙屋が現れた！<br><br>` +
-                    `「${noroshiya.finalMessage}」`;
-                
-                selectedNoroshiya = type;
-            } else {
-                // フォールバック処理
-                defaultNoroshiyaDisplay();
-            }
+            // サンプル：お調子者の狼煙屋
+            // ゆらぎを表現するアニメーション（波紋のような円）
+            const yuragiFx = `
+                <div style="position: relative; width: 100px; height: 100px; margin: 0 auto;">
+                    <div style="position: absolute; width: 100%; height: 100%; border: 2px solid #8B7355; border-radius: 50%; opacity: 0.3; animation: ripple 3s ease-out infinite;"></div>
+                    <div style="position: absolute; width: 100%; height: 100%; border: 2px solid #8B7355; border-radius: 50%; opacity: 0.3; animation: ripple 3s ease-out infinite 1s;"></div>
+                    <div style="position: absolute; width: 100%; height: 100%; border: 2px solid #8B7355; border-radius: 50%; opacity: 0.3; animation: ripple 3s ease-out infinite 2s;"></div>
+                </div>
+                <style>
+                    @keyframes ripple {
+                        0% { transform: scale(0.5); opacity: 0.6; }
+                        100% { transform: scale(1.5); opacity: 0; }
+                    }
+                </style>
+            `;
+            
+            // お調子者の狼煙屋のセリフ
+            const greeting = `おぉ〜！！ナンダナンダ、キレイナ石ジャナイカ〜www<br>
+                            ワタシ、ソレ見テタヨ〜（笑）<br>
+                            イヤァ、マジデ イイ石 拾ッタネ！！`;
+            
+            const middleMessage = `アハハハ、火打石ダヨソレ〜！<br>
+                                ワカッテタ？ワカッテナカッタデショ〜？www<br>
+                                デモネ、ソレガイインダヨ〜`;
+            
+            const finalMessage = `ネェネェ、一緒ニ狼煙アゲナイ？<br>
+                               タノシイヨ〜、ゼッタイ楽シイヨ〜！<br>
+                               （実ハ、チョット寂シカッタンダ...）`;
+            
+            document.getElementById('noroshiyaIcon').innerHTML = yuragiFx;
+            document.getElementById('noroshiyaMessage').innerHTML = 
+                `「${greeting}」<br><br>` +
+                `茶枯色（ちゃがれいろ）の狼煙屋が現れた！<br><br>` +
+                `「${middleMessage}」<br><br>` +
+                `「${finalMessage}」`;
             
             entrance.style.display = 'block';
         }

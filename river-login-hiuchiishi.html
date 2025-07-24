@@ -231,6 +231,104 @@
             transform: translateY(-5px) scale(1.1);
         }
         
+        /* 石の拡大表示モーダル */
+        .stone-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+        
+        .stone-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            animation: modalFadeIn 0.3s ease;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .stone-preview {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .stone-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .stone-preview .stone-shape {
+            width: 150px;
+            height: 150px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .modal-button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-button.primary {
+            background: #4ecdc4;
+            color: white;
+        }
+        
+        .modal-button.primary:hover {
+            background: #45b7b8;
+        }
+        
+        .modal-button.secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .modal-button.secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .attraction-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            margin: 15px 0;
+            transition: border-color 0.3s;
+        }
+        
+        .attraction-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+        
         /* メインコンテンツ */
         .main-content {
             position: relative;
@@ -399,6 +497,137 @@
         .hidden {
             display: none;
         }
+        
+        /* 石のモーダル */
+        .stone-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .stone-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: center;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .stone-preview {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .modal-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-button.primary {
+            background: #4ecdc4;
+            color: white;
+        }
+        
+        .modal-button.primary:hover {
+            background: #45b7b8;
+            transform: scale(1.05);
+        }
+        
+        .modal-button.secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .modal-button.secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .attraction-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        
+        .attraction-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+        
+        #modalMessage {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        #attractionSection p {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        /* スマホ対応 */
+        @media (max-width: 768px) {
+            .stone-modal-content {
+                padding: 20px;
+                width: 95%;
+            }
+            
+            .stone-preview {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
+            
+            .modal-button {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -426,10 +655,9 @@
         <div class="main-content">
             <div class="dialogue-box" id="dialogueBox">
                 <div class="dialogue-text" id="dialogueText">
-                    河原に綺麗な色の石が落ちている...<br>
-                    石を拾いますか？
+                    河原にいろんな石が落ちている...
                 </div>
-                <div id="dialogueActions">
+                <div id="dialogueActions" style="display: none;">
                     <button class="dialogue-button" onclick="startStonePicking()">はい</button>
                 </div>
             </div>
@@ -450,6 +678,28 @@
         </div>
     </div>
     
+    <!-- 石の拡大表示モーダル -->
+    <div class="stone-modal" id="stoneModal">
+        <div class="stone-modal-content">
+            <div class="stone-preview" id="stonePreview"></div>
+            <div id="modalMessage">この石を拾いますか？</div>
+            <div id="modalContent">
+                <div class="modal-buttons" id="pickButtons">
+                    <button class="modal-button primary" onclick="pickThisStone()">拾う</button>
+                    <button class="modal-button secondary" onclick="closeStoneModal()">別の石を見る</button>
+                </div>
+                <div id="attractionSection" style="display: none;">
+                    <p>この石のどこに惹かれた？</p>
+                    <input type="text" class="attraction-input" id="attractionInput" 
+                           placeholder="例：夕焼けみたいな色、まん丸、つるつるした感じ...">
+                    <div class="modal-buttons">
+                        <button class="modal-button primary" onclick="confirmPick()">決定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // Supabase設定
@@ -464,6 +714,7 @@
         let weatherData = {};
         let currentStage = 'initial';
         let selectedStone = null;
+        let selectedStoneElement = null; // 選択された石の要素
         let noroshiyaCharacters = []; // Supabaseから読み込んだ狼煙屋データ
         
         // 狼煙屋のキャラクターデータ
@@ -630,6 +881,8 @@
                     stone.dataset.stoneData = JSON.stringify(dbStone);
                     stone.dataset.isSpecial = 'true';
                     stone.style.display = 'block';
+                    stone.style.cursor = 'pointer';
+                    stone.onclick = function() { showStoneModal(dbStone); };
                     
                     stonesArea.appendChild(stone);
                 } else {
@@ -651,6 +904,8 @@
                     stone.dataset.stoneData = JSON.stringify(dbStone);
                     stone.dataset.isSpecial = 'true';
                     stone.style.display = 'block';
+                    stone.style.cursor = 'pointer';
+                    stone.onclick = function() { showStoneModal(dbStone); };
                     
                     stonesArea.appendChild(stone);
                 }
@@ -693,36 +948,119 @@
                 
                 stone.dataset.stoneData = JSON.stringify(stoneData);
                 stone.style.display = 'block';
+                stone.style.cursor = 'pointer';
+                stone.onclick = function() { showStoneModal(stoneData); };
                 
                 stonesArea.appendChild(stone);
             }
         }
         
-        // 石拾いを開始
-        function startStonePicking() {
-            currentStage = 'pickStone';
-            document.getElementById('dialogueText').innerHTML = 'どの石を拾いますか？<br><br>石の特徴を教えてください：';
+        // 石のモーダルを表示
+        function showStoneModal(stoneData) {
+            const modal = document.getElementById('stoneModal');
+            const preview = document.getElementById('stonePreview');
             
-            const textarea = document.createElement('textarea');
-            textarea.className = 'stone-description';
-            textarea.placeholder = '例：赤くて平たい石、黒くてゴツゴツした大きな石、白くて丸い小さな石...';
+            // 選択された石のデータを保存
+            selectedStone = stoneData;
             
-            const button = document.createElement('button');
-            button.className = 'dialogue-button';
-            button.textContent = '石を拾う';
-            button.onclick = pickStone;
+            // プレビューエリアに石を表示
+            preview.innerHTML = '';
             
-            const actions = document.getElementById('dialogueActions');
-            actions.innerHTML = '';
-            actions.appendChild(textarea);
-            actions.appendChild(button);
+            if (stoneData.image_url) {
+                // 画像がある場合
+                const img = document.createElement('img');
+                img.src = stoneData.image_url;
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '100%';
+                img.style.objectFit = 'contain';
+                preview.appendChild(img);
+            } else {
+                // CSS図形の場合
+                const stoneDiv = document.createElement('div');
+                stoneDiv.style.width = '100px';
+                stoneDiv.style.height = '80px';
+                stoneDiv.style.backgroundColor = stoneData.color || '#808080';
+                stoneDiv.style.margin = '0 auto';
+                
+                // 形状を再現
+                if (stoneData.shape === 'round') {
+                    stoneDiv.style.borderRadius = '50%';
+                } else if (stoneData.shape === 'flat') {
+                    stoneDiv.style.borderRadius = '30%';
+                    stoneDiv.style.transform = 'scaleY(0.6)';
+                } else if (stoneData.shape === 'sharp') {
+                    stoneDiv.style.clipPath = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
+                } else if (stoneData.shape === 'square') {
+                    stoneDiv.style.borderRadius = '10%';
+                } else if (stoneData.shape === 'rough') {
+                    stoneDiv.style.clipPath = 'polygon(20% 0%, 80% 10%, 100% 40%, 90% 90%, 40% 100%, 0% 80%, 10% 30%)';
+                } else if (stoneData.shape === 'smooth') {
+                    stoneDiv.style.borderRadius = '40% 60% 70% 30% / 60% 40% 60% 40%';
+                } else {
+                    stoneDiv.style.borderRadius = '40%';
+                }
+                
+                // データベースの石の場合は白い縁を追加
+                if (stoneData.dbData || stoneData.id) {
+                    stoneDiv.style.border = '3px solid rgba(255,255,255,0.5)';
+                }
+                
+                preview.appendChild(stoneDiv);
+            }
             
-            // 石を表示
-            document.querySelectorAll('.stone').forEach((stone, index) => {
-                setTimeout(() => {
-                    stone.style.display = 'block';
-                }, index * 100);
-            });
+            // モーダルを表示
+            modal.style.display = 'flex';
+            
+            // 初期状態に戻す
+            document.getElementById('pickButtons').style.display = 'block';
+            document.getElementById('attractionSection').style.display = 'none';
+            document.getElementById('modalMessage').textContent = 'この石を拾いますか？';
+            document.getElementById('attractionInput').value = '';
+        }
+        
+        // モーダルを閉じる
+        function closeStoneModal() {
+            document.getElementById('stoneModal').style.display = 'none';
+            selectedStone = null;
+        }
+        
+        // 石を拾うことを決定
+        function pickThisStone() {
+            document.getElementById('pickButtons').style.display = 'none';
+            document.getElementById('attractionSection').style.display = 'block';
+            document.getElementById('modalMessage').textContent = '';
+        }
+        
+        // 最終確認して石を拾う
+        async function confirmPick() {
+            const attraction = document.getElementById('attractionInput').value.trim();
+            
+            if (!attraction) {
+                alert('どこに惹かれたか教えてください');
+                return;
+            }
+            
+            // モーダルを閉じる
+            closeStoneModal();
+            
+            // ダイアログボックスを更新
+            document.getElementById('dialogueText').innerHTML = 'あなたが拾ったのはどうやら火打石のようです...<br><br>狼煙屋を探しています...';
+            document.getElementById('dialogueActions').innerHTML = '';
+            
+            // 石の説明と惹かれた理由を組み合わせる
+            let fullDescription = '';
+            if (selectedStone.name) {
+                fullDescription = selectedStone.name + '。' + attraction;
+            } else {
+                fullDescription = attraction;
+            }
+            
+            // Supabaseから狼煙屋データを取得してマッチング
+            const matchedNoroshiya = await findBestMatchNoroshiya(fullDescription);
+            
+            setTimeout(() => {
+                showNoroshiya(matchedNoroshiya);
+            }, 2000);
         }
         
         // 石を拾う（テキスト解析）
@@ -1091,6 +1429,15 @@
             getWeatherData();
             adjustTimeBasedDisplay();
             generateStones();
+            
+            // 石を自動的に表示（クリックできる状態にする）
+            setTimeout(() => {
+                document.querySelectorAll('.stone').forEach((stone, index) => {
+                    setTimeout(() => {
+                        stone.style.display = 'block';
+                    }, index * 50);
+                });
+            }, 500);
         });
     </script>
 </body>

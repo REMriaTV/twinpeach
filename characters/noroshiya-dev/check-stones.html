@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>石データ確認</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>データベース内の石一覧</h1>
+    <div id="results">読み込み中...</div>
+    
+    <script>
+        const SUPABASE_URL = 'https://roaucowddadmvxgzrvnu.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvYXVjb3dkZGFkbXZ4Z3pydm51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNDQxMDMsImV4cCI6MjA2NzgyMDEwM30.Tqs__X1JOfPiKsb5llj93jVLnyszF_ZrZjfp_UaIiNw';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        async function checkStones() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('stones')
+                    .select('*')
+                    .eq('is_hiuchiishi', true);
+                
+                if (error) throw error;
+                
+                let html = '<h2>火打石として使える石:</h2><ul>';
+                
+                if (data && data.length > 0) {
+                    data.forEach((stone, index) => {
+                        html += `<li>
+                            <strong>${index + 1}. ${stone.name}</strong> (ID: ${stone.id})<br>
+                            主な色: ${stone.colors?.primary || 'なし'}<br>
+                            画像: ${stone.image_url ? '<img src="' + stone.image_url + '" width="50">' : 'なし'}<br>
+                            <hr>
+                        </li>`;
+                    });
+                } else {
+                    html += '<li>データがありません</li>';
+                }
+                
+                html += '</ul>';
+                
+                // 全ての石も表示
+                const { data: allStones, error: allError } = await supabase
+                    .from('stones')
+                    .select('*');
+                
+                if (!allError && allStones) {
+                    html += '<h2>全ての石:</h2><ul>';
+                    allStones.forEach((stone, index) => {
+                        html += `<li>
+                            <strong>${index + 1}. ${stone.name}</strong> (ID: ${stone.id})<br>
+                            火打石: ${stone.is_hiuchiishi ? 'はい' : 'いいえ'}<br>
+                        </li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: red;">エラー: ${error.message}</p>`;
+            }
+        }
+        
+        checkStones();
+    </script>
+</body>
+</html>

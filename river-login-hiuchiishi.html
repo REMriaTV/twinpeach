@@ -1259,13 +1259,22 @@
                                （実ハ、チョット寂シカッタンダ...）`;
             
             document.getElementById('noroshiyaIcon').innerHTML = yuragiFx;
-            document.getElementById('noroshiyaMessage').innerHTML = 
+            
+            // タイピングアニメーション用のテキスト
+            const fullText = 
                 `「${greeting}」<br><br>` +
                 `茶枯色（ちゃがれいろ）の狼煙屋が現れた！<br><br>` +
                 `「${middleMessage}」<br><br>` +
                 `「${finalMessage}」`;
             
+            // メッセージエリアをクリア
+            const messageEl = document.getElementById('noroshiyaMessage');
+            messageEl.innerHTML = '';
+            
             entrance.style.display = 'block';
+            
+            // タイピングアニメーション
+            typeWriter(fullText, messageEl, 50); // 50ms間隔で1文字ずつ表示
         }
         
         // デフォルトの狼煙屋表示
@@ -1425,6 +1434,39 @@
             if (now.getHours() >= 18 || now.getHours() < 6) {
                 document.body.style.filter = 'brightness(0.7)';
             }
+        }
+        
+        // タイピングアニメーション関数
+        function typeWriter(text, element, speed = 50) {
+            let index = 0;
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = text;
+            const textContent = tempDiv.innerHTML; // HTMLタグを保持
+            
+            function type() {
+                if (index < textContent.length) {
+                    // <br>タグを検出して一度に挿入
+                    if (textContent.substring(index, index + 4) === '<br>') {
+                        element.innerHTML += '<br>';
+                        index += 4;
+                    } else if (textContent[index] === '<') {
+                        // その他のHTMLタグをスキップ
+                        const tagEnd = textContent.indexOf('>', index);
+                        if (tagEnd !== -1) {
+                            element.innerHTML += textContent.substring(index, tagEnd + 1);
+                            index = tagEnd + 1;
+                        }
+                    } else {
+                        // 通常の文字
+                        element.innerHTML += textContent[index];
+                        index++;
+                    }
+                    
+                    setTimeout(type, speed);
+                }
+            }
+            
+            type();
         }
         
         // 初期化

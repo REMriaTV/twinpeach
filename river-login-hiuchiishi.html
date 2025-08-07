@@ -1048,12 +1048,15 @@
                 // 石の名前
                 document.getElementById('stoneProfileName').textContent = selectedStone.name || '名前のない石';
                 
+                // dbDataから詳細情報を取得
+                const dbData = selectedStone.dbData || selectedStone;
+                
                 // 特別な特徴
-                const features = selectedStone.special_features || '特になし';
+                const features = dbData.special_features || '特になし';
                 document.getElementById('stoneProfileFeatures').innerHTML = '<strong>特別な特徴：</strong>' + features;
                 
                 // 見つかる場所
-                const locations = selectedStone.found_locations || 'どこにでもある';
+                const locations = dbData.found_locations || 'どこにでもある';
                 document.getElementById('stoneProfileLocations').innerHTML = '<strong>見つかる場所：</strong>' + locations;
             }
         }
@@ -1075,8 +1078,9 @@
                 if (selectedStone.colors) {
                     fullDescription += '、' + (selectedStone.colors.primary || '');
                 }
-                if (selectedStone.special_features) {
-                    fullDescription += '、' + selectedStone.special_features;
+                const dbData = selectedStone.dbData || selectedStone;
+                if (dbData.special_features) {
+                    fullDescription += '、' + dbData.special_features;
                 }
             }
             

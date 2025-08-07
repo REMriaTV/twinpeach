@@ -691,11 +691,11 @@
     <div class="stone-modal" id="stoneModal">
         <div class="stone-modal-content">
             <div class="stone-preview" id="stonePreview"></div>
-            <div id="modalMessage">この石を拾いますか？</div>
+            <div id="modalMessage">この石が気になりますか？</div>
             <div id="modalContent">
                 <div class="modal-buttons" id="pickButtons">
                     <button class="modal-button primary" onclick="pickThisStone()">はい</button>
-                    <button class="modal-button secondary" onclick="closeStoneModal()">やめる</button>
+                    <button class="modal-button secondary" onclick="closeStoneModal()">いいえ</button>
                 </div>
                 <div id="stoneProfileSection" style="display: none;">
                     <div style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 10px; text-align: left;">
@@ -1028,7 +1028,7 @@
             // 初期状態に戻す
             document.getElementById('pickButtons').style.display = 'block';
             document.getElementById('stoneProfileSection').style.display = 'none';
-            document.getElementById('modalMessage').textContent = 'この石を拾いますか？';
+            document.getElementById('modalMessage').textContent = 'この石が気になりますか？';
         }
         
         // モーダルを閉じる

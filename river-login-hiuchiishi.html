@@ -697,12 +697,17 @@
                     <button class="modal-button primary" onclick="pickThisStone()">はい</button>
                     <button class="modal-button secondary" onclick="closeStoneModal()">やめる</button>
                 </div>
-                <div id="attractionSection" style="display: none;">
-                    <p>この石のどこに惹かれた？</p>
-                    <input type="text" class="attraction-input" id="attractionInput" 
-                           placeholder="例：夕焼けみたいな色、まん丸、つるつるした感じ...">
+                <div id="stoneProfileSection" style="display: none;">
+                    <div style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 10px; text-align: left;">
+                        <h3 style="margin: 0 0 15px 0; font-size: 1.2em; color: #333; text-align: center;" id="stoneProfileName">石の名前</h3>
+                        <div style="font-size: 0.95em; line-height: 1.6; color: #666;">
+                            <p style="margin: 10px 0;" id="stoneProfileFeatures"><strong>特別な特徴：</strong></p>
+                            <p style="margin: 10px 0;" id="stoneProfileLocations"><strong>見つかる場所：</strong></p>
+                        </div>
+                    </div>
                     <div class="modal-buttons">
-                        <button class="modal-button primary" onclick="confirmPick()">決定</button>
+                        <button class="modal-button primary" onclick="confirmPick()">この石を拾う</button>
+                        <button class="modal-button secondary" onclick="closeStoneModal()">やめる</button>
                     </div>
                 </div>
             </div>
@@ -1022,9 +1027,8 @@
             
             // 初期状態に戻す
             document.getElementById('pickButtons').style.display = 'block';
-            document.getElementById('attractionSection').style.display = 'none';
+            document.getElementById('stoneProfileSection').style.display = 'none';
             document.getElementById('modalMessage').textContent = 'この石を拾いますか？';
-            document.getElementById('attractionInput').value = '';
         }
         
         // モーダルを閉じる
@@ -1036,19 +1040,26 @@
         // 石を拾うことを決定
         function pickThisStone() {
             document.getElementById('pickButtons').style.display = 'none';
-            document.getElementById('attractionSection').style.display = 'block';
+            document.getElementById('stoneProfileSection').style.display = 'block';
             document.getElementById('modalMessage').textContent = '';
+            
+            // 石のプロフィールを表示
+            if (selectedStone) {
+                // 石の名前
+                document.getElementById('stoneProfileName').textContent = selectedStone.name || '名前のない石';
+                
+                // 特別な特徴
+                const features = selectedStone.special_features || '特になし';
+                document.getElementById('stoneProfileFeatures').innerHTML = '<strong>特別な特徴：</strong>' + features;
+                
+                // 見つかる場所
+                const locations = selectedStone.found_locations || 'どこにでもある';
+                document.getElementById('stoneProfileLocations').innerHTML = '<strong>見つかる場所：</strong>' + locations;
+            }
         }
         
         // 最終確認して石を拾う
         async function confirmPick() {
-            const attraction = document.getElementById('attractionInput').value.trim();
-            
-            if (!attraction) {
-                alert('どこに惹かれたか教えてください');
-                return;
-            }
-            
             // モーダルを閉じる
             closeStoneModal();
             
@@ -1056,12 +1067,17 @@
             document.getElementById('dialogueText').innerHTML = 'あなたが拾ったのはどうやら火打石のようです...';
             document.getElementById('dialogueActions').innerHTML = '';
             
-            // 石の説明と惹かれた理由を組み合わせる
+            // 石の情報を使ってマッチング
             let fullDescription = '';
-            if (selectedStone && selectedStone.name) {
-                fullDescription = selectedStone.name + '。' + attraction;
-            } else {
-                fullDescription = attraction;
+            if (selectedStone) {
+                // 石の名前、色、特徴を組み合わせる
+                fullDescription = selectedStone.name || '';
+                if (selectedStone.colors) {
+                    fullDescription += '、' + (selectedStone.colors.primary || '');
+                }
+                if (selectedStone.special_features) {
+                    fullDescription += '、' + selectedStone.special_features;
+                }
             }
             
             // Supabaseから狼煙屋データを取得してマッチング

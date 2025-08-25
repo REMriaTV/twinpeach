@@ -468,9 +468,17 @@ function selectStone(id) {
     document.getElementById('stone-texture').value = stone.texture || 'ツルツル';
     document.getElementById('stone-transparency').value = stone.transparency || '不透明';
     document.getElementById('stone-features').value = stone.special_features || '';
-    document.getElementById('stone-locations').value = stone.found_locations || '';
-    document.getElementById('stone-rarity').value = stone.rarity || 'common';
-    document.getElementById('stone-ng-keywords').value = (stone.ng_keywords || []).join(', ');
+    
+    // 位置情報フィールドの復元
+    document.getElementById('stone-location-name').value = stone.location_name || '';
+    document.getElementById('stone-prefecture').value = stone.prefecture || '';
+    document.getElementById('stone-city').value = stone.city || '';
+    document.getElementById('stone-location-tag').value = stone.location_tag || '';
+    document.getElementById('stone-location-detail').value = stone.location_detail || '';
+    document.getElementById('stone-location-notes').value = stone.location_notes || '';
+    document.getElementById('stone-address').value = stone.address || stone.map_url || '';
+    document.getElementById('stone-lat').value = stone.lat || '';
+    document.getElementById('stone-lng').value = stone.lng || '';
     
     // 画像プレビューを更新
     const previewEl = document.getElementById('stone-image-preview');
@@ -498,11 +506,19 @@ function addNewStone() {
         texture: 'ツルツル',
         transparency: '不透明',
         special_features: '',
-        found_locations: '',
-        rarity: 'common',
         is_hiuchiishi: true,
-        ng_keywords: [],
-        image_url: null
+        image_url: null,
+        // 位置情報フィールド
+        location_name: '',
+        prefecture: '',
+        city: '',
+        location_tag: '',
+        location_detail: '',
+        location_notes: '',
+        address: '',
+        map_url: '',
+        lat: null,
+        lng: null
     };
     
     // 画像プレビューをクリア
@@ -720,11 +736,19 @@ async function saveStoneWithImage() {
         texture: document.getElementById('stone-texture').value,
         transparency: document.getElementById('stone-transparency').value,
         special_features: document.getElementById('stone-features').value,
-        found_locations: document.getElementById('stone-locations').value,
-        rarity: document.getElementById('stone-rarity').value,
         is_hiuchiishi: document.getElementById('stone-hiuchiishi').value === 'true',
-        ng_keywords: document.getElementById('stone-ng-keywords').value.split(',').map(s => s.trim()).filter(s => s),
-        image_url: currentStoneImage // 画像データを追加
+        image_url: currentStoneImage, // 画像データを追加
+        // 位置情報フィールド
+        location_name: document.getElementById('stone-location-name').value || null,
+        prefecture: document.getElementById('stone-prefecture').value || null,
+        city: document.getElementById('stone-city').value || null,
+        location_tag: document.getElementById('stone-location-tag').value || null,
+        location_detail: document.getElementById('stone-location-detail').value || null,
+        location_notes: document.getElementById('stone-location-notes').value || null,
+        address: document.getElementById('stone-address').value || null,
+        map_url: document.getElementById('stone-address').value || null, // addressと同じ値を使用
+        lat: document.getElementById('stone-lat').value ? parseFloat(document.getElementById('stone-lat').value) : null,
+        lng: document.getElementById('stone-lng').value ? parseFloat(document.getElementById('stone-lng').value) : null
     };
     
     try {

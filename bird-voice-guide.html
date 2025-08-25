@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鳥の声図鑑 - Twin Peach</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "游ゴシック", "YuGothic", "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "メイリオ", sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* フィルター */
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .filter-section h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        /* 鳥カードグリッド */
+        .birds-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .bird-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .bird-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .bird-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 3rem;
+        }
+        
+        .bird-info {
+            padding: 1.5rem;
+        }
+        
+        .bird-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: #333;
+        }
+        
+        .bird-scientific {
+            font-size: 0.9rem;
+            color: #888;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+        
+        .bird-call-text {
+            background: #f8f9fa;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #667eea;
+        }
+        
+        .voice-player {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem;
+            background: #f0f4f8;
+            border-radius: 8px;
+        }
+        
+        .play-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        
+        .play-btn:hover {
+            background: #5a67d8;
+        }
+        
+        .play-btn.playing {
+            background: #e53e3e;
+        }
+        
+        .voice-info {
+            flex: 1;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        /* 詳細モーダル */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 2rem auto;
+            max-width: 800px;
+            border-radius: 12px;
+            overflow: hidden;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        .detail-section {
+            margin-bottom: 2rem;
+        }
+        
+        .detail-section h3 {
+            color: #667eea;
+            margin-bottom: 0.8rem;
+        }
+        
+        .voice-recordings {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .recording-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        /* 読み込み中 */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+        
+        /* 検索結果なし */
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+        
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .birds-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🦅 鳥の声図鑑</h1>
+        <p>Twin Peach - 鳥たちの鳴き声を聴いてみよう</p>
+    </div>
+    
+    <div class="container">
+        <!-- フィルター -->
+        <div class="filter-section">
+            <h2>鳥を絞り込む</h2>
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterBirds('all')">すべて</button>
+                <button class="filter-btn" onclick="filterBirds('common')">よく見かける</button>
+                <button class="filter-btn" onclick="filterBirds('uncommon')">たまに見かける</button>
+                <button class="filter-btn" onclick="filterBirds('rare')">めずらしい</button>
+            </div>
+        </div>
+        
+        <!-- 鳥カードグリッド -->
+        <div id="birds-grid" class="birds-grid">
+            <div class="loading">読み込み中...</div>
+        </div>
+    </div>
+    
+    <!-- 詳細モーダル -->
+    <div id="bird-modal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+                <h2 id="modal-bird-name"></h2>
+                <p id="modal-bird-scientific"></p>
+            </div>
+            <div class="modal-body">
+                <div class="detail-section">
+                    <h3>鳴き声</h3>
+                    <div id="modal-call-text" class="bird-call-text"></div>
+                    <div id="modal-recordings" class="voice-recordings"></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>特徴</h3>
+                    <p id="modal-characteristics"></p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>生息地</h3>
+                    <p id="modal-habitat"></p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>行動</h3>
+                    <p id="modal-behavior"></p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>シンボル・意味</h3>
+                    <p id="modal-symbolism"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Supabase設定
+        const SUPABASE_URL = 'https://roaucowddadmvxgzrvnu.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvYXVjb3dkZGFkbXZ4Z3pydm51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNDQxMDMsImV4cCI6MjA2NzgyMDEwM30.Tqs__X1JOfPiKsb5llj93jVLnyszF_ZrZjfp_UaIiNw';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let allBirds = [];
+        let currentFilter = 'all';
+        let currentAudio = null;
+        let currentPlayBtn = null;
+        
+        // 初期化
+        async function init() {
+            await loadBirds();
+            displayBirds();
+        }
+        
+        // 鳥データ読み込み
+        async function loadBirds() {
+            try {
+                const { data, error } = await supabase
+                    .from('birds')
+                    .select('*')
+                    .order('name', { ascending: true });
+                
+                if (error) throw error;
+                
+                allBirds = data || [];
+                
+                // デモ用の音声データを追加（実際の実装では音声URLを使用）
+                allBirds = allBirds.map(bird => ({
+                    ...bird,
+                    recordings: generateDemoRecordings(bird)
+                }));
+                
+            } catch (error) {
+                console.error('Error loading birds:', error);
+                document.getElementById('birds-grid').innerHTML = 
+                    '<div class="no-results">データの読み込みに失敗しました</div>';
+            }
+        }
+        
+        // デモ用録音データ生成
+        function generateDemoRecordings(bird) {
+            // 実際の実装では、Supabase Storageや外部URLから音声を取得
+            return [
+                {
+                    id: 1,
+                    description: '朝の鳴き声',
+                    duration: '0:12',
+                    url: null // 実際の音声URL
+                },
+                {
+                    id: 2,
+                    description: '警戒時の鳴き声',
+                    duration: '0:08',
+                    url: null
+                }
+            ];
+        }
+        
+        // 鳥表示
+        function displayBirds() {
+            const grid = document.getElementById('birds-grid');
+            const filteredBirds = currentFilter === 'all' 
+                ? allBirds 
+                : allBirds.filter(bird => bird.rarity === currentFilter);
+            
+            if (filteredBirds.length === 0) {
+                grid.innerHTML = '<div class="no-results">該当する鳥が見つかりません</div>';
+                return;
+            }
+            
+            grid.innerHTML = filteredBirds.map(bird => `
+                <div class="bird-card" onclick="showBirdDetail('${bird.id}')">
+                    <div class="bird-image">🐦</div>
+                    <div class="bird-info">
+                        <div class="bird-name">${bird.name}</div>
+                        <div class="bird-scientific">${bird.scientific_name || ''}</div>
+                        <div class="bird-call-text">${bird.call_description || '...'}</div>
+                        <div class="voice-player">
+                            <button class="play-btn" onclick="playBirdSound(event, '${bird.id}')">
+                                <span>▶</span>
+                            </button>
+                            <div class="voice-info">
+                                ${bird.recordings ? bird.recordings.length + '種類の鳴き声' : '録音準備中'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // フィルター
+        function filterBirds(filter) {
+            currentFilter = filter;
+            
+            // ボタンのアクティブ状態を更新
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', 
+                    (filter === 'all' && btn.textContent === 'すべて') ||
+                    (filter === 'common' && btn.textContent === 'よく見かける') ||
+                    (filter === 'uncommon' && btn.textContent === 'たまに見かける') ||
+                    (filter === 'rare' && btn.textContent === 'めずらしい')
+                );
+            });
+            
+            displayBirds();
+        }
+        
+        // 鳥の詳細表示
+        function showBirdDetail(birdId) {
+            const bird = allBirds.find(b => b.id === birdId);
+            if (!bird) return;
+            
+            document.getElementById('modal-bird-name').textContent = bird.name;
+            document.getElementById('modal-bird-scientific').textContent = bird.scientific_name || '';
+            document.getElementById('modal-call-text').textContent = bird.call_description || '...';
+            document.getElementById('modal-characteristics').textContent = bird.characteristics || '情報なし';
+            document.getElementById('modal-habitat').textContent = bird.habitat || '情報なし';
+            document.getElementById('modal-behavior').textContent = bird.behavior || '情報なし';
+            document.getElementById('modal-symbolism').textContent = bird.symbolism || '情報なし';
+            
+            // 録音リスト
+            const recordingsHtml = bird.recordings && bird.recordings.length > 0
+                ? bird.recordings.map(rec => `
+                    <div class="recording-item">
+                        <button class="play-btn" onclick="playRecording(event, '${rec.url}')">
+                            <span>▶</span>
+                        </button>
+                        <div style="flex: 1;">
+                            <div>${rec.description}</div>
+                            <div style="font-size: 0.8rem; color: #999;">${rec.duration}</div>
+                        </div>
+                    </div>
+                `).join('')
+                : '<p style="text-align: center; color: #999;">録音準備中...</p>';
+            
+            document.getElementById('modal-recordings').innerHTML = recordingsHtml;
+            document.getElementById('bird-modal').style.display = 'block';
+        }
+        
+        // モーダルを閉じる
+        function closeModal(event) {
+            if (!event || event.target.id === 'bird-modal') {
+                document.getElementById('bird-modal').style.display = 'none';
+                stopCurrentAudio();
+            }
+        }
+        
+        // 音声再生（カード）
+        function playBirdSound(event, birdId) {
+            event.stopPropagation();
+            const bird = allBirds.find(b => b.id === birdId);
+            if (!bird || !bird.recordings || bird.recordings.length === 0) return;
+            
+            playAudio(event.currentTarget, bird.recordings[0].url);
+        }
+        
+        // 音声再生（録音）
+        function playRecording(event, url) {
+            event.stopPropagation();
+            playAudio(event.currentTarget, url);
+        }
+        
+        // 音声再生制御
+        function playAudio(button, url) {
+            // 現在の音声を停止
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            // ボタンの状態をリセット
+            if (currentPlayBtn) {
+                currentPlayBtn.classList.remove('playing');
+                currentPlayBtn.innerHTML = '<span>▶</span>';
+            }
+            
+            // 同じボタンをクリックした場合は停止のみ
+            if (currentPlayBtn === button) {
+                currentPlayBtn = null;
+                return;
+            }
+            
+            // 新しい音声を再生
+            if (url) {
+                currentAudio = new Audio(url);
+                currentPlayBtn = button;
+                button.classList.add('playing');
+                button.innerHTML = '<span>■</span>';
+                
+                currentAudio.play();
+                
+                currentAudio.onended = () => {
+                    button.classList.remove('playing');
+                    button.innerHTML = '<span>▶</span>';
+                    currentPlayBtn = null;
+                    currentAudio = null;
+                };
+            } else {
+                // デモ：音声URLがない場合の仮実装
+                button.classList.add('playing');
+                button.innerHTML = '<span>■</span>';
+                currentPlayBtn = button;
+                
+                setTimeout(() => {
+                    button.classList.remove('playing');
+                    button.innerHTML = '<span>▶</span>';
+                    currentPlayBtn = null;
+                }, 2000);
+            }
+        }
+        
+        // 現在の音声を停止
+        function stopCurrentAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            if (currentPlayBtn) {
+                currentPlayBtn.classList.remove('playing');
+                currentPlayBtn.innerHTML = '<span>▶</span>';
+                currentPlayBtn = null;
+            }
+        }
+        
+        // 初期化実行
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

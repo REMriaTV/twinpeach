@@ -1,152 +1,184 @@
-// モード管理
-let currentMapMode = localStorage.getItem('stoneMapMode') || 'blur';
-let modeUnlockExpiry = localStorage.getItem('modeUnlockExpiry');
+// Supabase設定
+const SUPABASE_URL = 'https://roaucowddadmvxgzrvnu.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvYXVjb3dkZGFkbXZ4Z3pydm51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNDQxMDMsImV4cCI6MjA2NzgyMDEwM30.Tqs__X1JOfPiKsb5llj93jVLnyszF_ZrZjfp_UaIiNw';
 
-// パスワード
-const UNLOCK_PASSWORD = 'mokumoku';
+// Supabaseクライアント初期化
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// GeoJSONデータ格納用
+// マップ関連の変数
+let map;
+let markersLayer;
+let geoJsonLayer;
 let japanGeoJSON = null;
 
-// Supabaseから石データを取得
-async function fetchStonesFromSupabase() {
-    try {
-        // Supabaseクライアントの確認
-        if (!window.supabase) {
-            console.error('Supabase client not initialized');
-            return [];
-        }
+// モード管理
+let currentMapMode = 'blur'; // 'blur' または 'clear'
+const UNLOCK_PASSWORD = 'mokumoku';
 
-        const { data, error } = await window.supabase
-            .from('stones')
-            .select('*')
-            .not('lat', 'is', null)
-            .not('lng', 'is', null)
-            .order('id');
-
-        if (error) throw error;
-        
-        console.log('Fetched stones:', data);
-        return data || [];
-    } catch (error) {
-        console.error('Error fetching stones:', error);
-        return [];
-    }
-}
+// 都道府県の中心座標（主要都市）
+const prefectureCoordinates = {
+    '北海道': [43.0642, 141.3469],
+    '青森県': [40.8246, 140.7406],
+    '岩手県': [39.7036, 141.1527],
+    '宮城県': [38.2688, 140.8721],
+    '秋田県': [39.7186, 140.1024],
+    '山形県': [38.2404, 140.3634],
+    '福島県': [37.7608, 140.4748],
+    '茨城県': [36.3418, 140.4468],
+    '栃木県': [36.5657, 139.8836],
+    '群馬県': [36.3911, 139.0608],
+    '埼玉県': [35.8569, 139.6489],
+    '千葉県': [35.6047, 140.1234],
+    '東京都': [35.6762, 139.6503],
+    '神奈川県': [35.4478, 139.6425],
+    '新潟県': [37.9022, 139.0236],
+    '富山県': [36.6953, 137.2114],
+    '石川県': [36.5947, 136.6256],
+    '福井県': [36.0652, 136.2218],
+    '山梨県': [35.6640, 138.5684],
+    '長野県': [36.6513, 138.1810],
+    '岐阜県': [35.3912, 136.7223],
+    '静岡県': [34.9769, 138.3831],
+    '愛知県': [35.1802, 136.9066],
+    '三重県': [34.7303, 136.5086],
+    '滋賀県': [35.0045, 135.8686],
+    '京都府': [35.0211, 135.7559],
+    '大阪府': [34.6863, 135.5200],
+    '兵庫県': [34.6913, 135.1830],
+    '奈良県': [34.6851, 135.8329],
+    '和歌山県': [34.2260, 135.1675],
+    '鳥取県': [35.5011, 134.2351],
+    '島根県': [35.4723, 133.0505],
+    '岡山県': [34.6618, 133.9345],
+    '広島県': [34.3966, 132.4596],
+    '山口県': [34.1858, 131.4705],
+    '徳島県': [34.0658, 134.5593],
+    '香川県': [34.3400, 134.0434],
+    '愛媛県': [33.8416, 132.7657],
+    '高知県': [33.5597, 133.5311],
+    '福岡県': [33.6064, 130.4183],
+    '佐賀県': [33.2494, 130.2988],
+    '長崎県': [32.7448, 129.8737],
+    '熊本県': [32.7898, 130.7417],
+    '大分県': [33.2382, 131.6126],
+    '宮崎県': [31.9111, 131.4239],
+    '鹿児島県': [31.5602, 130.5581],
+    '沖縄県': [26.2124, 127.6809]
+};
 
 // 地図の初期化
-const map = L.map('map').setView([36.5, 138], 6);
-
-// タイルレイヤー
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 20
-}).addTo(map);
-
-// レイヤーグループ
-let markersLayer = L.layerGroup().addTo(map);
-let geoJSONLayer = null;
-
-// 日本の都道府県GeoJSONを読み込む
-async function loadJapanGeoJSON() {
-    try {
-        const urls = [
-            'https://raw.githubusercontent.com/smartnews-smri/japan-topography/main/data/municipality/geojson/s0010/prefectures.json',
-            'https://raw.githubusercontent.com/niiyz/JapanCityGeoJson/master/geojson/prefectures.geojson',
-            'https://raw.githubusercontent.com/dataofjapan/land/master/prefecture.geojson'
-        ];
-        
-        let loaded = false;
-        for (const url of urls) {
-            try {
-                console.log('GeoJSONを読み込み中:', url);
-                const response = await fetch(url);
-                if (response.ok) {
-                    japanGeoJSON = await response.json();
-                    console.log('GeoJSONデータ読み込み完了:', url);
-                    loaded = true;
-                    break;
-                }
-            } catch (e) {
-                console.warn('読み込み失敗:', url, e);
-            }
-        }
-        
-        if (!loaded) {
-            throw new Error('すべてのGeoJSONソースの読み込みに失敗');
-        }
-        
-        // 読み込み完了後、石データを取得して地図を更新
-        const stones = await fetchStonesFromSupabase();
-        updateMapDisplay('', stones);
-        updatePrefectureFilter(stones);
-        document.getElementById('loading').style.display = 'none';
-    } catch (error) {
-        console.error('GeoJSON読み込みエラー:', error);
-        // エラー時は簡易版にフォールバック
-        document.getElementById('loading').innerHTML = '<div>地図データの読み込みに失敗しました。簡易版で表示します。</div>';
-        setTimeout(async () => {
-            document.getElementById('loading').style.display = 'none';
-            const stones = await fetchStonesFromSupabase();
-            updateMapDisplay('', stones);
-            updatePrefectureFilter(stones);
-        }, 2000);
-    }
+function initMap() {
+    // 読み込み表示を非表示
+    document.getElementById('loading').style.display = 'none';
+    
+    // マップを初期化
+    map = L.map('map').setView([36.5, 138], 5);
+    
+    // タイル層を追加
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // マーカーレイヤーを初期化
+    markersLayer = L.layerGroup().addTo(map);
+    
+    // 都道府県フィルターを初期化
+    initPrefectureFilter();
 }
 
-// 都道府県フィルターを更新
-function updatePrefectureFilter(stones) {
-    const prefectures = [...new Set(stones.map(s => s.prefecture).filter(p => p))].sort();
-    const filterSelect = document.getElementById('prefectureFilter');
+// 都道府県フィルターを初期化
+function initPrefectureFilter() {
+    const select = document.getElementById('prefectureFilter');
+    select.innerHTML = '<option value="all">すべて表示</option>';
     
-    // 既存のオプションをクリア（「すべて表示」以外）
-    filterSelect.innerHTML = '<option value="">すべて表示</option>';
-    
-    // 都道府県を追加
-    prefectures.forEach(pref => {
+    Object.keys(prefectureCoordinates).forEach(pref => {
         const option = document.createElement('option');
         option.value = pref;
         option.textContent = pref;
-        filterSelect.appendChild(option);
+        select.appendChild(option);
     });
 }
 
-// モード確認と期限チェック
+// カスタムアイコンを作成
+function createCustomIcon(locationTag) {
+    const color = getMarkerColor(locationTag);
+    return L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+}
+
+// GeoJSONデータを読み込む
+async function loadJapanGeoJSON() {
+    console.log('Starting to load GeoJSON...');
+    try {
+        const response = await fetch('https://raw.githubusercontent.com/niiyz/JapanGeoGo/master/geojson/prefectures.geojson');
+        japanGeoJSON = await response.json();
+        console.log('GeoJSON loaded successfully');
+        
+        // 初期化が完了したら石データを読み込む
+        initMap();
+        updateModeDisplay();
+        fetchStonesFromSupabase().then(stones => {
+            console.log('Stones loaded:', stones.length);
+            updateMapDisplay('all', stones);
+        }).catch(err => {
+            console.error('Error loading stones:', err);
+        });
+    } catch (error) {
+        console.error('Failed to load GeoJSON:', error);
+        // フォールバック：GeoJSONなしで続行
+        initMap();
+        updateModeDisplay();
+        fetchStonesFromSupabase().then(stones => {
+            console.log('Stones loaded (fallback):', stones.length);
+            updateMapDisplay('all', stones);
+        }).catch(err => {
+            console.error('Error loading stones (fallback):', err);
+        });
+    }
+}
+
+// モードの有効期限をチェック
 function checkModeExpiry() {
-    if (modeUnlockExpiry && new Date().getTime() > parseInt(modeUnlockExpiry)) {
-        currentMapMode = 'blur';
-        localStorage.removeItem('stoneMapMode');
-        localStorage.removeItem('modeUnlockExpiry');
-    }
-    updateModeDisplay();
-}
-
-// モード表示更新
-function updateModeDisplay() {
-    const modeBtn = document.getElementById('toggleModeBtn');
-    const currentModeText = document.getElementById('currentMode');
-    const clearLegend = document.getElementById('clearModeLegend');
-    const blurLegend = document.getElementById('blurModeLegend');
+    const savedMode = localStorage.getItem('stoneMapMode');
+    const expiry = localStorage.getItem('modeUnlockExpiry');
     
-    if (currentMapMode === 'clear') {
-        modeBtn.textContent = 'ぼんやりモードに戻る';
-        modeBtn.classList.remove('locked');
-        currentModeText.textContent = '現在: はっきり密画モード';
-        clearLegend.style.display = 'block';
-        blurLegend.style.display = 'none';
+    if (savedMode === 'clear' && expiry) {
+        const expiryTime = parseInt(expiry);
+        if (new Date().getTime() > expiryTime) {
+            // 期限切れ
+            localStorage.removeItem('stoneMapMode');
+            localStorage.removeItem('modeUnlockExpiry');
+            currentMapMode = 'blur';
+        } else {
+            currentMapMode = 'clear';
+        }
     } else {
-        modeBtn.textContent = 'はっきりモードに切り替え 🔒';
-        modeBtn.classList.add('locked');
-        currentModeText.textContent = '現在: ぼんやり略画モード';
-        clearLegend.style.display = 'none';
-        blurLegend.style.display = 'block';
+        currentMapMode = 'blur';
     }
 }
 
-// モード切替
+// モード表示を更新
+function updateModeDisplay() {
+    const modeText = document.getElementById('currentMode');
+    const toggleBtn = document.getElementById('toggleMode');
+    
+    if (currentMapMode === 'blur') {
+        modeText.textContent = 'ぼんやりモード';
+        toggleBtn.textContent = 'はっきりモードへ';
+    } else {
+        modeText.textContent = 'はっきりモード';
+        toggleBtn.textContent = 'ぼんやりモードへ';
+    }
+}
+
+// モード切り替え
 function toggleMode() {
     if (currentMapMode === 'blur') {
+        // パスワード入力モーダルを表示
         document.getElementById('passwordModal').style.display = 'flex';
         document.getElementById('passwordInput').focus();
     } else {
@@ -312,41 +344,52 @@ function showPrefectureDetails(prefecture) {
     });
 }
 
-        // モーダルを表示
-        document.getElementById('detailModal').style.display = 'flex';
-    });
+// Supabaseから石データを取得
+async function fetchStonesFromSupabase() {
+    console.log('Fetching stones from Supabase...');
+    try {
+        const { data, error } = await supabase
+            .from('stones')
+            .select('*')
+            .not('lat', 'is', null)
+            .not('lng', 'is', null);
+        
+        if (error) {
+            console.error('Supabase error:', error);
+            // エラー表示
+            const mapDiv = document.getElementById('map');
+            mapDiv.innerHTML = `<div class="error-message">データの読み込みに失敗しました: ${error.message}</div>`;
+            return [];
+        }
+        
+        console.log('Fetched stones:', data?.length || 0);
+        return data || [];
+    } catch (error) {
+        console.error('Error fetching stones:', error);
+        // エラー表示
+        const mapDiv = document.getElementById('map');
+        mapDiv.innerHTML = `<div class="error-message">データベース接続エラー: ${error.message}</div>`;
+        return [];
+    }
 }
 
-// カスタムアイコンを作成
-function createCustomIcon(locationTag) {
-    const color = getMarkerColor(locationTag);
-    return L.divIcon({
-        className: 'custom-div-icon',
-        html: `<div style="background-color: ${color}; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-    });
-}
-
-// 地図表示を更新
-function updateMapDisplay(filterPrefecture = '', stones = []) {
-    // レイヤーをクリア
+// 地図の表示を更新
+async function updateMapDisplay(prefectureFilter, stones) {
+    // 既存のマーカーをクリア
     markersLayer.clearLayers();
-    if (geoJSONLayer) {
-        map.removeLayer(geoJSONLayer);
-        geoJSONLayer = null;
+    if (geoJsonLayer) {
+        map.removeLayer(geoJsonLayer);
+        geoJsonLayer = null;
     }
     
     // フィルタリング
-    const filteredStones = stones.filter(stone => 
-        (!filterPrefecture || stone.prefecture === filterPrefecture) &&
-        stone.lat && stone.lng
-    );
+    const filteredStones = prefectureFilter === 'all' 
+        ? stones 
+        : stones.filter(stone => stone.prefecture === prefectureFilter);
     
     if (currentMapMode === 'blur') {
-        // ぼんやりモード: 都道府県を色分け表示
+        // ぼんやりモード: 都道府県ごとに色分け
         const prefectureGroups = {};
-        
         filteredStones.forEach(stone => {
             if (!prefectureGroups[stone.prefecture]) {
                 prefectureGroups[stone.prefecture] = [];
@@ -354,9 +397,9 @@ function updateMapDisplay(filterPrefecture = '', stones = []) {
             prefectureGroups[stone.prefecture].push(stone);
         });
         
-        // GeoJSONがある場合は正確な都道府県形状を使用
+        // GeoJSONを使った都道府県表示
         if (japanGeoJSON) {
-            geoJSONLayer = L.geoJSON(japanGeoJSON, {
+            geoJsonLayer = L.geoJSON(japanGeoJSON, {
                 style: function(feature) {
                     const prefName = feature.properties.nam_ja || 
                                    feature.properties.name_ja || 

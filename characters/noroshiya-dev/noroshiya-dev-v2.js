@@ -65,6 +65,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
     
+    // GoogleマップURLから緯度経度を自動抽出
+    const addressInput = document.getElementById('stone-address');
+    if (addressInput) {
+        addressInput.addEventListener('change', (e) => {
+            extractLatLngFromUrl(e.target.value);
+        });
+    }
+    
     // データ読み込み（最初は石タブ）
     await loadStonesData();
 });
@@ -791,3 +799,85 @@ window.deleteNoroshiya = deleteNoroshiya;
 window.deleteBird = deleteBird;
 window.deleteStone = deleteStone;
 window.handleStoneImageSelect = handleStoneImageSelect;
+
+// GoogleマップURLから緯度経度を抽出
+function extractLatLngFromUrl(url) {
+    if (!url) return;
+    
+    let lat = null;
+    let lng = null;
+    
+    // パターン1: @緯度,経度,ズームz の形式
+    const pattern1 = /@(-?\d+\.\d+),(-?\d+\.\d+),/;
+    const match1 = url.match(pattern1);
+    if (match1) {
+        lat = parseFloat(match1[1]);
+        lng = parseFloat(match1[2]);
+    }
+    
+    // パターン2: place/場所名/@緯度,経度,ズームz の形式
+    const pattern2 = /place\/[^\/]+\/@(-?\d+\.\d+),(-?\d+\.\d+),/;
+    const match2 = url.match(pattern2);
+    if (match2) {
+        lat = parseFloat(match2[1]);
+        lng = parseFloat(match2[2]);
+    }
+    
+    // パターン3: dir/出発地/目的地/@緯度,経度,ズームz の形式
+    const pattern3 = /dir\/[^\/]+\/[^\/]+\/@(-?\d+\.\d+),(-?\d+\.\d+),/;
+    const match3 = url.match(pattern3);
+    if (match3) {
+        lat = parseFloat(match3[1]);
+        lng = parseFloat(match3[2]);
+    }
+    
+    // パターン4: search/検索キーワード/@緯度,経度,ズームz の形式
+    const pattern4 = /search\/[^\/]+\/@(-?\d+\.\d+),(-?\d+\.\d+),/;
+    const match4 = url.match(pattern4);
+    if (match4) {
+        lat = parseFloat(match4[1]);
+        lng = parseFloat(match4[2]);
+    }
+    
+    // パターン5: !3d緯度!4d経度 の形式（ストリートビューなど）
+    const pattern5 = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/;
+    const match5 = url.match(pattern5);
+    if (match5) {
+        lat = parseFloat(match5[1]);
+        lng = parseFloat(match5[2]);
+    }
+    
+    // パターン6: ll=緯度,経度 の形式（古い形式）
+    const pattern6 = /ll=(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match6 = url.match(pattern6);
+    if (match6) {
+        lat = parseFloat(match6[1]);
+        lng = parseFloat(match6[2]);
+    }
+    
+    // パターン7: q=緯度,経度 の形式（検索クエリ）
+    const pattern7 = /q=(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match7 = url.match(pattern7);
+    if (match7) {
+        lat = parseFloat(match7[1]);
+        lng = parseFloat(match7[2]);
+    }
+    
+    // 緯度経度が見つかった場合、フィールドに自動入力
+    if (lat !== null && lng !== null) {
+        document.getElementById('stone-lat').value = lat;
+        document.getElementById('stone-lng').value = lng;
+        
+        // ユーザーに通知
+        const notification = document.createElement('div');
+        notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #4CAF50; color: white; padding: 10px 20px; border-radius: 4px; z-index: 10000;';
+        notification.textContent = `緯度経度を自動抽出しました: ${lat}, ${lng}`;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+}
+
+window.extractLatLngFromUrl = extractLatLngFromUrl;

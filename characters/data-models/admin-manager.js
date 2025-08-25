@@ -377,7 +377,6 @@ function showStoneForm(stone = null) {
     // フォームをリセット
     form.reset();
     document.getElementById('stone-colors-tags').innerHTML = '';
-    document.getElementById('stone-locations-tags').innerHTML = '';
     document.getElementById('stone-keywords-tags').innerHTML = '';
     document.getElementById('stone-photos-list').innerHTML = '';
     
@@ -410,15 +409,21 @@ function showStoneForm(stone = null) {
         form.folklore_legend.value = stone.folklore_legend || '';
         form.folklore_usage.value = stone.folklore_usage || '';
         
+        // 位置情報の復元
+        form.location_name.value = stone.location_name || '';
+        form.prefecture.value = stone.prefecture || '';
+        form.city.value = stone.city || '';
+        form.location_tag.value = stone.location_tag || '';
+        form.location_detail.value = stone.location_detail || '';
+        form.location_notes.value = stone.location_notes || '';
+        form.address.value = stone.address || stone.map_url || '';
+        form.lat.value = stone.lat || '';
+        form.lng.value = stone.lng || '';
+        
         // タグの復元
         if (Array.isArray(stone.colors)) {
             stone.colors.forEach(color => {
                 addTagToList('stone-colors-tags', color);
-            });
-        }
-        if (stone.finding_locations?.locations && Array.isArray(stone.finding_locations.locations)) {
-            stone.finding_locations.locations.forEach(loc => {
-                addTagToList('stone-locations-tags', loc);
             });
         }
         if (stone.matching_keywords && Array.isArray(stone.matching_keywords)) {
@@ -497,18 +502,6 @@ function addStoneColor(event) {
     }
 }
 
-// 石の場所追加
-function addStoneLocation(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        const input = event.target;
-        const value = input.value.trim();
-        if (value) {
-            addTagToList('stone-locations-tags', value);
-            input.value = '';
-        }
-    }
-}
 
 // 石のキーワード追加
 function addStoneKeyword(event) {
@@ -665,8 +658,6 @@ async function saveStone(event) {
     // タグからデータを収集
     const colors = Array.from(document.querySelectorAll('#stone-colors-tags .tag'))
         .map(tag => tag.textContent.replace('×', '').trim());
-    const locations = Array.from(document.querySelectorAll('#stone-locations-tags .tag'))
-        .map(tag => tag.textContent.replace('×', '').trim());
     const keywords = Array.from(document.querySelectorAll('#stone-keywords-tags .tag'))
         .map(tag => tag.textContent.replace('×', '').trim());
     
@@ -719,8 +710,18 @@ async function saveStone(event) {
         elemental_element: form.elemental_element.value,
         elemental_energy: form.elemental_energy.value,
         elemental_resonance: form.elemental_resonance.value,
-        // 発見場所・マッチングキーワード（配列→JSONB対応）
-        finding_locations: { locations: locations },
+        // 位置情報（新規追加）
+        location_name: form.location_name.value,
+        prefecture: form.prefecture.value,
+        city: form.city.value,
+        location_tag: form.location_tag.value,
+        location_detail: form.location_detail.value,
+        location_notes: form.location_notes.value,
+        address: form.address.value,
+        map_url: form.address.value, // addressフィールドと同じ値を使用
+        lat: form.lat.value ? parseFloat(form.lat.value) : null,
+        lng: form.lng.value ? parseFloat(form.lng.value) : null,
+        // マッチングキーワード
         matching_keywords: keywords,
         // 狼煙屋との相性（フラット構造）
         noroshiya_primary_match: form.noroshiya_primary_match.value,

@@ -796,6 +796,15 @@
                     <!-- 位置情報セクション -->
                     <div class="form-section">
                         <h2>位置情報</h2>
+                        
+                        <!-- 採取ポイント選択 -->
+                        <div class="form-group">
+                            <label>登録済み採取ポイント</label>
+                            <select id="saved-locations" onchange="loadSavedLocation()">
+                                <option value="">-- 新規登録または選択 --</option>
+                            </select>
+                        </div>
+                        
                         <div class="form-group">
                             <label>場所名</label>
                             <input type="text" id="stone-location-name" placeholder="例: 日野川（下流）">
@@ -885,6 +894,13 @@
                         <div class="form-group">
                             <label>経度</label>
                             <input type="number" id="stone-lng" step="0.0000001" placeholder="例: 133.4039000">
+                        </div>
+                        
+                        <!-- 採取ポイント保存ボタン -->
+                        <div class="form-group">
+                            <button type="button" class="save-location-btn" onclick="saveCurrentLocation()">
+                                この場所を採取ポイントとして保存
+                            </button>
                         </div>
                     </div>
                     

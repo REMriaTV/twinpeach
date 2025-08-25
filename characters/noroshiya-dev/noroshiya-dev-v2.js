@@ -16,6 +16,7 @@ let currentNoroshiyaId = null;
 let currentBirdId = null;
 let currentStoneId = null;
 let currentStoneImage = null; // 現在選択中の石の画像
+let savedLocations = []; // 保存された採取ポイント
 
 // 初期化
 document.addEventListener('DOMContentLoaded', async () => {
@@ -75,6 +76,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // データ読み込み（最初は石タブ）
     await loadStonesData();
+    
+    // 保存された採取ポイントを読み込み
+    loadSavedLocations();
 });
 
 // タブ切り替え
@@ -881,3 +885,137 @@ function extractLatLngFromUrl(url) {
 }
 
 window.extractLatLngFromUrl = extractLatLngFromUrl;
+
+// 採取ポイント管理機能
+function loadSavedLocations() {
+    // ローカルストレージから採取ポイントを読み込み
+    const saved = localStorage.getItem('twinpeach_saved_locations');
+    if (saved) {
+        savedLocations = JSON.parse(saved);
+    } else {
+        savedLocations = [];
+    }
+    
+    // セレクトボックスを更新
+    updateLocationSelect();
+}
+
+// 採取ポイントセレクトボックスを更新
+function updateLocationSelect() {
+    const select = document.getElementById('saved-locations');
+    if (!select) return;
+    
+    // 既存のオプションをクリア（最初のオプションは残す）
+    while (select.options.length > 1) {
+        select.remove(1);
+    }
+    
+    // 保存された採取ポイントを追加
+    savedLocations.forEach((location, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `${location.name} (${location.prefecture}${location.city || ''})`;
+        select.appendChild(option);
+    });
+}
+
+// 選択された採取ポイントを読み込み
+function loadSavedLocation() {
+    const select = document.getElementById('saved-locations');
+    const index = select.value;
+    
+    if (index === '') return;
+    
+    const location = savedLocations[parseInt(index)];
+    if (!location) return;
+    
+    // フォームに値を設定
+    document.getElementById('stone-location-name').value = location.location_name || '';
+    document.getElementById('stone-prefecture').value = location.prefecture || '';
+    document.getElementById('stone-city').value = location.city || '';
+    document.getElementById('stone-location-tag').value = location.location_tag || '';
+    document.getElementById('stone-location-detail').value = location.location_detail || '';
+    document.getElementById('stone-location-notes').value = location.location_notes || '';
+    document.getElementById('stone-address').value = location.address || '';
+    document.getElementById('stone-lat').value = location.lat || '';
+    document.getElementById('stone-lng').value = location.lng || '';
+    
+    // ユーザーに通知
+    const notification = document.createElement('div');
+    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #9b59b6; color: white; padding: 10px 20px; border-radius: 4px; z-index: 10000;';
+    notification.textContent = `採取ポイント「${location.name}」を読み込みました`;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// 現在の入力内容を採取ポイントとして保存
+function saveCurrentLocation() {
+    const locationName = document.getElementById('stone-location-name').value;
+    const prefecture = document.getElementById('stone-prefecture').value;
+    
+    if (!locationName || !prefecture) {
+        alert('場所名と都道府県は必須です');
+        return;
+    }
+    
+    // 採取ポイントデータを作成
+    const newLocation = {
+        name: locationName,
+        location_name: locationName,
+        prefecture: prefecture,
+        city: document.getElementById('stone-city').value,
+        location_tag: document.getElementById('stone-location-tag').value,
+        location_detail: document.getElementById('stone-location-detail').value,
+        location_notes: document.getElementById('stone-location-notes').value,
+        address: document.getElementById('stone-address').value,
+        lat: document.getElementById('stone-lat').value ? parseFloat(document.getElementById('stone-lat').value) : null,
+        lng: document.getElementById('stone-lng').value ? parseFloat(document.getElementById('stone-lng').value) : null,
+        created_at: new Date().toISOString()
+    };
+    
+    // 重複チェック
+    const exists = savedLocations.some(loc => 
+        loc.name === newLocation.name && 
+        loc.prefecture === newLocation.prefecture &&
+        loc.city === newLocation.city
+    );
+    
+    if (exists) {
+        if (!confirm('同じ名前の採取ポイントが既に存在します。上書きしますか？')) {
+            return;
+        }
+        // 既存の場所を更新
+        const index = savedLocations.findIndex(loc => 
+            loc.name === newLocation.name && 
+            loc.prefecture === newLocation.prefecture &&
+            loc.city === newLocation.city
+        );
+        savedLocations[index] = newLocation;
+    } else {
+        // 新規追加
+        savedLocations.push(newLocation);
+    }
+    
+    // ローカルストレージに保存
+    localStorage.setItem('twinpeach_saved_locations', JSON.stringify(savedLocations));
+    
+    // セレクトボックスを更新
+    updateLocationSelect();
+    
+    // ユーザーに通知
+    const notification = document.createElement('div');
+    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #27ae60; color: white; padding: 10px 20px; border-radius: 4px; z-index: 10000;';
+    notification.textContent = `採取ポイント「${locationName}」を保存しました`;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// グローバル関数として公開
+window.loadSavedLocation = loadSavedLocation;
+window.saveCurrentLocation = saveCurrentLocation;

@@ -234,7 +234,7 @@ function createMiniPopupContent(prefecture, count) {
     return `
         <div class="mini-popup">
             <h4>${prefecture}</h4>
-            <div class="stone-count">採取石数: ${count}個</div>
+            <div class="stone-count">ひろった石: ${count}個</div>
         </div>
     `;
 }
@@ -257,7 +257,7 @@ function showPrefectureDetails(prefecture) {
     fetchStonesFromSupabase().then(allStones => {
         const stones = allStones.filter(s => s.prefecture === prefecture);
         
-        let content = `<h4>採取場所一覧</h4>`;
+        let content = '';
         
         const locations = {};
         stones.forEach(stone => {
@@ -268,21 +268,34 @@ function showPrefectureDetails(prefecture) {
             locations[key].push(stone);
         });
         
+        content += `
+            <div style="margin-bottom: 20px;">
+                <h4 style="font-size: 18px; color: #333; margin-bottom: 10px;">ひろった場所一覧</h4>
+                <p style="color: #666; font-size: 14px;">全 ${Object.keys(locations).length} 箇所、${stones.length} 個の石</p>
+            </div>
+        `;
+        
         Object.entries(locations).forEach(([location, locationStones]) => {
+            const firstStone = locationStones[0];
+            const tagHTML = firstStone.location_tag ? createTagHTML({location_tag: firstStone.location_tag}) : '';
+            
             content += `
-                <div style="margin: 15px 0; padding: 10px; background: #f8f8f8; border-radius: 8px;">
-                    <h5 style="margin: 0 0 10px 0;">${location}</h5>
-                    <div style="font-size: 14px; color: #666;">石の数: ${locationStones.length}個</div>
+                <div style="margin: 20px 0; padding: 20px; background: #f8f8f8; border-radius: 12px; border-left: 4px solid #4ECDC4;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h5 style="margin: 0; font-size: 16px; color: #333;">${location}</h5>
+                        <div>${tagHTML}</div>
+                    </div>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 15px;">石の数: ${locationStones.length}個</div>
                     <div class="stone-grid">
             `;
             
             locationStones.forEach(stone => {
                 const imageHtml = stone.image_url 
-                    ? `<img src="${stone.image_url}" alt="${stone.name}" style="width: 100%; height: 100%; object-fit: cover;">`
-                    : `<div style="background: #ddd; width: 100%; height: 100%; border-radius: 50%;"></div>`;
+                    ? `<img src="${stone.image_url}" alt="${stone.name}">`
+                    : `<div style="background: linear-gradient(135deg, #e0e0e0, #f5f5f5); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999; font-size: 24px;">🪨</div>`;
                 
                 content += `
-                    <div class="stone-item" onclick="viewStone('${stone.id}')">
+                    <div class="stone-item" onclick="event.stopPropagation(); viewStone('${stone.id}')" title="${stone.name}">
                         <div class="stone-thumbnail">${imageHtml}</div>
                         <div class="stone-name">${stone.name}</div>
                     </div>
@@ -292,9 +305,20 @@ function showPrefectureDetails(prefecture) {
             content += `</div></div>`;
         });
         
-        document.getElementById('detailTitle').textContent = prefecture;
+        content += `
+            <p style="text-align: center; color: #999; font-size: 12px; margin-top: 20px;">
+                石をクリックして詳細を表示
+            </p>
+        `;
+        
+        document.getElementById('detailTitle').textContent = `${prefecture}の石`;
         document.getElementById('detailBody').innerHTML = content;
-        document.getElementById('detailModal').style.display = 'flex';
+        
+        const modal = document.getElementById('detailModal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.querySelector('.detail-content').style.opacity = '1';
+        }, 10);
     });
 }
 
@@ -441,9 +465,10 @@ async function updateMapDisplay(prefectureFilter, stones) {
             
             // ミニマルなポップアップ（第1段階）
             const miniContent = `
-                <div class="mini-popup" style="cursor: pointer;" onclick="showLocationDetails('${locKey}')">
+                <div class="mini-popup" style="cursor: pointer;" onclick="event.stopPropagation(); showLocationDetails('${locKey}')">
                     <h4>${location.location_name}</h4>
                     <div class="stone-count">ひろった石: ${location.stones.length}個</div>
+                    <div class="click-hint">クリックして詳細を見る →</div>
                 </div>
             `;
             
@@ -454,17 +479,23 @@ async function updateMapDisplay(prefectureFilter, stones) {
                 closeOnClick: false
             });
             
+            let popupTimer;
+            
             marker.on('mouseover', function(e) {
+                clearTimeout(popupTimer);
                 this.openPopup();
             });
             
             marker.on('mouseout', function(e) {
-                setTimeout(() => {
+                popupTimer = setTimeout(() => {
                     this.closePopup();
-                }, 300);
+                }, 500);
             });
             
             marker.on('click', function(e) {
+                e.originalEvent.stopPropagation();
+                clearTimeout(popupTimer);
+                this.closePopup();
                 showLocationDetails(locKey);
             });
             
@@ -491,10 +522,10 @@ function showLocationDetails(locKey) {
     location.stones.forEach(stone => {
         const imageHtml = stone.image_url 
             ? `<img src="${stone.image_url}" alt="${stone.name}">`
-            : `<div style="background: #ddd; width: 100%; height: 100%; border-radius: 50%;"></div>`;
+            : `<div style="background: linear-gradient(135deg, #e0e0e0, #f5f5f5); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999; font-size: 24px;">🪨</div>`;
         
         stonesHtml += `
-            <div class="stone-item" onclick="viewStone('${stone.id}')">
+            <div class="stone-item" onclick="event.stopPropagation(); viewStone('${stone.id}')" title="${stone.name}">
                 <div class="stone-thumbnail">${imageHtml}</div>
                 <div class="stone-name">${stone.name}</div>
             </div>
@@ -505,21 +536,32 @@ function showLocationDetails(locKey) {
     // 詳細モーダルに内容を設定
     document.getElementById('detailTitle').textContent = location.location_name;
     document.getElementById('detailBody').innerHTML = `
-        <div class="location-tags">${tagHTML}</div>
-        <p><strong>都道府県:</strong> ${location.prefecture || '未設定'}</p>
-        <p><strong>市区町村:</strong> ${location.city || '未設定'}</p>
-        <h4 style="margin: 20px 0 10px 0; font-size: 18px;">ひろった石: ${location.stones.length}個</h4>
+        <div class="location-info">
+            <div class="location-tags" style="margin-bottom: 15px;">${tagHTML}</div>
+            <p><strong>都道府県:</strong> ${location.prefecture || '未設定'}</p>
+            <p><strong>市区町村:</strong> ${location.city || '未設定'}</p>
+        </div>
+        <h4 style="margin: 25px 0 15px 0; font-size: 20px; color: #333; border-bottom: 2px solid #4ECDC4; padding-bottom: 8px;">
+            ひろった石: ${location.stones.length}個
+        </h4>
         ${stonesHtml}
+        <p style="text-align: center; color: #999; font-size: 12px; margin-top: 20px;">
+            石をクリックして詳細を表示
+        </p>
     `;
     
-    // モーダルを表示
-    document.getElementById('detailModal').style.display = 'flex';
+    // モーダルを表示（アニメーション付き）
+    const modal = document.getElementById('detailModal');
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.querySelector('.detail-content').style.opacity = '1';
+    }, 10);
 }
 
 // 石の詳細を表示（第3段階）
 function viewStone(stoneId) {
     // イベントの伝播を停止
-    event.stopPropagation();
+    if (event) event.stopPropagation();
     
     fetchStonesFromSupabase().then(allStones => {
         const stone = allStones.find(s => s.id === stoneId);
@@ -528,8 +570,13 @@ function viewStone(stoneId) {
         const tagHTML = createTagHTML(stone);
         
         const imageHtml = stone.image_url 
-            ? `<img src="${stone.image_url}" alt="${stone.name}" style="max-width: 300px; border-radius: 8px;">`
-            : `<div style="background: #ddd; width: 300px; height: 300px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #999;">画像なし</div>`;
+            ? `<img src="${stone.image_url}" alt="${stone.name}" style="max-width: 100%; max-height: 400px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">`
+            : `<div style="background: linear-gradient(135deg, #e0e0e0, #f5f5f5); width: 300px; height: 300px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 48px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">🪨</div>`;
+        
+        // 色の表示を改善
+        const colorDisplay = stone.colors?.primary ? 
+            `<span style="display: inline-block; width: 20px; height: 20px; background: ${stone.colors.primary}; border-radius: 50%; vertical-align: middle; margin-right: 8px; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>${stone.colors.primary}` : 
+            '未設定';
         
         // 石の情報ポップアップを作成
         const stoneModal = document.createElement('div');
@@ -537,18 +584,21 @@ function viewStone(stoneId) {
         stoneModal.innerHTML = `
             <div class="modal-content">
                 <button class="close-button" onclick="this.parentElement.parentElement.remove()">&times;</button>
-                <h2 class="modal-title">${stone.name}</h2>
+                <h2 class="modal-title" style="color: #333; margin-bottom: 25px;">${stone.name}</h2>
                 <div class="modal-body">
-                    <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
                         ${imageHtml}
                     </div>
-                    <div class="location-info">
-                        ${tagHTML ? `<div style="margin-bottom: 10px;">${tagHTML}</div>` : ''}
-                        <p><strong>色:</strong> ${stone.colors?.primary || '未設定'}</p>
-                        <p><strong>特徴:</strong> ${stone.special_features || '未設定'}</p>
-                        <p><strong>場所:</strong> ${stone.location_name || '未設定'}</p>
-                        <p><strong>詳細:</strong> ${stone.location_detail || '未設定'}</p>
-                        ${stone.location_notes ? `<p><strong>備考:</strong> ${stone.location_notes}</p>` : ''}
+                    <div class="location-info" style="background: #f8f8f8; padding: 20px; border-radius: 12px;">
+                        ${tagHTML ? `<div style="margin-bottom: 15px;">${tagHTML}</div>` : ''}
+                        <div style="display: grid; gap: 12px;">
+                            <p><strong style="color: #666; font-weight: 600;">色:</strong> ${colorDisplay}</p>
+                            <p><strong style="color: #666; font-weight: 600;">特徴:</strong> ${stone.special_features || '未設定'}</p>
+                            <p><strong style="color: #666; font-weight: 600;">ひろった場所:</strong> ${stone.location_name || '未設定'}</p>
+                            <p><strong style="color: #666; font-weight: 600;">詳細:</strong> ${stone.location_detail || '未設定'}</p>
+                            ${stone.location_notes ? `<p><strong style="color: #666; font-weight: 600;">備考:</strong> ${stone.location_notes}</p>` : ''}
+                            ${stone.discovered_at ? `<p><strong style="color: #666; font-weight: 600;">発見日:</strong> ${new Date(stone.discovered_at).toLocaleDateString('ja-JP')}</p>` : ''}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -557,12 +607,28 @@ function viewStone(stoneId) {
         document.body.appendChild(stoneModal);
         stoneModal.style.display = 'flex';
         
+        // アニメーションのためのタイミング調整
+        setTimeout(() => {
+            stoneModal.querySelector('.modal-content').style.opacity = '1';
+        }, 10);
+        
         // モーダルの外側クリックで閉じる
         stoneModal.addEventListener('click', (e) => {
             if (e.target === stoneModal) {
-                stoneModal.remove();
+                stoneModal.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => stoneModal.remove(), 300);
             }
         });
+        
+        // ESCキーで閉じる
+        const handleEsc = (e) => {
+            if (e.key === 'Escape') {
+                stoneModal.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => stoneModal.remove(), 300);
+                document.removeEventListener('keydown', handleEsc);
+            }
+        };
+        document.addEventListener('keydown', handleEsc);
     });
 }
 

@@ -446,13 +446,38 @@ function displayStonesList() {
             card.classList.add('active');
         }
         
-        const colors = stone.colors || {};
-        const colorText = [colors.primary, colors.secondary].filter(c => c).join('・');
+        // サブテキストの構成
+        let subText = '';
+        
+        // 火打石の場合は「火打石」と表示
+        if (stone.is_hiuchiishi) {
+            subText = '火打石';
+        } else {
+            // 火打石でない場合は色情報を表示
+            const colors = stone.colors || {};
+            const colorText = [colors.primary, colors.secondary].filter(c => c).join('・');
+            if (colorText) {
+                subText = colorText;
+            }
+            // タイプがあれば追加
+            if (stone.type) {
+                subText += (subText ? ' / ' : '') + stone.type;
+            }
+        }
+        
+        // エリア名を追加
+        if (stone.location_name) {
+            subText += ' / ' + stone.location_name;
+        }
+        
+        // IDを小さく表示
+        const stoneIdDisplay = stone.id ? `<span style="font-size: 10px; color: #999; position: absolute; top: 5px; right: 5px;">${stone.id}</span>` : '';
         
         card.innerHTML = `
+            ${stoneIdDisplay}
             ${stone.image_url ? `<img src="${stone.image_url}" alt="${stone.name}" class="item-image">` : ''}
             <div class="name">${stone.name}</div>
-            <div class="details">${colorText} / ${stone.type || ''}</div>
+            <div class="details">${subText}</div>
         `;
         
         listEl.appendChild(card);

@@ -23,6 +23,13 @@
             color: white;
             padding: 1rem 2rem;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-content {
+            flex: 1;
         }
         
         .header h1 {
@@ -34,6 +41,23 @@
             font-size: 0.9rem;
             opacity: 0.8;
             margin-top: 0.25rem;
+        }
+        
+        .header-link {
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            transition: background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .header-link:hover {
+            background: #2980b9;
         }
         
         /* タブナビゲーション */
@@ -402,8 +426,17 @@
 </head>
 <body>
     <div class="header">
-        <h1>狼煙屋・鳥・石 データベース管理</h1>
-        <div class="subtitle">Twin Peach - 狼煙屋の世界観設定</div>
+        <div class="header-content">
+            <h1>狼煙屋・鳥・石 データベース管理</h1>
+            <div class="subtitle">Twin Peach - 狼煙屋の世界観設定</div>
+        </div>
+        <a href="../../stone-map-v6.html" class="header-link" target="_blank">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+            </svg>
+            石マップを見る
+        </a>
     </div>
     
     <!-- タブナビゲーション -->

@@ -458,23 +458,10 @@
             color: #555;
         }
         
-        .section-description {
-            color: #666;
-            font-size: 0.95rem;
-            margin-bottom: 1rem;
-        }
-        
         .color-input-group {
             display: flex;
             align-items: center;
             gap: 1rem;
-            flex-wrap: wrap;
-        }
-        
-        .color-input-row {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
         }
         
         .color-picker {
@@ -494,21 +481,10 @@
             font-size: 0.9rem;
         }
         
-        .ratio-container {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            background: #f0f0f0;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            flex: 1;
-            min-width: 200px;
-        }
-        
         .ratio-label {
             font-weight: 500;
             color: #555;
-            min-width: 40px;
+            font-size: 0.9rem;
         }
         
         .color-ratio {
@@ -569,20 +545,6 @@
             font-weight: 600;
             color: #2c3e50;
             font-size: 1.2rem;
-        }
-        
-        .ratio-explanation {
-            background: #e8f4fd;
-            border: 1px solid #bee5eb;
-            border-radius: 6px;
-            padding: 1rem;
-            margin: 1rem 0;
-            font-size: 0.9rem;
-            color: #0c5460;
-        }
-        
-        .ratio-explanation strong {
-            color: #0c5460;
         }
     </style>
 </head>
@@ -916,22 +878,16 @@
                         <!-- カラーピッカーセクション -->
                         <div class="color-picker-section">
                             <h3>石の色を選択</h3>
-                            <p class="section-description">石を構成する色と、それぞれの色が占める割合を設定してください</p>
-                            
                             <div class="color-selections">
                                 <!-- メインカラー -->
                                 <div class="color-selection-item">
                                     <label>メインカラー</label>
                                     <div class="color-input-group">
-                                        <div class="color-input-row">
-                                            <input type="color" id="stone-color-main" class="color-picker" value="#808080">
-                                            <input type="text" id="stone-color-main-hex" class="color-hex" value="#808080" placeholder="#000000">
-                                        </div>
-                                        <div class="ratio-container">
-                                            <span class="ratio-label">割合:</span>
-                                            <input type="range" id="stone-color-main-ratio" class="color-ratio" min="0" max="100" value="60">
-                                            <span class="ratio-value">60%</span>
-                                        </div>
+                                        <input type="color" id="stone-color-main" class="color-picker" value="#808080">
+                                        <input type="text" id="stone-color-main-hex" class="color-hex" value="#808080" placeholder="#000000">
+                                        <span class="ratio-label">割合</span>
+                                        <input type="range" id="stone-color-main-ratio" class="color-ratio" min="0" max="100" value="60">
+                                        <span class="ratio-value">60%</span>
                                     </div>
                                 </div>
                                 
@@ -939,15 +895,11 @@
                                 <div class="color-selection-item">
                                     <label>サブカラー1</label>
                                     <div class="color-input-group">
-                                        <div class="color-input-row">
-                                            <input type="color" id="stone-color-sub1" class="color-picker" value="#FFFFFF">
-                                            <input type="text" id="stone-color-sub1-hex" class="color-hex" value="#FFFFFF" placeholder="#000000">
-                                        </div>
-                                        <div class="ratio-container">
-                                            <span class="ratio-label">割合:</span>
-                                            <input type="range" id="stone-color-sub1-ratio" class="color-ratio" min="0" max="100" value="30">
-                                            <span class="ratio-value">30%</span>
-                                        </div>
+                                        <input type="color" id="stone-color-sub1" class="color-picker" value="#FFFFFF">
+                                        <input type="text" id="stone-color-sub1-hex" class="color-hex" value="#FFFFFF" placeholder="#000000">
+                                        <span class="ratio-label">割合</span>
+                                        <input type="range" id="stone-color-sub1-ratio" class="color-ratio" min="0" max="100" value="30">
+                                        <span class="ratio-value">30%</span>
                                     </div>
                                 </div>
                                 
@@ -955,24 +907,13 @@
                                 <div class="color-selection-item">
                                     <label>サブカラー2</label>
                                     <div class="color-input-group">
-                                        <div class="color-input-row">
-                                            <input type="color" id="stone-color-sub2" class="color-picker" value="#000000">
-                                            <input type="text" id="stone-color-sub2-hex" class="color-hex" value="#000000" placeholder="#000000">
-                                        </div>
-                                        <div class="ratio-container">
-                                            <span class="ratio-label">割合:</span>
-                                            <input type="range" id="stone-color-sub2-ratio" class="color-ratio" min="0" max="100" value="10">
-                                            <span class="ratio-value">10%</span>
-                                        </div>
+                                        <input type="color" id="stone-color-sub2" class="color-picker" value="#000000">
+                                        <input type="text" id="stone-color-sub2-hex" class="color-hex" value="#000000" placeholder="#000000">
+                                        <span class="ratio-label">割合</span>
+                                        <input type="range" id="stone-color-sub2-ratio" class="color-ratio" min="0" max="100" value="10">
+                                        <span class="ratio-value">10%</span>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <!-- 割合の説明 -->
-                            <div class="ratio-explanation">
-                                <p><strong>💡 割合について</strong><br>
-                                3つの色の割合は自動的に100%になるよう調整されます。<br>
-                                例: 60% + 30% + 10% = 100%</p>
                             </div>
                             
                             <!-- 調合結果 -->

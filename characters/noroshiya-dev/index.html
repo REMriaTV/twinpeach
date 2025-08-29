@@ -546,6 +546,57 @@
             color: #2c3e50;
             font-size: 1.2rem;
         }
+        
+        /* カラーピッカーと画像プレビュー */
+        .color-picker-with-preview {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        
+        .color-picker-image {
+            width: 150px;
+            height: 150px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #f5f5f5;
+            position: relative;
+        }
+        
+        .color-picker-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .no-image-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        .color-selections {
+            flex: 1;
+        }
+        
+        /* スマホ対応 */
+        @media (max-width: 768px) {
+            .color-picker-with-preview {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .color-picker-image {
+                width: 120px;
+                height: 120px;
+                align-self: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -878,7 +929,14 @@
                         <!-- カラーピッカーセクション -->
                         <div class="color-picker-section">
                             <h3>石の色を選択</h3>
-                            <div class="color-selections">
+                            <div class="color-picker-with-preview">
+                                <!-- 画像プレビュー -->
+                                <div class="color-picker-image">
+                                    <img id="stone-color-preview-image" src="" alt="石の画像" style="display: none;">
+                                    <div class="no-image-placeholder">画像なし</div>
+                                </div>
+                                
+                                <div class="color-selections">
                                 <!-- メインカラー -->
                                 <div class="color-selection-item">
                                     <label>メインカラー</label>
@@ -914,6 +972,7 @@
                                         <span class="ratio-value">10%</span>
                                     </div>
                                 </div>
+                            </div>
                             </div>
                             
                             <!-- 調合結果 -->

@@ -654,14 +654,34 @@ function selectStone(id) {
     document.getElementById('stone-lat').value = stone.lat || '';
     document.getElementById('stone-lng').value = stone.lng || '';
     
-    // 画像プレビューを更新
+    // 画像プレビューを更新（メインと色選択部分の両方）
     const previewEl = document.getElementById('stone-image-preview');
+    const colorPreviewImg = document.getElementById('stone-color-preview-image');
+    const noImagePlaceholder = document.querySelector('.no-image-placeholder');
+    
     if (stone.image_url) {
         previewEl.innerHTML = `<img src="${stone.image_url}" alt="${stone.name}">`;
         currentStoneImage = stone.image_url;
+        
+        // カラーピッカー用の画像も更新
+        if (colorPreviewImg) {
+            colorPreviewImg.src = stone.image_url;
+            colorPreviewImg.style.display = 'block';
+        }
+        if (noImagePlaceholder) {
+            noImagePlaceholder.style.display = 'none';
+        }
     } else {
         previewEl.innerHTML = '<div class="placeholder">画像なし</div>';
         currentStoneImage = null;
+        
+        // カラーピッカー用の画像も非表示
+        if (colorPreviewImg) {
+            colorPreviewImg.style.display = 'none';
+        }
+        if (noImagePlaceholder) {
+            noImagePlaceholder.style.display = 'block';
+        }
     }
     
     displayStonesList();
@@ -886,8 +906,20 @@ async function handleStoneImageSelect(event) {
     const reader = new FileReader();
     reader.onload = (e) => {
         const previewEl = document.getElementById('stone-image-preview');
+        const colorPreviewImg = document.getElementById('stone-color-preview-image');
+        const noImagePlaceholder = document.querySelector('.no-image-placeholder');
+        
         previewEl.innerHTML = `<img src="${e.target.result}" alt="プレビュー">`;
         currentStoneImage = e.target.result; // Base64データとして保存
+        
+        // カラーピッカー用の画像も更新
+        if (colorPreviewImg) {
+            colorPreviewImg.src = e.target.result;
+            colorPreviewImg.style.display = 'block';
+        }
+        if (noImagePlaceholder) {
+            noImagePlaceholder.style.display = 'none';
+        }
     };
     reader.readAsDataURL(file);
 }

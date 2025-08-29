@@ -52,19 +52,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveStone();
     });
     
-    // カラーピッカーとカラーコードの連動
-    const colorPicker = document.getElementById('color-picker');
-    const colorCode = document.getElementById('color-code');
-    
-    colorPicker.addEventListener('change', (e) => {
-        colorCode.value = e.target.value;
-    });
-    
-    colorCode.addEventListener('change', (e) => {
-        if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
-            colorPicker.value = e.target.value;
-        }
-    });
+    // 石の色調合システムを初期化
+    initializeColorBlendingSystem();
     
     // GoogleマップURLから緯度経度を自動抽出
     const addressInput = document.getElementById('stone-address');
@@ -92,6 +81,119 @@ function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.toggle('active', content.id === `${tabName}-tab`);
     });
+}
+
+// 石の色調合システムを初期化
+function initializeColorBlendingSystem() {
+    // カラーピッカーとテキストフィールドの連動
+    const colorInputs = [
+        { picker: 'stone-color-main', hex: 'stone-color-main-hex', ratio: 'stone-color-main-ratio' },
+        { picker: 'stone-color-sub1', hex: 'stone-color-sub1-hex', ratio: 'stone-color-sub1-ratio' },
+        { picker: 'stone-color-sub2', hex: 'stone-color-sub2-hex', ratio: 'stone-color-sub2-ratio' }
+    ];
+    
+    colorInputs.forEach(input => {
+        const picker = document.getElementById(input.picker);
+        const hex = document.getElementById(input.hex);
+        const ratio = document.getElementById(input.ratio);
+        
+        if (picker && hex) {
+            // カラーピッカー変更時
+            picker.addEventListener('input', (e) => {
+                hex.value = e.target.value;
+                updateBlendedColor();
+            });
+            
+            // HEX入力変更時
+            hex.addEventListener('input', (e) => {
+                if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+                    picker.value = e.target.value;
+                    updateBlendedColor();
+                }
+            });
+        }
+        
+        if (ratio) {
+            // 割合変更時
+            ratio.addEventListener('input', (e) => {
+                const ratioValue = e.target.nextElementSibling;
+                if (ratioValue) {
+                    ratioValue.textContent = e.target.value + '%';
+                }
+                updateBlendedColor();
+            });
+        }
+    });
+}
+
+// 色を調合して結果を更新
+function updateBlendedColor() {
+    const mainColor = document.getElementById('stone-color-main').value;
+    const sub1Color = document.getElementById('stone-color-sub1').value;
+    const sub2Color = document.getElementById('stone-color-sub2').value;
+    
+    const mainRatio = parseInt(document.getElementById('stone-color-main-ratio').value) / 100;
+    const sub1Ratio = parseInt(document.getElementById('stone-color-sub1-ratio').value) / 100;
+    const sub2Ratio = parseInt(document.getElementById('stone-color-sub2-ratio').value) / 100;
+    
+    // 割合を正規化（合計が100%になるように）
+    const totalRatio = mainRatio + sub1Ratio + sub2Ratio;
+    const normalizedRatios = {
+        main: mainRatio / totalRatio,
+        sub1: sub1Ratio / totalRatio,
+        sub2: sub2Ratio / totalRatio
+    };
+    
+    // 色を調合
+    const blendedColor = blendColors([
+        { color: mainColor, ratio: normalizedRatios.main },
+        { color: sub1Color, ratio: normalizedRatios.sub1 },
+        { color: sub2Color, ratio: normalizedRatios.sub2 }
+    ]);
+    
+    // プレビューと結果を更新
+    const preview = document.getElementById('blended-color-preview');
+    const hexDisplay = document.getElementById('blended-color-hex');
+    
+    if (preview) {
+        preview.style.background = blendedColor;
+    }
+    if (hexDisplay) {
+        hexDisplay.textContent = blendedColor;
+    }
+}
+
+// 複数の色を割合に基づいて調合
+function blendColors(colors) {
+    let r = 0, g = 0, b = 0;
+    
+    colors.forEach(({ color, ratio }) => {
+        const rgb = hexToRgb(color);
+        r += rgb.r * ratio;
+        g += rgb.g * ratio;
+        b += rgb.b * ratio;
+    });
+    
+    r = Math.round(r);
+    g = Math.round(g);
+    b = Math.round(b);
+    
+    return rgbToHex(r, g, b);
+}
+
+// HEXをRGBに変換
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
+// RGBをHEXに変換
+function rgbToHex(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
 }
 
 // 狼煙屋データ読み込み
@@ -497,6 +599,41 @@ function selectStone(id) {
     document.getElementById('stone-name').value = stone.name || '';
     document.getElementById('stone-type').value = stone.type || '';
     document.getElementById('stone-hiuchiishi').value = stone.is_hiuchiishi ? 'true' : 'false';
+    // カラーピッカーの復元
+    if (colors.main) {
+        document.getElementById('stone-color-main').value = colors.main;
+        document.getElementById('stone-color-main-hex').value = colors.main;
+    }
+    if (colors.sub1) {
+        document.getElementById('stone-color-sub1').value = colors.sub1;
+        document.getElementById('stone-color-sub1-hex').value = colors.sub1;
+    }
+    if (colors.sub2) {
+        document.getElementById('stone-color-sub2').value = colors.sub2;
+        document.getElementById('stone-color-sub2-hex').value = colors.sub2;
+    }
+    if (colors.main_ratio !== undefined) {
+        document.getElementById('stone-color-main-ratio').value = colors.main_ratio;
+        document.querySelector('#stone-color-main-ratio + .ratio-value').textContent = colors.main_ratio + '%';
+    }
+    if (colors.sub1_ratio !== undefined) {
+        document.getElementById('stone-color-sub1-ratio').value = colors.sub1_ratio;
+        document.querySelector('#stone-color-sub1-ratio + .ratio-value').textContent = colors.sub1_ratio + '%';
+    }
+    if (colors.sub2_ratio !== undefined) {
+        document.getElementById('stone-color-sub2-ratio').value = colors.sub2_ratio;
+        document.querySelector('#stone-color-sub2-ratio + .ratio-value').textContent = colors.sub2_ratio + '%';
+    }
+    
+    // 調合色を更新
+    if (colors.blended) {
+        document.getElementById('blended-color-preview').style.background = colors.blended;
+        document.getElementById('blended-color-hex').textContent = colors.blended;
+    } else {
+        updateBlendedColor();
+    }
+    
+    // 従来のフィールド（後方互換性）
     document.getElementById('stone-color-primary').value = colors.primary || '';
     document.getElementById('stone-color-secondary').value = colors.secondary || '';
     document.getElementById('stone-pattern').value = colors.pattern || '';
@@ -764,7 +901,16 @@ async function saveStoneWithImage() {
         name: document.getElementById('stone-name').value,
         type: document.getElementById('stone-type').value,
         colors: {
-            primary: document.getElementById('stone-color-primary').value,
+            // カラーピッカーから取得した色情報
+            main: document.getElementById('stone-color-main').value,
+            sub1: document.getElementById('stone-color-sub1').value,
+            sub2: document.getElementById('stone-color-sub2').value,
+            main_ratio: parseInt(document.getElementById('stone-color-main-ratio').value),
+            sub1_ratio: parseInt(document.getElementById('stone-color-sub1-ratio').value),
+            sub2_ratio: parseInt(document.getElementById('stone-color-sub2-ratio').value),
+            blended: document.getElementById('blended-color-hex').textContent,
+            // 後方互換性のため従来のフィールドも保持
+            primary: document.getElementById('stone-color-primary').value || document.getElementById('blended-color-hex').textContent,
             secondary: document.getElementById('stone-color-secondary').value || null,
             pattern: document.getElementById('stone-pattern').value || null
         },

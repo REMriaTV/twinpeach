@@ -698,12 +698,16 @@
             /* メインコンテンツの調整 */
             .main-content {
                 flex: 1;
-                padding: 0.5rem;
+                padding: 0;
                 overflow-y: auto;
                 overflow-x: hidden;
                 position: relative;
                 z-index: 5;
                 width: 100%;
+            }
+            
+            .main-content form {
+                padding: 0.5rem;
             }
             
             /* スワイプエリア */
@@ -718,7 +722,7 @@
             }
             
             .form-section {
-                padding: 0.8rem;
+                padding: 0.8rem 0.5rem;
                 margin-bottom: 1rem;
                 width: 100%;
                 overflow-x: hidden;
@@ -751,7 +755,7 @@
             }
             
             .save-section {
-                padding: 0.8rem;
+                padding: 0.8rem 0.5rem;
                 display: flex;
                 flex-wrap: wrap;
                 gap: 0.5rem;
@@ -788,7 +792,7 @@
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
                 max-width: 100%;
-                padding: 1rem;
+                padding: 0.8rem 0.5rem;
             }
             
             .color-input-group {

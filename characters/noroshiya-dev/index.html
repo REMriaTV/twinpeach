@@ -644,6 +644,7 @@
         @media (max-width: 768px) {
             .header {
                 padding: 1rem;
+                flex-wrap: wrap;
             }
             
             .header h1 {
@@ -655,8 +656,13 @@
             }
             
             .header-link {
-                padding: 0.4rem 1rem;
-                font-size: 0.85rem;
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            
+            .header-link svg {
+                width: 16px;
+                height: 16px;
             }
             
             .tab-nav {
@@ -826,13 +832,22 @@
             <h1>狼煙屋・鳥・石 データベース管理</h1>
             <div class="subtitle">Twin Peach - 狼煙屋の世界観設定</div>
         </div>
-        <a href="../../stone-map-v6.html" class="header-link" target="_blank">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-            </svg>
-            石マップを見る
-        </a>
+        <div style="display: flex; gap: 10px;">
+            <a href="../../river-login-hiuchiishi.html" class="header-link" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-6 3-6s3 6 3 6s3-6 3-6s3 6 3 6s3-6 3-6s3 6 3 6s3-6 3-6"></path>
+                    <path d="M2 18s3-6 3-6s3 6 3 6s3-6 3-6s3 6 3 6s3-6 3-6s3 6 3 6s3-6 3-6"></path>
+                </svg>
+                河原へ行く
+            </a>
+            <a href="../../stone-map-v6.html" class="header-link" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                </svg>
+                石マップを見る
+            </a>
+        </div>
     </div>
     
     <!-- タブナビゲーション -->

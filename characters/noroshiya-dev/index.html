@@ -641,8 +641,7 @@
                 position: relative;
                 height: calc(100vh - 100px);
                 overflow: hidden;
-                width: 100vw;
-                max-width: 100vw;
+                width: 100%;
             }
             
             /* サイドバーをスライド可能に */
@@ -664,6 +663,7 @@
             
             .sidebar.hidden {
                 margin-left: -100%;
+                display: none !important;
             }
             
             .sidebar-header {
@@ -708,14 +708,10 @@
                 padding: 0;
                 overflow-y: auto;
                 overflow-x: hidden;
-                position: absolute;
-                left: 0;
-                right: 0;
-                top: 0;
-                bottom: 0;
+                position: relative;
                 z-index: 5;
-                width: 100vw;
-                max-width: 100vw;
+                width: 100%;
+                min-width: 0;
             }
             
             .main-content form {
@@ -854,11 +850,13 @@
             }
             
             /* サイドバーが隠れた時の追加スタイル */
+            .container.sidebar-hidden .sidebar {
+                display: none;
+            }
+            
             .container.sidebar-hidden .main-content {
-                position: relative;
-                left: auto;
-                right: auto;
                 width: 100%;
+                max-width: 100%;
             }
         }
         

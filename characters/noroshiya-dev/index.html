@@ -696,8 +696,11 @@
                 flex: 1;
                 padding: 1rem;
                 overflow-y: auto;
+                overflow-x: hidden;
                 position: relative;
                 z-index: 5;
+                width: 100%;
+                max-width: 100%;
             }
             
             /* スワイプエリア */
@@ -714,6 +717,8 @@
             .form-section {
                 padding: 1rem;
                 margin-bottom: 1rem;
+                max-width: 100%;
+                overflow-x: hidden;
             }
             
             .form-section h2 {
@@ -774,24 +779,45 @@
             .color-picker-section {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
+                max-width: 100%;
+                padding: 1rem;
             }
             
             .color-input-group {
                 flex-wrap: wrap;
+                gap: 0.5rem;
             }
             
             /* スライダーの幅を制限 */
             input[type="range"] {
-                max-width: 150px;
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            .color-picker-with-preview {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .color-selections {
+                width: 100%;
+            }
+            
+            .color-selection-item {
+                padding: 0.8rem;
             }
             
             .color-blend-preview {
                 flex-direction: column;
                 align-items: center;
+                width: 100%;
             }
             
             .blend-result {
                 margin-top: 1rem;
+                width: 100%;
+                text-align: center;
             }
         }
         

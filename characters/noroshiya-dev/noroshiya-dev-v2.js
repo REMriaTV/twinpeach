@@ -1240,13 +1240,16 @@ function toggleSidebar() {
     if (!activeTab) return;
     
     const sidebar = activeTab.querySelector('.sidebar');
-    if (!sidebar) return;
+    const container = activeTab.querySelector('.container');
+    if (!sidebar || !container) return;
     
     if (sidebarVisible) {
         sidebar.classList.add('hidden');
+        container.classList.add('sidebar-hidden');
         sidebarVisible = false;
     } else {
         sidebar.classList.remove('hidden');
+        container.classList.remove('sidebar-hidden');
         sidebarVisible = true;
     }
 }
@@ -1287,11 +1290,13 @@ function handleTouchEnd(e) {
     // 右スワイプで表示（隠れている時のみ）
     if (swipeDistance > 30 && !sidebarVisible) {
         sidebar.classList.remove('hidden');
+        activeTab.querySelector('.container').classList.remove('sidebar-hidden');
         sidebarVisible = true;
     }
     // 左スワイプで非表示（表示されている時のみ）
     else if (swipeDistance < -30 && sidebarVisible) {
         sidebar.classList.add('hidden');
+        activeTab.querySelector('.container').classList.add('sidebar-hidden');
         sidebarVisible = false;
     }
     

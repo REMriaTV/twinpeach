@@ -853,12 +853,14 @@
             }
             
             /* サイドバーが隠れた時の追加スタイル */
-            .sidebar.hidden + .main-content {
+            .container.sidebar-hidden .main-content {
                 margin-left: 0;
                 width: 100%;
+                padding-left: 0;
+                padding-right: 0;
             }
             
-            .sidebar.hidden + .main-content form {
+            .container.sidebar-hidden .main-content form {
                 padding-left: 1rem;
                 padding-right: 1rem;
             }

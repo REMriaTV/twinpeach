@@ -407,32 +407,6 @@
             display: none;
         }
         
-        /* レスポンシブ */
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: auto;
-                max-height: 300px;
-            }
-            
-            .main-content {
-                height: auto;
-            }
-            
-            .tab-nav {
-                padding: 0;
-                overflow-x: auto;
-            }
-            
-            .tab-nav button {
-                padding: 1rem;
-                font-size: 0.9rem;
-            }
-        }
         
         /* カラーピッカースタイル */
         .color-picker-section {
@@ -652,17 +626,15 @@
             
             .tab-content {
                 padding: 0;
+                position: relative;
             }
             
             .container {
                 display: flex;
                 flex-direction: row;
                 gap: 0;
-                position: absolute;
-                top: 95px;
-                left: 0;
-                right: 0;
-                bottom: 0;
+                position: relative;
+                height: calc(100vh - 100px);
                 overflow: hidden;
             }
             
@@ -796,6 +768,30 @@
                 margin: 0 auto 1.5rem;
                 font-size: 0.9rem;
                 padding: 0.5rem 1rem;
+            }
+            
+            /* カラーピッカーセクションの調整 */
+            .color-picker-section {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .color-input-group {
+                flex-wrap: wrap;
+            }
+            
+            /* スライダーの幅を制限 */
+            input[type="range"] {
+                max-width: 150px;
+            }
+            
+            .color-blend-preview {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .blend-result {
+                margin-top: 1rem;
             }
         }
         

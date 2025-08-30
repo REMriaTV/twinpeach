@@ -166,6 +166,7 @@
             transition: all 0.2s;
             border: 2px solid transparent;
             position: relative;
+            min-height: 80px;
         }
         
         .item-card:hover {
@@ -202,12 +203,12 @@
         .item-card .item-image {
             width: 40px;
             height: 40px;
-            float: right;
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
             border-radius: 4px;
             object-fit: cover;
             border: 1px solid #ddd;
-            margin-left: 10px;
-            margin-top: -5px;
         }
         
         /* メインコンテンツ（フォーム） */
@@ -683,12 +684,15 @@
             
             .item-card {
                 padding: 0.8rem;
+                padding-bottom: 60px;
                 margin-bottom: 0.4rem;
             }
             
             .item-card .item-image {
                 width: 35px;
                 height: 35px;
+                bottom: 0.8rem;
+                right: 0.8rem;
             }
             
             .item-card .details {

@@ -651,19 +651,19 @@
                 max-width: 320px;
                 position: relative;
                 height: 100%;
-                transition: margin-left 0.3s ease;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 z-index: 10;
                 background: white;
                 box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-                margin-left: 0;
+                transform: translateX(0);
                 flex-shrink: 0;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
             }
             
             .sidebar.hidden {
-                margin-left: -100%;
-                display: none !important;
+                transform: translateX(-100%);
+                transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             }
             
             .sidebar-header {
@@ -850,9 +850,6 @@
             }
             
             /* サイドバーが隠れた時の追加スタイル */
-            .container.sidebar-hidden .sidebar {
-                display: none;
-            }
             
             .container.sidebar-hidden .main-content {
                 width: 100%;
@@ -868,25 +865,24 @@
                 .floating-tab {
                     display: flex;
                     position: fixed;
-                    left: 0;
+                    left: 10px;
                     top: 50%;
                     transform: translateY(-50%);
-                    width: 40px;
-                    height: 80px;
-                    background: #3498db;
+                    width: 30px;
+                    height: 30px;
+                    background: transparent;
                     border: none;
-                    border-radius: 0 8px 8px 0;
                     align-items: center;
                     justify-content: center;
                     z-index: 15;
                     cursor: pointer;
                     transition: all 0.3s ease;
-                    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.2);
-                    font-size: 24px;
-                    font-weight: bold;
-                    color: white;
+                    font-size: 28px;
+                    font-weight: normal;
+                    color: rgba(0, 0, 0, 0.4);
                     opacity: 0;
                     pointer-events: none;
+                    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
                 }
                 
                 .floating-tab.visible {
@@ -899,23 +895,19 @@
                 @keyframes fadeToSubtle {
                     0% {
                         opacity: 1;
-                        background: #3498db;
+                        color: rgba(0, 0, 0, 0.4);
                     }
                     100% {
-                        opacity: 0.3;
-                        background: rgba(52, 152, 219, 0.6);
+                        opacity: 0.5;
+                        color: rgba(0, 0, 0, 0.2);
                     }
                 }
                 
                 .floating-tab.visible:hover {
                     animation: none;
                     opacity: 1;
-                    background: #2980b9;
-                }
-                
-                .floating-tab:hover {
-                    width: 45px;
-                    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.3);
+                    color: rgba(0, 0, 0, 0.6);
+                    transform: translateY(-50%) scale(1.2);
                 }
                 
                 .floating-tab:active {

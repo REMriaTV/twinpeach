@@ -892,11 +892,29 @@
                 .floating-tab.visible {
                     opacity: 1;
                     pointer-events: auto;
+                    animation: fadeToSubtle 3s ease-in-out forwards;
+                    animation-delay: 2s;
+                }
+                
+                @keyframes fadeToSubtle {
+                    0% {
+                        opacity: 1;
+                        background: #3498db;
+                    }
+                    100% {
+                        opacity: 0.3;
+                        background: rgba(52, 152, 219, 0.6);
+                    }
+                }
+                
+                .floating-tab.visible:hover {
+                    animation: none;
+                    opacity: 1;
+                    background: #2980b9;
                 }
                 
                 .floating-tab:hover {
                     width: 45px;
-                    background: #2980b9;
                     box-shadow: 2px 0 16px rgba(0, 0, 0, 0.3);
                 }
                 

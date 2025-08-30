@@ -613,8 +613,8 @@
         /* モバイル用スタイル */
         @media (max-width: 768px) {
             .header {
-                padding: 0.8rem 1rem;
-                gap: 1rem;
+                padding: 0.6rem 1rem;
+                gap: 0.8rem;
             }
             
             .header h1 {
@@ -646,7 +646,7 @@
             }
             
             .tab-nav button {
-                padding: 0.8rem 1rem;
+                padding: 0.6rem 1rem;
                 font-size: 0.9rem;
             }
             
@@ -658,9 +658,12 @@
                 display: flex;
                 flex-direction: row;
                 gap: 0;
-                position: relative;
+                position: absolute;
+                top: 95px;
+                left: 0;
+                right: 0;
+                bottom: 0;
                 overflow: hidden;
-                height: calc(100vh - 120px);
             }
             
             /* サイドバーをスライド可能に */
@@ -676,6 +679,8 @@
                 box-shadow: 2px 0 10px rgba(0,0,0,0.1);
                 margin-left: 0;
                 flex-shrink: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }
             
             .sidebar.hidden {

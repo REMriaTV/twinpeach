@@ -871,13 +871,14 @@
                     left: 0;
                     top: 50%;
                     transform: translateY(-50%);
-                    width: 4px;
-                    height: 60px;
-                    background: linear-gradient(to right, rgba(52, 152, 219, 0.6), transparent);
-                    border-radius: 0 4px 4px 0;
+                    width: 8px;
+                    height: 100px;
+                    background: linear-gradient(to right, rgba(52, 152, 219, 0.9), rgba(52, 152, 219, 0.3));
+                    border-radius: 0 8px 8px 0;
                     z-index: 20;
                     transition: opacity 0.3s ease;
-                    animation: pulse 2s ease-in-out infinite;
+                    animation: pulse 1.5s ease-in-out infinite;
+                    box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
                 }
                 
                 .swipe-indicator.hidden {
@@ -887,16 +888,19 @@
                 
                 @keyframes pulse {
                     0% {
-                        opacity: 0.4;
-                        width: 4px;
+                        opacity: 0.6;
+                        width: 8px;
+                        box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
                     }
                     50% {
-                        opacity: 0.8;
-                        width: 6px;
+                        opacity: 1;
+                        width: 12px;
+                        box-shadow: 0 0 20px rgba(52, 152, 219, 0.8);
                     }
                     100% {
-                        opacity: 0.4;
-                        width: 4px;
+                        opacity: 0.6;
+                        width: 8px;
+                        box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
                     }
                 }
             }

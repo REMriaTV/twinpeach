@@ -709,10 +709,13 @@
                 position: relative;
                 z-index: 5;
                 width: 100%;
+                min-width: 0; /* flexアイテムの幅調整 */
             }
             
             .main-content form {
-                padding: 0.5rem;
+                padding: 1rem;
+                width: 100%;
+                box-sizing: border-box;
             }
             
             /* スワイプエリア */
@@ -727,10 +730,11 @@
             }
             
             .form-section {
-                padding: 0.8rem 0.5rem;
+                padding: 1rem;
                 margin-bottom: 1rem;
                 width: 100%;
                 overflow-x: hidden;
+                box-sizing: border-box;
             }
             
             .form-section h2 {
@@ -760,11 +764,12 @@
             }
             
             .save-section {
-                padding: 0.8rem 0.5rem;
+                padding: 1rem;
                 display: flex;
                 flex-wrap: wrap;
                 gap: 0.5rem;
                 width: 100%;
+                box-sizing: border-box;
             }
             
             .save-section button {
@@ -797,7 +802,8 @@
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
                 max-width: 100%;
-                padding: 0.8rem 0.5rem;
+                padding: 1rem;
+                box-sizing: border-box;
             }
             
             .color-input-group {
@@ -807,8 +813,8 @@
             
             /* スライダーの幅を制限 */
             input[type="range"] {
-                max-width: 100%;
-                width: 100%;
+                max-width: calc(100% - 120px); /* ラベルと値の分のスペースを確保 */
+                width: calc(100% - 120px);
             }
             
             .color-picker-with-preview {

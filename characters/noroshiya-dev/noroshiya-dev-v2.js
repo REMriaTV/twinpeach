@@ -68,6 +68,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 保存された採取ポイントを読み込み
     loadSavedLocations();
+    
+    // モバイルのスワイプ機能を初期化
+    if (window.innerWidth <= 768) {
+        initMobileSwipe();
+    }
 });
 
 // タブ切り替え
@@ -1246,15 +1251,12 @@ function toggleSidebar() {
     }
 }
 
-// スワイプジェスチャーの実装
-document.addEventListener('DOMContentLoaded', () => {
-    // モバイルのみ
-    if (window.innerWidth <= 768) {
-        document.addEventListener('touchstart', handleTouchStart, { passive: true });
-        document.addEventListener('touchmove', handleTouchMove, { passive: true });
-        document.addEventListener('touchend', handleTouchEnd, { passive: true });
-    }
-});
+// モバイルスワイプ機能の初期化
+function initMobileSwipe() {
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+}
 
 // タッチ開始
 function handleTouchStart(e) {
@@ -1283,15 +1285,17 @@ function handleTouchEnd(e) {
     if (!sidebar) return;
     
     // 右スワイプで表示（隠れている時のみ）
-    if (swipeDistance > 50 && !sidebarVisible) {
+    if (swipeDistance > 30 && !sidebarVisible) {
         sidebar.classList.remove('hidden');
         sidebarVisible = true;
     }
     // 左スワイプで非表示（表示されている時のみ）
-    else if (swipeDistance < -50 && sidebarVisible) {
+    else if (swipeDistance < -30 && sidebarVisible) {
         sidebar.classList.add('hidden');
         sidebarVisible = false;
     }
+    
+    isDragging = false;
 }
 
 // タブ切り替え時にサイドバーの状態をリセット

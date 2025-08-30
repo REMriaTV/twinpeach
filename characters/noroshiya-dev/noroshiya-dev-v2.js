@@ -1241,18 +1241,24 @@ function toggleSidebar() {
     
     const sidebar = activeTab.querySelector('.sidebar');
     const container = activeTab.querySelector('.container');
+    const floatingTab = document.getElementById('floating-tab');
     if (!sidebar || !container) return;
     
     if (sidebarVisible) {
         sidebar.classList.add('hidden');
         container.classList.add('sidebar-hidden');
         sidebarVisible = false;
+        if (floatingTab) floatingTab.classList.add('visible');
     } else {
         sidebar.classList.remove('hidden');
         container.classList.remove('sidebar-hidden');
         sidebarVisible = true;
+        if (floatingTab) floatingTab.classList.remove('visible');
     }
 }
+
+// グローバル関数として公開
+window.toggleSidebar = toggleSidebar;
 
 // モバイルスワイプ機能の初期化
 function initMobileSwipe() {
@@ -1260,10 +1266,10 @@ function initMobileSwipe() {
     document.addEventListener('touchmove', handleTouchMove, { passive: true });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
     
-    // 初期状態でインジケーターを非表示（サイドバーが表示されているため）
-    const indicator = document.getElementById('swipe-indicator');
-    if (indicator && sidebarVisible) {
-        indicator.classList.add('hidden');
+    // 初期状態でフローティングタブを非表示（サイドバーが表示されているため）
+    const floatingTab = document.getElementById('floating-tab');
+    if (floatingTab && sidebarVisible) {
+        floatingTab.classList.remove('visible');
     }
 }
 
@@ -1293,21 +1299,21 @@ function handleTouchEnd(e) {
     const sidebar = activeTab.querySelector('.sidebar');
     if (!sidebar) return;
     
-    const indicator = document.getElementById('swipe-indicator');
+    const floatingTab = document.getElementById('floating-tab');
     
     // 右スワイプで表示（隠れている時のみ）
     if (swipeDistance > 30 && !sidebarVisible) {
         sidebar.classList.remove('hidden');
         activeTab.querySelector('.container').classList.remove('sidebar-hidden');
         sidebarVisible = true;
-        if (indicator) indicator.classList.add('hidden');
+        if (floatingTab) floatingTab.classList.remove('visible');
     }
     // 左スワイプで非表示（表示されている時のみ）
     else if (swipeDistance < -30 && sidebarVisible) {
         sidebar.classList.add('hidden');
         activeTab.querySelector('.container').classList.add('sidebar-hidden');
         sidebarVisible = false;
-        if (indicator) indicator.classList.remove('hidden');
+        if (floatingTab) floatingTab.classList.add('visible');
     }
     
     isDragging = false;

@@ -859,49 +859,49 @@
                 max-width: 100%;
             }
             
-            /* スワイプインジケーター */
-            .swipe-indicator {
+            /* フローティングタブ */
+            .floating-tab {
                 display: none;
             }
             
             @media (max-width: 768px) {
-                .swipe-indicator {
-                    display: block;
+                .floating-tab {
+                    display: flex;
                     position: fixed;
                     left: 0;
                     top: 50%;
                     transform: translateY(-50%);
-                    width: 8px;
-                    height: 100px;
-                    background: linear-gradient(to right, rgba(52, 152, 219, 0.9), rgba(52, 152, 219, 0.3));
+                    width: 32px;
+                    height: 60px;
+                    background: rgba(255, 255, 255, 0.9);
+                    border: 1px solid #e0e0e0;
+                    border-left: none;
                     border-radius: 0 8px 8px 0;
-                    z-index: 20;
-                    transition: opacity 0.3s ease;
-                    animation: pulse 1.5s ease-in-out infinite;
-                    box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
-                }
-                
-                .swipe-indicator.hidden {
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 15;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+                    font-size: 18px;
+                    color: #555;
                     opacity: 0;
                     pointer-events: none;
                 }
                 
-                @keyframes pulse {
-                    0% {
-                        opacity: 0.6;
-                        width: 8px;
-                        box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
-                    }
-                    50% {
-                        opacity: 1;
-                        width: 12px;
-                        box-shadow: 0 0 20px rgba(52, 152, 219, 0.8);
-                    }
-                    100% {
-                        opacity: 0.6;
-                        width: 8px;
-                        box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
-                    }
+                .floating-tab.visible {
+                    opacity: 1;
+                    pointer-events: auto;
+                }
+                
+                .floating-tab:hover {
+                    width: 36px;
+                    background: rgba(255, 255, 255, 1);
+                    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+                }
+                
+                .floating-tab:active {
+                    transform: translateY(-50%) scale(0.95);
                 }
             }
         }
@@ -944,8 +944,8 @@
         <button class="tab-btn" data-tab="noroshiya">狼煙屋</button>
     </div>
     
-    <!-- スワイプインジケーター -->
-    <div class="swipe-indicator" id="swipe-indicator"></div>
+    <!-- フローティングタブ -->
+    <div class="floating-tab" id="floating-tab" onclick="toggleSidebar()">&lt;</div>
     
     <!-- 狼煙屋タブ -->
     <div class="tab-content" id="noroshiya-tab">

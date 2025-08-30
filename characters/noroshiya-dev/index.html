@@ -858,6 +858,48 @@
                 width: 100%;
                 max-width: 100%;
             }
+            
+            /* スワイプインジケーター */
+            .swipe-indicator {
+                display: none;
+            }
+            
+            @media (max-width: 768px) {
+                .swipe-indicator {
+                    display: block;
+                    position: fixed;
+                    left: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 4px;
+                    height: 60px;
+                    background: linear-gradient(to right, rgba(52, 152, 219, 0.6), transparent);
+                    border-radius: 0 4px 4px 0;
+                    z-index: 20;
+                    transition: opacity 0.3s ease;
+                    animation: pulse 2s ease-in-out infinite;
+                }
+                
+                .swipe-indicator.hidden {
+                    opacity: 0;
+                    pointer-events: none;
+                }
+                
+                @keyframes pulse {
+                    0% {
+                        opacity: 0.4;
+                        width: 4px;
+                    }
+                    50% {
+                        opacity: 0.8;
+                        width: 6px;
+                    }
+                    100% {
+                        opacity: 0.4;
+                        width: 4px;
+                    }
+                }
+            }
         }
         
         /* デスクトップでは選択中の情報を非表示 */
@@ -897,6 +939,9 @@
         <button class="tab-btn" data-tab="birds">鳥</button>
         <button class="tab-btn" data-tab="noroshiya">狼煙屋</button>
     </div>
+    
+    <!-- スワイプインジケーター -->
+    <div class="swipe-indicator" id="swipe-indicator"></div>
     
     <!-- 狼煙屋タブ -->
     <div class="tab-content" id="noroshiya-tab">

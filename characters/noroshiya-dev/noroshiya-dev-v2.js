@@ -1259,6 +1259,12 @@ function initMobileSwipe() {
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
     document.addEventListener('touchmove', handleTouchMove, { passive: true });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    
+    // 初期状態でインジケーターを非表示（サイドバーが表示されているため）
+    const indicator = document.getElementById('swipe-indicator');
+    if (indicator && sidebarVisible) {
+        indicator.classList.add('hidden');
+    }
 }
 
 // タッチ開始
@@ -1287,17 +1293,21 @@ function handleTouchEnd(e) {
     const sidebar = activeTab.querySelector('.sidebar');
     if (!sidebar) return;
     
+    const indicator = document.getElementById('swipe-indicator');
+    
     // 右スワイプで表示（隠れている時のみ）
     if (swipeDistance > 30 && !sidebarVisible) {
         sidebar.classList.remove('hidden');
         activeTab.querySelector('.container').classList.remove('sidebar-hidden');
         sidebarVisible = true;
+        if (indicator) indicator.classList.add('hidden');
     }
     // 左スワイプで非表示（表示されている時のみ）
     else if (swipeDistance < -30 && sidebarVisible) {
         sidebar.classList.add('hidden');
         activeTab.querySelector('.container').classList.add('sidebar-hidden');
         sidebarVisible = false;
+        if (indicator) indicator.classList.remove('hidden');
     }
     
     isDragging = false;

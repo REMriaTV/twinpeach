@@ -1222,3 +1222,138 @@ function saveCurrentLocation() {
 // グローバル関数として公開
 window.loadSavedLocation = loadSavedLocation;
 window.saveCurrentLocation = saveCurrentLocation;
+
+// スライドパネル機能
+let currentPanel = null;
+let touchStartX = 0;
+let touchEndX = 0;
+
+// スライドパネルを開く
+function openPanel(panelType) {
+    const sidebar = document.querySelector(`#${panelType}-tab .sidebar`);
+    const overlay = document.getElementById('slideOverlay');
+    
+    if (sidebar && overlay) {
+        currentPanel = sidebar;
+        sidebar.classList.add('active');
+        overlay.style.display = 'block';
+        setTimeout(() => overlay.classList.add('active'), 10);
+        
+        // body のスクロールを無効化
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+// スライドパネルを閉じる
+function closePanel() {
+    if (currentPanel) {
+        currentPanel.classList.remove('active');
+        const overlay = document.getElementById('slideOverlay');
+        overlay.classList.remove('active');
+        
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            currentPanel = null;
+            // body のスクロールを復活
+            document.body.style.overflow = '';
+        }, 300);
+    }
+}
+
+// 石パネルを開く
+function openStonePanel() {
+    openPanel('stones');
+}
+
+// モバイルメニューボタンのイベント
+document.addEventListener('DOMContentLoaded', () => {
+    const menuBtn = document.getElementById('mobileMenuBtn');
+    const overlay = document.getElementById('slideOverlay');
+    
+    if (menuBtn) {
+        menuBtn.addEventListener('click', () => {
+            // 現在アクティブなタブを取得
+            const activeTab = document.querySelector('.tab-content.active').id.replace('-tab', '');
+            openPanel(activeTab);
+        });
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', closePanel);
+    }
+    
+    // スワイプジェスチャーの実装
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+});
+
+// タッチ開始
+function handleTouchStart(e) {
+    touchStartX = e.touches[0].clientX;
+}
+
+// タッチ移動
+function handleTouchMove(e) {
+    if (!currentPanel) {
+        // パネルが開いていない場合、左端からのスワイプを検出
+        if (touchStartX < 20) {
+            touchEndX = e.touches[0].clientX;
+            if (touchEndX - touchStartX > 50) {
+                // 現在アクティブなタブを取得
+                const activeTab = document.querySelector('.tab-content.active').id.replace('-tab', '');
+                openPanel(activeTab);
+            }
+        }
+    }
+}
+
+// タッチ終了
+function handleTouchEnd(e) {
+    if (currentPanel) {
+        touchEndX = e.changedTouches[0].clientX;
+        
+        // 左にスワイプでパネルを閉じる
+        if (touchStartX - touchEndX > 100) {
+            closePanel();
+        }
+    }
+}
+
+// 石選択時の処理を拡張
+const originalDisplayStoneDetails = window.displayStoneDetails;
+window.displayStoneDetails = function(stoneId) {
+    // 元の処理を実行
+    if (originalDisplayStoneDetails) {
+        originalDisplayStoneDetails(stoneId);
+    }
+    
+    // モバイルの場合、選択中の石情報を更新
+    if (window.innerWidth <= 768) {
+        const stone = stonesList.find(s => s.id === stoneId);
+        if (stone) {
+            const nameElement = document.getElementById('selected-stone-name');
+            const iconElement = document.getElementById('selected-stone-icon');
+            const emojiElement = document.getElementById('selected-stone-emoji');
+            
+            if (nameElement) nameElement.textContent = stone.name || '名前なし';
+            
+            if (stone.image_url && iconElement && emojiElement) {
+                iconElement.src = stone.image_url;
+                iconElement.style.display = 'block';
+                emojiElement.style.display = 'none';
+            } else if (iconElement && emojiElement) {
+                iconElement.style.display = 'none';
+                emojiElement.style.display = 'block';
+            }
+            
+            // パネルを自動で閉じる
+            closePanel();
+        }
+    }
+};
+
+// グローバル関数として公開
+window.openStonePanel = openStonePanel;
+window.openPanel = openPanel;
+window.closePanel = closePanel;

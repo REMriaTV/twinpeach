@@ -640,9 +640,9 @@
                 gap: 0;
                 position: relative;
                 height: calc(100vh - 100px);
-                overflow-x: hidden;
-                overflow-y: hidden;
-                width: 100%;
+                overflow: hidden;
+                width: 100vw;
+                max-width: 100vw;
             }
             
             /* サイドバーをスライド可能に */
@@ -708,21 +708,22 @@
                 padding: 0;
                 overflow-y: auto;
                 overflow-x: hidden;
-                position: relative;
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
                 z-index: 5;
-                width: 100%;
-                min-width: 0; /* flexアイテムの幅調整 */
-                margin-left: 0;
-                transition: none;
+                width: 100vw;
+                max-width: 100vw;
             }
             
             .main-content form {
                 padding: 1rem;
-                padding-left: 1.5rem;
-                padding-right: 1.5rem;
                 width: 100%;
                 box-sizing: border-box;
                 max-width: 100%;
+                overflow-x: hidden;
             }
             
             /* スワイプエリア */
@@ -854,15 +855,10 @@
             
             /* サイドバーが隠れた時の追加スタイル */
             .container.sidebar-hidden .main-content {
-                margin-left: 0;
+                position: relative;
+                left: auto;
+                right: auto;
                 width: 100%;
-                padding-left: 0;
-                padding-right: 0;
-            }
-            
-            .container.sidebar-hidden .main-content form {
-                padding-left: 1rem;
-                padding-right: 1rem;
             }
         }
         

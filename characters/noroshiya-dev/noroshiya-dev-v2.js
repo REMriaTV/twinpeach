@@ -547,6 +547,12 @@ function displayStonesList() {
     stonesList.forEach(stone => {
         const card = document.createElement('div');
         card.className = 'item-card';
+        
+        // 火打石の場合はクラスを追加
+        if (stone.is_hiuchiishi) {
+            card.classList.add('hiuchiishi');
+        }
+        
         card.onclick = () => selectStone(stone.id);
         
         if (stone.id === currentStoneId) {
@@ -582,6 +588,7 @@ function displayStonesList() {
         
         card.innerHTML = `
             ${stoneIdDisplay}
+            ${stone.is_hiuchiishi ? '<div class="hiuchiishi-indicator">火</div>' : ''}
             ${stone.image_url ? `<img src="${stone.image_url}" alt="${stone.name}" class="item-image">` : ''}
             <div class="name">${stone.name}</div>
             <div class="details">${subText}</div>

@@ -588,7 +588,6 @@ function displayStonesList() {
         
         card.innerHTML = `
             ${stoneIdDisplay}
-            ${stone.is_hiuchiishi ? '<div class="hiuchiishi-indicator"></div>' : ''}
             ${stone.image_url ? `<img src="${stone.image_url}" alt="${stone.name}" class="item-image">` : ''}
             <div class="name">${stone.name}</div>
             <div class="details">${subText}</div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>狼煙屋・鳥・石 データベース管理</title>
+    <title>火打石スケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -212,24 +212,23 @@
             border: 1px solid #ddd;
         }
         
-        /* 火打石インジケーター */
-        .hiuchiishi-indicator {
+        /* 火打石カード - 赤丸インジケーター */
+        .item-card.hiuchiishi::before {
+            content: '';
             position: absolute;
             top: 50%;
-            left: -4px;
+            left: 10px;
             transform: translateY(-50%);
-            width: 8px;
-            height: 8px;
-            background: #ff4444;
+            width: 10px;
+            height: 10px;
+            background-color: #ff4444;
             border-radius: 50%;
-            box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.3);
+            z-index: 1;
         }
         
-        /* 火打石カード */
         .item-card.hiuchiishi {
-            border-left-width: 4px;
-            border-left-color: #ff4444;
-            padding-left: 1.2rem;
+            position: relative;
+            padding-left: 30px; /* 赤丸のスペースを確保 */
         }
         
         /* メインコンテンツ（フォーム） */

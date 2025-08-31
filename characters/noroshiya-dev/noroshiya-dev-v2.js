@@ -676,6 +676,11 @@ function selectStone(id) {
         if (noImagePlaceholder) {
             noImagePlaceholder.style.display = 'none';
         }
+        // 抽出ボタンを表示
+        const extractBtn = document.getElementById('extract-colors-btn');
+        if (extractBtn) {
+            extractBtn.style.display = 'block';
+        }
     } else {
         previewEl.innerHTML = '<div class="placeholder">画像なし</div>';
         currentStoneImage = null;
@@ -686,6 +691,11 @@ function selectStone(id) {
         }
         if (noImagePlaceholder) {
             noImagePlaceholder.style.display = 'block';
+        }
+        // 抽出ボタンを非表示
+        const extractBtn = document.getElementById('extract-colors-btn');
+        if (extractBtn) {
+            extractBtn.style.display = 'none';
         }
     }
     
@@ -1227,6 +1237,95 @@ function saveCurrentLocation() {
 // グローバル関数として公開
 window.loadSavedLocation = loadSavedLocation;
 window.saveCurrentLocation = saveCurrentLocation;
+
+// 画像から色を抽出する関数
+async function extractColorsFromImage() {
+    const img = document.getElementById('stone-color-preview-image');
+    if (!img || !img.src || img.style.display === 'none') {
+        alert('画像を選択してください');
+        return;
+    }
+    
+    try {
+        // Color Thiefのインスタンスを作成
+        const colorThief = new ColorThief();
+        
+        // 画像が読み込まれていることを確認
+        if (img.complete) {
+            extractColors(img);
+        } else {
+            img.addEventListener('load', function() {
+                extractColors(img);
+            });
+        }
+    } catch (error) {
+        console.error('色の抽出エラー:', error);
+        alert('色の抽出に失敗しました');
+    }
+}
+
+// 実際の色抽出処理
+function extractColors(img) {
+    const colorThief = new ColorThief();
+    
+    // パレット（3色）を取得
+    const palette = colorThief.getPalette(img, 3);
+    
+    if (palette && palette.length >= 3) {
+        // RGB値を16進数に変換
+        const colors = palette.map(rgb => rgbToHex(rgb[0], rgb[1], rgb[2]));
+        
+        // 各色の明度を計算して、最も暗い色をメインに
+        const colorsWithBrightness = colors.map((color, index) => {
+            const rgb = palette[index];
+            const brightness = (rgb[0] * 0.299 + rgb[1] * 0.587 + rgb[2] * 0.114);
+            return { color, brightness, rgb };
+        });
+        
+        // 明度でソート（暗い順）
+        colorsWithBrightness.sort((a, b) => a.brightness - b.brightness);
+        
+        // 色をスライダーに設定
+        // メインカラー（最も暗い色）
+        document.getElementById('stone-color-main').value = colorsWithBrightness[0].color;
+        document.getElementById('stone-color-main-hex').value = colorsWithBrightness[0].color;
+        document.getElementById('stone-color-main-ratio').value = 50;
+        document.getElementById('stone-color-main-ratio').nextElementSibling.textContent = '50%';
+        
+        // サブカラー1（中間の色）
+        document.getElementById('stone-color-sub1').value = colorsWithBrightness[1].color;
+        document.getElementById('stone-color-sub1-hex').value = colorsWithBrightness[1].color;
+        document.getElementById('stone-color-sub1-ratio').value = 35;
+        document.getElementById('stone-color-sub1-ratio').nextElementSibling.textContent = '35%';
+        
+        // サブカラー2（最も明るい色）
+        document.getElementById('stone-color-sub2').value = colorsWithBrightness[2].color;
+        document.getElementById('stone-color-sub2-hex').value = colorsWithBrightness[2].color;
+        document.getElementById('stone-color-sub2-ratio').value = 15;
+        document.getElementById('stone-color-sub2-ratio').nextElementSibling.textContent = '15%';
+        
+        // 調合色を更新
+        updateBlendedColor();
+        
+        // 成功メッセージ
+        const notification = document.createElement('div');
+        notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #27ae60; color: white; padding: 10px 20px; border-radius: 4px; z-index: 10000;';
+        notification.textContent = '色を抽出しました';
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 2000);
+    }
+}
+
+// RGB値を16進数に変換
+function rgbToHex(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+// グローバル関数として公開
+window.extractColorsFromImage = extractColorsFromImage;
 
 // スライドパネル機能（シンプル版）
 let sidebarVisible = true;

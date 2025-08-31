@@ -576,6 +576,30 @@
             flex: 1;
         }
         
+        /* 色抽出ボタン */
+        .extract-colors-btn {
+            display: block;
+            width: 100%;
+            max-width: 200px;
+            margin: 0.5rem auto;
+            padding: 0.5rem 1rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+        
+        .extract-colors-btn:hover {
+            background: #2980b9;
+        }
+        
+        .extract-colors-btn:active {
+            transform: scale(0.98);
+        }
+        
         /* スマホ対応 */
         @media (max-width: 768px) {
             .color-picker-with-preview {
@@ -1281,6 +1305,10 @@
                                     <div class="no-image-placeholder">画像なし</div>
                                 </div>
                                 
+                                <button type="button" id="extract-colors-btn" class="extract-colors-btn" onclick="extractColorsFromImage()" style="display: none;">
+                                    画像から色を抽出
+                                </button>
+                                
                                 <div class="color-selections">
                                 <!-- メインカラー -->
                                 <div class="color-selection-item">
@@ -1527,6 +1555,8 @@
     
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Color Thief -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
     <!-- メインJS -->
     <script src="noroshiya-dev-v2.js"></script>
 </body>

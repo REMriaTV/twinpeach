@@ -649,21 +649,22 @@
                 width: 75%;
                 min-width: 280px;
                 max-width: 320px;
-                position: relative;
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
                 height: 100%;
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 z-index: 10;
                 background: white;
                 box-shadow: 2px 0 10px rgba(0,0,0,0.1);
                 transform: translateX(0);
-                flex-shrink: 0;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
             }
             
             .sidebar.hidden {
                 transform: translateX(-100%);
-                transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             }
             
             .sidebar-header {
@@ -704,14 +705,16 @@
             
             /* メインコンテンツの調整 */
             .main-content {
-                flex: 1;
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
                 padding: 0;
                 overflow-y: auto;
                 overflow-x: hidden;
-                position: relative;
                 z-index: 5;
                 width: 100%;
-                min-width: 0;
             }
             
             .main-content form {

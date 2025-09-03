@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V4デジタルスケッチブック</title>
+    <title>【改修済】V4デジタルスケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -714,11 +714,11 @@
                 width: 75%;
                 min-width: 280px;
                 max-width: 320px;
-                position: fixed; /* absoluteからfixedに変更 */
+                position: fixed;
                 left: 0;
-                top: 0;
+                top: calc(60px + 48px); /* ヘッダー + タブの後から開始 */
                 bottom: 0;
-                height: 100vh; /* 画面全体の高さ */
+                height: calc(100vh - 60px - 48px); /* 画面高さからヘッダーとタブを引く */
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 z-index: 10;
                 background: white;
@@ -726,8 +726,8 @@
                 transform: translateX(-100%); /* 初期状態で非表示 */
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
-                padding-top: calc(60px + 48px); /* ヘッダー + タブの高さ */
-                padding-bottom: 20px; /* 下部の余白 */
+                display: flex;
+                flex-direction: column;
             }
             
             .sidebar.hidden {
@@ -737,10 +737,11 @@
             .sidebar-header {
                 padding: 1rem;
                 position: sticky;
-                top: calc(60px + 48px); /* ヘッダー + タブの高さに合わせる */
+                top: 0; /* サイドバー内の最上部に固定 */
                 background: white;
                 z-index: 10;
                 border-bottom: 1px solid #e0e0e0;
+                flex-shrink: 0; /* 縮まないように */
             }
             
             .sidebar-header h3 {
@@ -750,6 +751,14 @@
             .add-btn {
                 font-size: 0.85rem;
                 padding: 0.4rem 0.8rem;
+            }
+            
+            /* アイテムリスト */
+            .item-list {
+                flex: 1;
+                overflow-y: auto;
+                padding: 0.5rem;
+                padding-bottom: 100px; /* 最後のアイテムのための余白 */
             }
             
             .item-card {

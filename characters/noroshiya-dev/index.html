@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【スクロール改修済】V4デジタルスケッチブック</title>
+    <title>【基本情報コンパクト】V4デジタルスケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -870,16 +870,46 @@
             
             /* 画像プレビューエリア */
             .image-preview {
-                width: 150px;
-                height: 150px;
-                margin: 0 auto 1rem;
+                width: 120px;
+                height: 120px;
+                margin: 0 auto 0.5rem;
             }
             
             .image-upload-btn {
                 display: block;
-                margin: 0 auto 1.5rem;
-                font-size: 0.9rem;
+                margin: 0 auto 0.8rem;
+                font-size: 0.85rem;
+                padding: 0.4rem 0.8rem;
+            }
+            
+            /* 基本情報セクションのコンパクト化 */
+            .form-section.basic-info {
                 padding: 0.5rem 1rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .form-section.basic-info h2 {
+                margin-bottom: 0.5rem;
+                font-size: 1.1rem;
+            }
+            
+            .form-section.basic-info .form-grid {
+                gap: 0.5rem;
+            }
+            
+            .form-section.basic-info .form-group {
+                margin-bottom: 0.5rem;
+            }
+            
+            .form-section.basic-info .form-group label {
+                margin-bottom: 0.2rem;
+                font-size: 0.85rem;
+            }
+            
+            .form-section.basic-info input,
+            .form-section.basic-info select {
+                padding: 0.4rem 0.6rem;
+                font-size: 16px;
             }
             
             /* カラーピッカーセクションをよりコンパクトに */
@@ -1435,7 +1465,7 @@
                     </button>
                     <input type="file" id="stone-image-input" accept="image/*" onchange="handleStoneImageSelect(event)">
                     
-                    <div class="form-section">
+                    <div class="form-section basic-info">
                         <h2>基本情報</h2>
                         <div class="form-grid">
                             <div class="form-group">

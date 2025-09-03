@@ -729,7 +729,7 @@
             }
             
             .sidebar.hidden {
-                transform: translateX(-100%);
+                transform: translateX(-100%) !important;
             }
             
             .sidebar-header {
@@ -1040,13 +1040,13 @@
                 left: 0;
                 top: 50%;
                 transform: translateY(-50%);
-                width: 20px;
+                width: 30px;
                 height: 120px;
-                background: rgba(0, 0, 0, 0.1);
+                background: rgba(0, 0, 0, 0.15);
                 border-top-right-radius: 10px;
                 border-bottom-right-radius: 10px;
                 cursor: pointer;
-                z-index: 1001;
+                z-index: 9999;
                 transition: all 0.3s ease;
             }
             
@@ -1117,7 +1117,7 @@
     
     <div class="header">
         <div class="header-content">
-            <h1>デジタルスケッチブック</h1>
+            <h1>V3デジタルスケッチブック</h1>
             <div class="subtitle">狼煙屋のマッチングシステム用データベース</div>
         </div>
         <div class="header-links">

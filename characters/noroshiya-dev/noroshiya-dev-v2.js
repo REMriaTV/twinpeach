@@ -1433,15 +1433,23 @@ function toggleSidebar() {
 // サイドバーを表示
 function showSidebar() {
     const activeTab = document.querySelector('.tab-content.active');
-    if (!activeTab) return;
+    if (!activeTab) {
+        console.error('Active tab not found');
+        return;
+    }
     
     const sidebar = activeTab.querySelector('.sidebar');
     const container = activeTab.querySelector('.container');
     const indicator = document.getElementById('slide-indicator');
     
-    if (!sidebar || !container) return;
+    if (!sidebar || !container) {
+        console.error('Sidebar or container not found');
+        return;
+    }
     
+    // 強制的にスタイルを適用
     sidebar.classList.remove('hidden');
+    sidebar.style.transform = 'translateX(0)';
     container.classList.remove('sidebar-hidden');
     if (indicator) indicator.classList.add('hidden');
     sidebarVisible = true;
@@ -1459,6 +1467,7 @@ function hideSidebar() {
     if (!sidebar || !container) return;
     
     sidebar.classList.add('hidden');
+    sidebar.style.transform = '';  // スタイルをリセット
     container.classList.add('sidebar-hidden');
     if (indicator) indicator.classList.remove('hidden');
     sidebarVisible = false;

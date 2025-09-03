@@ -69,9 +69,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 保存された採取ポイントを読み込み
     loadSavedLocations();
     
-    // モバイルのスワイプ機能を初期化
+    // モバイルの初期設定
     if (window.innerWidth <= 768) {
-        initMobileSwipe();
+        // 初期状態でサイドバーを非表示に
+        hideSidebar();
     }
 });
 
@@ -524,7 +525,7 @@ async function loadStonesData() {
         const { data, error } = await supabase
             .from('stones')
             .select('*')
-            .order('id', { ascending: true });
+            .order('id', { ascending: false });
         
         if (error) throw error;
         
@@ -1111,17 +1112,29 @@ function extractLatLngFromUrl(url) {
 window.extractLatLngFromUrl = extractLatLngFromUrl;
 
 // 採取ポイント管理機能
-function loadSavedLocations() {
-    // ローカルストレージから採取ポイントを読み込み
-    const saved = localStorage.getItem('twinpeach_saved_locations');
-    if (saved) {
-        savedLocations = JSON.parse(saved);
-    } else {
-        savedLocations = [];
+async function loadSavedLocations() {
+    try {
+        // Supabaseから採取ポイントを読み込み
+        const { data, error } = await supabase
+            .from('saved_locations')
+            .select('*')
+            .order('name', { ascending: true });
+        
+        if (error) throw error;
+        
+        savedLocations = data || [];
+        
+        // セレクトボックスを更新
+        updateLocationSelect();
+    } catch (error) {
+        console.error('採取ポイントの読み込みエラー:', error);
+        // エラー時はローカルストレージから読み込みを試みる（後方互換性）
+        const saved = localStorage.getItem('twinpeach_saved_locations');
+        if (saved) {
+            savedLocations = JSON.parse(saved);
+            updateLocationSelect();
+        }
     }
-    
-    // セレクトボックスを更新
-    updateLocationSelect();
 }
 
 // 採取ポイントセレクトボックスを更新
@@ -1135,48 +1148,60 @@ function updateLocationSelect() {
     }
     
     // 保存された採取ポイントを追加
-    savedLocations.forEach((location, index) => {
+    savedLocations.forEach((location) => {
         const option = document.createElement('option');
-        option.value = index;
+        option.value = location.id; // Supabaseのidを使用
         option.textContent = `${location.name} (${location.prefecture}${location.city || ''})`;
         select.appendChild(option);
     });
 }
 
 // 選択された採取ポイントを読み込み
-function loadSavedLocation() {
+async function loadSavedLocation() {
     const select = document.getElementById('saved-locations');
-    const index = select.value;
+    const locationId = select.value;
     
-    if (index === '') return;
+    if (locationId === '') return;
     
-    const location = savedLocations[parseInt(index)];
-    if (!location) return;
-    
-    // フォームに値を設定
-    document.getElementById('stone-location-name').value = location.location_name || '';
-    document.getElementById('stone-prefecture').value = location.prefecture || '';
-    document.getElementById('stone-city').value = location.city || '';
-    document.getElementById('stone-location-tag').value = location.location_tag || '';
-    document.getElementById('stone-location-detail').value = location.location_detail || '';
-    document.getElementById('stone-location-notes').value = location.location_notes || '';
-    document.getElementById('stone-address').value = location.address || '';
-    document.getElementById('stone-lat').value = location.lat || '';
-    document.getElementById('stone-lng').value = location.lng || '';
-    
-    // ユーザーに通知
-    const notification = document.createElement('div');
-    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #9b59b6; color: white; padding: 10px 20px; border-radius: 4px; z-index: 10000;';
-    notification.textContent = `採取ポイント「${location.name}」を読み込みました`;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
+    try {
+        // Supabaseから特定の採取ポイントを読み込み
+        const { data: location, error } = await supabase
+            .from('saved_locations')
+            .select('*')
+            .eq('id', locationId)
+            .single();
+        
+        if (error) throw error;
+        if (!location) return;
+        
+        // フォームに値を設定
+        document.getElementById('stone-location-name').value = location.location_name || location.name || '';
+        document.getElementById('stone-prefecture').value = location.prefecture || '';
+        document.getElementById('stone-city').value = location.city || '';
+        document.getElementById('stone-location-tag').value = location.location_tag || '';
+        document.getElementById('stone-location-detail').value = location.location_detail || '';
+        document.getElementById('stone-location-notes').value = location.location_notes || '';
+        document.getElementById('stone-address').value = location.address || location.map_url || '';
+        document.getElementById('stone-lat').value = location.lat || '';
+        document.getElementById('stone-lng').value = location.lng || '';
+        
+        // ユーザーに通知
+        const notification = document.createElement('div');
+        notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #9b59b6; color: white; padding: 10px 20px; border-radius: 4px; z-index: 10000;';
+        notification.textContent = `採取ポイント「${location.name}」を読み込みました`;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    } catch (error) {
+        console.error('採取ポイントの読み込みエラー:', error);
+        alert('採取ポイントの読み込みに失敗しました');
+    }
 }
 
 // 現在の入力内容を採取ポイントとして保存
-function saveCurrentLocation() {
+async function saveCurrentLocation() {
     const locationName = document.getElementById('stone-location-name').value;
     const prefecture = document.getElementById('stone-prefecture').value;
     
@@ -1190,54 +1215,68 @@ function saveCurrentLocation() {
         name: locationName,
         location_name: locationName,
         prefecture: prefecture,
-        city: document.getElementById('stone-city').value,
-        location_tag: document.getElementById('stone-location-tag').value,
-        location_detail: document.getElementById('stone-location-detail').value,
-        location_notes: document.getElementById('stone-location-notes').value,
-        address: document.getElementById('stone-address').value,
+        city: document.getElementById('stone-city').value || null,
+        location_tag: document.getElementById('stone-location-tag').value || null,
+        location_detail: document.getElementById('stone-location-detail').value || null,
+        location_notes: document.getElementById('stone-location-notes').value || null,
+        address: document.getElementById('stone-address').value || null,
+        map_url: document.getElementById('stone-address').value || null,
         lat: document.getElementById('stone-lat').value ? parseFloat(document.getElementById('stone-lat').value) : null,
-        lng: document.getElementById('stone-lng').value ? parseFloat(document.getElementById('stone-lng').value) : null,
-        created_at: new Date().toISOString()
+        lng: document.getElementById('stone-lng').value ? parseFloat(document.getElementById('stone-lng').value) : null
     };
     
-    // 重複チェック
-    const exists = savedLocations.some(loc => 
-        loc.name === newLocation.name && 
-        loc.prefecture === newLocation.prefecture &&
-        loc.city === newLocation.city
-    );
-    
-    if (exists) {
-        if (!confirm('同じ名前の採取ポイントが既に存在します。上書きしますか？')) {
-            return;
+    try {
+        // 重複チェック
+        const { data: existingLocations, error: checkError } = await supabase
+            .from('saved_locations')
+            .select('*')
+            .eq('name', newLocation.name)
+            .eq('prefecture', newLocation.prefecture)
+            .eq('city', newLocation.city || '');
+        
+        if (checkError) throw checkError;
+        
+        if (existingLocations && existingLocations.length > 0) {
+            if (!confirm('同じ名前の採取ポイントが既に存在します。上書きしますか？')) {
+                return;
+            }
+            
+            // 既存の場所を更新
+            const { error: updateError } = await supabase
+                .from('saved_locations')
+                .update(newLocation)
+                .eq('id', existingLocations[0].id);
+            
+            if (updateError) throw updateError;
+        } else {
+            // 新規追加
+            const { error: insertError } = await supabase
+                .from('saved_locations')
+                .insert([newLocation]);
+            
+            if (insertError) throw insertError;
         }
-        // 既存の場所を更新
-        const index = savedLocations.findIndex(loc => 
-            loc.name === newLocation.name && 
-            loc.prefecture === newLocation.prefecture &&
-            loc.city === newLocation.city
-        );
-        savedLocations[index] = newLocation;
-    } else {
-        // 新規追加
-        savedLocations.push(newLocation);
+        
+        // 採取ポイントリストを再読み込み
+        await loadSavedLocations();
+        
+        // ユーザーに通知
+        const notification = document.createElement('div');
+        notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #27ae60; color: white; padding: 10px 20px; border-radius: 4px; z-index: 10000;';
+        notification.textContent = `採取ポイント「${locationName}」を保存しました`;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+        
+        // ローカルストレージにもバックアップ保存（オフライン対応）
+        localStorage.setItem('twinpeach_saved_locations', JSON.stringify(savedLocations));
+        
+    } catch (error) {
+        console.error('採取ポイントの保存エラー:', error);
+        alert('採取ポイントの保存に失敗しました: ' + error.message);
     }
-    
-    // ローカルストレージに保存
-    localStorage.setItem('twinpeach_saved_locations', JSON.stringify(savedLocations));
-    
-    // セレクトボックスを更新
-    updateLocationSelect();
-    
-    // ユーザーに通知
-    const notification = document.createElement('div');
-    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #27ae60; color: white; padding: 10px 20px; border-radius: 4px; z-index: 10000;';
-    notification.textContent = `採取ポイント「${locationName}」を保存しました`;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
 }
 
 // グローバル関数として公開
@@ -1341,88 +1380,60 @@ let isDragging = false;
 
 // スライドパネルの表示/非表示
 function toggleSidebar() {
+    if (sidebarVisible) {
+        hideSidebar();
+    } else {
+        showSidebar();
+    }
+}
+
+// サイドバーを表示
+function showSidebar() {
     const activeTab = document.querySelector('.tab-content.active');
     if (!activeTab) return;
     
     const sidebar = activeTab.querySelector('.sidebar');
     const container = activeTab.querySelector('.container');
-    const floatingTab = document.getElementById('floating-tab');
+    const hamburger = document.getElementById('hamburger-menu');
+    const overlay = document.getElementById('sidebar-overlay');
+    
     if (!sidebar || !container) return;
     
-    if (sidebarVisible) {
-        sidebar.classList.add('hidden');
-        container.classList.add('sidebar-hidden');
-        sidebarVisible = false;
-        if (floatingTab) floatingTab.classList.add('visible');
-    } else {
-        sidebar.classList.remove('hidden');
-        container.classList.remove('sidebar-hidden');
-        sidebarVisible = true;
-        if (floatingTab) floatingTab.classList.remove('visible');
-    }
+    sidebar.classList.remove('hidden');
+    container.classList.remove('sidebar-hidden');
+    hamburger.classList.add('active');
+    overlay.classList.add('visible');
+    sidebarVisible = true;
 }
 
-// グローバル関数として公開
-window.toggleSidebar = toggleSidebar;
-
-// モバイルスワイプ機能の初期化
-function initMobileSwipe() {
-    document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchmove', handleTouchMove, { passive: true });
-    document.addEventListener('touchend', handleTouchEnd, { passive: true });
-    
-    // 初期状態でフローティングタブを非表示（サイドバーが表示されているため）
-    const floatingTab = document.getElementById('floating-tab');
-    if (floatingTab && sidebarVisible) {
-        floatingTab.classList.remove('visible');
-    }
-}
-
-// タッチ開始
-function handleTouchStart(e) {
-    touchStartX = e.touches[0].clientX;
-    isDragging = false;
-}
-
-// タッチ移動
-function handleTouchMove(e) {
-    if (!isDragging && Math.abs(e.touches[0].clientX - touchStartX) > 10) {
-        isDragging = true;
-    }
-}
-
-// タッチ終了
-function handleTouchEnd(e) {
-    if (!isDragging) return;
-    
-    touchEndX = e.changedTouches[0].clientX;
-    const swipeDistance = touchEndX - touchStartX;
-    
+// サイドバーを非表示
+function hideSidebar() {
     const activeTab = document.querySelector('.tab-content.active');
     if (!activeTab) return;
     
     const sidebar = activeTab.querySelector('.sidebar');
-    if (!sidebar) return;
+    const container = activeTab.querySelector('.container');
+    const hamburger = document.getElementById('hamburger-menu');
+    const overlay = document.getElementById('sidebar-overlay');
     
-    const floatingTab = document.getElementById('floating-tab');
+    if (!sidebar || !container) return;
     
-    // 右スワイプで表示（隠れている時のみ）
-    if (swipeDistance > 30 && !sidebarVisible) {
-        sidebar.classList.remove('hidden');
-        activeTab.querySelector('.container').classList.remove('sidebar-hidden');
-        sidebarVisible = true;
-        if (floatingTab) floatingTab.classList.remove('visible');
-    }
-    // 左スワイプで非表示（表示されている時のみ）
-    else if (swipeDistance < -30 && sidebarVisible) {
-        sidebar.classList.add('hidden');
-        activeTab.querySelector('.container').classList.add('sidebar-hidden');
-        sidebarVisible = false;
-        if (floatingTab) floatingTab.classList.add('visible');
-    }
-    
-    isDragging = false;
+    sidebar.classList.add('hidden');
+    container.classList.add('sidebar-hidden');
+    hamburger.classList.remove('active');
+    overlay.classList.remove('visible');
+    sidebarVisible = false;
 }
+
+// グローバル関数として公開
+window.toggleSidebar = toggleSidebar;
+window.showSidebar = showSidebar;
+window.hideSidebar = hideSidebar;
+
+// モバイルスワイプ機能の初期化（削除）
+// スワイプ機能は使用しない
+
+// タッチハンドラは削除（スワイプ機能を使用しない）
 
 // タブ切り替え時にサイドバーの状態をリセット
 const originalSwitchTab = window.switchTab;

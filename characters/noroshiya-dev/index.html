@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>火打石スケッチブック</title>
+    <title>デジタルスケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -372,6 +372,25 @@
         
         .delete-btn:hover {
             background: #c0392b;
+        }
+        
+        /* 採取ポイント保存ボタン */
+        .save-location-btn {
+            background: #9b59b6;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 0.5rem;
+        }
+        
+        .save-location-btn:hover {
+            background: #8e44ad;
         }
         
         /* 空状態 */
@@ -852,13 +871,18 @@
                 padding: 0.5rem 1rem;
             }
             
-            /* カラーピッカーセクションの調整 */
+            /* カラーピッカーセクションをよりコンパクトに */
             .color-picker-section {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
                 max-width: 100%;
-                padding: 0.7rem;
+                padding: 0.5rem;
                 box-sizing: border-box;
+            }
+            
+            .color-picker-section h3 {
+                margin-bottom: 0.5rem;
+                font-size: 0.9rem;
             }
             
             .color-input-group {
@@ -866,10 +890,10 @@
                 gap: 0.5rem;
             }
             
-            /* スライダーの幅を制限 */
+            /* スライダーの幅を拡張 */
             input[type="range"] {
-                max-width: calc(100% - 120px); /* ラベルと値の分のスペースを確保 */
-                width: calc(100% - 120px);
+                width: 100%;
+                max-width: 100%;
             }
             
             .color-picker-with-preview {
@@ -883,7 +907,36 @@
             }
             
             .color-selection-item {
-                padding: 0.6rem;
+                padding: 0.4rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .color-selection-item label {
+                font-size: 0.85rem;
+                margin-bottom: 0.2rem;
+            }
+            
+            /* モバイルでサブカラーの色コードを非表示 */
+            @media (max-width: 768px) {
+                .color-selection-item:not(:first-child) .color-hex {
+                    display: none;
+                }
+                
+                .color-input-group {
+                    align-items: center;
+                    justify-content: space-between;
+                }
+                
+                .color-ratio {
+                    flex: 1;
+                    margin: 0 10px;
+                }
+                
+                .ratio-label {
+                    min-width: 35px;
+                    text-align: right;
+                    font-size: 0.85rem;
+                }
             }
             
             .color-blend-preview {
@@ -905,66 +958,88 @@
                 max-width: 100%;
             }
             
-            /* フローティングタブ */
-            .floating-tab {
+            /* ハンバーガーメニュー */
+            .hamburger-menu {
                 display: none;
+                position: fixed;
+                left: 20px;
+                top: 80px;
+                z-index: 1001;
+                background: #2c3e50;
+                border: none;
+                padding: 12px;
+                cursor: pointer;
+                border-radius: 4px;
+                width: 48px;
+                height: 48px;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                gap: 4px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                transition: background 0.3s;
+            }
+            
+            .hamburger-menu:hover {
+                background: #34495e;
             }
             
             @media (max-width: 768px) {
-                .floating-tab {
+                .hamburger-menu {
                     display: flex;
-                    position: fixed;
-                    left: 10px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 30px;
-                    height: 30px;
-                    background: transparent;
-                    border: none;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 15;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    font-size: 28px;
-                    font-weight: normal;
-                    color: rgba(0, 0, 0, 0.4);
+                }
+            }
+            
+            .hamburger-menu span {
+                display: block;
+                width: 24px;
+                height: 3px;
+                background: white;
+                transition: all 0.3s ease;
+                border-radius: 2px;
+            }
+            
+            .hamburger-menu.active span:nth-child(1) {
+                transform: rotate(45deg) translate(5px, 5px);
+            }
+            
+            .hamburger-menu.active span:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .hamburger-menu.active span:nth-child(3) {
+                transform: rotate(-45deg) translate(7px, -6px);
+            }
+            
+            /* オーバーレイ */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.3);
+                z-index: 999;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            .sidebar-overlay.visible {
+                display: block;
+                opacity: 1;
+            }
+            
+            @media (max-width: 768px) {
+                .sidebar-overlay {
+                    display: block;
                     opacity: 0;
                     pointer-events: none;
-                    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
                 }
                 
-                .floating-tab.visible {
+                .sidebar-overlay.visible {
                     opacity: 1;
                     pointer-events: auto;
-                    animation: fadeToSubtle 1s ease-in-out forwards;
-                    animation-delay: 0.3s;
-                }
-                
-                @keyframes fadeToSubtle {
-                    0% {
-                        opacity: 1;
-                        color: rgba(0, 0, 0, 0.4);
-                    }
-                    50% {
-                        opacity: 0.5;
-                        color: rgba(0, 0, 0, 0.2);
-                    }
-                    100% {
-                        opacity: 0;
-                        pointer-events: none;
-                    }
-                }
-                
-                .floating-tab.visible:hover {
-                    animation: none;
-                    opacity: 1;
-                    color: rgba(0, 0, 0, 0.6);
-                    transform: translateY(-50%) scale(1.2);
-                }
-                
-                .floating-tab:active {
-                    transform: translateY(-50%) scale(0.95);
                 }
             }
         }
@@ -976,6 +1051,15 @@
     </style>
 </head>
 <body>
+    <!-- ハンバーガーメニュー -->
+    <button class="hamburger-menu" id="hamburger-menu" onclick="toggleSidebar()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    
+    <!-- サイドバーオーバーレイ -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="hideSidebar()"></div>
     
     <div class="header">
         <div class="header-content">
@@ -1523,7 +1607,9 @@
                         </div>
                         <div class="form-group">
                             <label>市区町村</label>
-                            <input type="text" id="stone-city" placeholder="例: 春日市">
+                            <select id="stone-city">
+                                <option value="">都道府県を先に選択してください</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>タグ</label>
@@ -1536,7 +1622,9 @@
                         </div>
                         <div class="form-group">
                             <label>詳細な場所</label>
-                            <input type="text" id="stone-location-detail" placeholder="例: 河川公園の橋の下、上流側の浅瀬">
+                            <select id="stone-location-detail">
+                                <option value="">タグを先に選択してください</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>場所メモ</label>
@@ -1579,5 +1667,157 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
     <!-- メインJS -->
     <script src="noroshiya-dev-v2.js"></script>
+    
+    <script>
+    // 都道府県と市区町村のマッピング（主要都市のみ）
+    const cityData = {
+        '東京都': ['千代田区', '中央区', '港区', '新宿区', '文京区', '台東区', '墨田区', '江東区', '品川区', '目黒区', '大田区', '世田谷区', '渋谷区', '中野区', '杉並区', '豊島区', '北区', '荒川区', '板橋区', '練馬区', '足立区', '葛飾区', '江戸川区'],
+        '神奈川県': ['横浜市', '川崎市', '相模原市', '横須賀市', '平塚市', '鎌倉市', '藤沢市', '小田原市', '茅ヶ崎市', '逗子市', '三浦市', '秦野市', '厚木市', '大和市', '伊勢原市', '海老名市', '座間市', '南足柄市', '綾瀬市'],
+        '千葉県': ['千葉市', '銃香市', '市川市', '船橋市', '館山市', '木更津市', '松戸市', '野田市', '茂原市', '成田市', '佐倉市', '東金市', '旭市', '習志野市', '柏市', '勝浦市', '市原市', '流山市', '八千代市', '我孫子市'],
+        '埼玉県': ['さいたま市', '川越市', '熊谷市', '川口市', '行田市', '秩父市', '所沢市', '飯能市', '加須市', '本庄市', '春日部市', '狭山市', '羽生市', '鴻巣市', '深谷市', '上尾市', '草加市', '越谷市', '蛕ヶ島市', '戸田市'],
+        '大阪府': ['大阪市', '堺市', '岸和田市', '豊中市', '池田市', '吹田市', '泉大津市', '高槻市', '貝塚市', '守口市', '枚方市', '茨木市', '八尾市', '泉佐野市', '富田林市', '寝屋川市', '河内長野市', '松原市', '大東市', '和泉市'],
+        '京都府': ['京都市', '福知山市', '舞鶴市', '綾部市', '宇治市', '宮津市', '亀岡市', '城陽市', '向日市', '長岡京市', '八幡市', '京田辺市', '京丹後市', '南丹市', '木津川市'],
+        '兵庫県': ['神戸市', '姫路市', '西宮市', '尼崎市', '明石市', '加古川市', '宝塚市', '伊丹市', '川西市', '三田市', '高砂市', '芦屋市', '豊岡市', '三木市', 'たつの市', '相生市', '加東市', '赤穂市', '西脇市', '加西市'],
+        '愛知県': ['名古屋市', '豊橋市', '岡崎市', '一宮市', '豊田市', '春日井市', '安城市', '豊川市', '津島市', '碧南市', '刈谷市', '豊明市', '日進市', '田原市', '愛西市', '清須市', '北名古屋市', '弥富市', 'みよし市', 'あま市'],
+        '福岡県': ['福岡市', '北九州市', '久留米市', '飯塚市', '大牟田市', '春日市', '筑紫野市', '大野城市', '宗像市', '太宰府市', '行橋市', '中間市', '小郡市', '田川市', '筑後市', '大川市', '直方市', '柳川市', '八女市', '条市']
+    };
+    
+    // タグと詳細な場所のマッピング
+    const locationDetailData = {
+        '川・河原': ['上流域', '中流域', '下流域', '河口付近'],
+        '海岸': ['砂浜', '石浜', '岩場', '磯'],
+        '山・その他': ['頂上', '山中', '麓', '登山道', '渓流沿い']
+    };
+    
+    // 都道府県選択時の処理
+    document.getElementById('stone-prefecture').addEventListener('change', function(e) {
+        const selectedPrefecture = e.target.value;
+        const citySelect = document.getElementById('stone-city');
+        
+        // 既存のオプションをクリア
+        citySelect.innerHTML = '';
+        
+        if (selectedPrefecture && cityData[selectedPrefecture]) {
+            // デフォルトオプション
+            citySelect.innerHTML = '<option value="">選択してください</option>';
+            
+            // 市区町村を追加
+            cityData[selectedPrefecture].forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                citySelect.appendChild(option);
+            });
+            
+            // その他オプション
+            const otherOption = document.createElement('option');
+            otherOption.value = 'その他';
+            otherOption.textContent = 'その他（手動入力）';
+            citySelect.appendChild(otherOption);
+        } else {
+            citySelect.innerHTML = '<option value="">都道府県を先に選択してください</option>';
+        }
+    });
+    
+    // タグ選択時の処理
+    document.getElementById('stone-location-tag').addEventListener('change', function(e) {
+        const selectedTag = e.target.value;
+        const detailSelect = document.getElementById('stone-location-detail');
+        
+        // 既存のオプションをクリア
+        detailSelect.innerHTML = '';
+        
+        if (selectedTag && locationDetailData[selectedTag]) {
+            // デフォルトオプション
+            detailSelect.innerHTML = '<option value="">選択してください</option>';
+            
+            // 詳細を追加
+            locationDetailData[selectedTag].forEach(detail => {
+                const option = document.createElement('option');
+                option.value = detail;
+                option.textContent = detail;
+                detailSelect.appendChild(option);
+            });
+            
+            // その他オプション
+            const otherOption = document.createElement('option');
+            otherOption.value = 'その他';
+            otherOption.textContent = 'その他（手動入力）';
+            detailSelect.appendChild(otherOption);
+        } else {
+            detailSelect.innerHTML = '<option value="">タグを先に選択してください</option>';
+        }
+    });
+    
+    // 市区町村で「その他」が選択された時の処理
+    document.getElementById('stone-city').addEventListener('change', function(e) {
+        if (e.target.value === 'その他') {
+            // inputに変更
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'stone-city-custom';
+            input.className = 'form-control';
+            input.placeholder = '市区町村を入力';
+            input.style.width = '100%';
+            input.style.padding = '8px 12px';
+            input.style.border = '1px solid #ddd';
+            input.style.borderRadius = '4px';
+            
+            // selectを隠してinputを表示
+            e.target.style.display = 'none';
+            e.target.parentNode.appendChild(input);
+            input.focus();
+            
+            // フォーカスが外れたらselectに戻す
+            input.addEventListener('blur', function() {
+                if (input.value) {
+                    // カスタム値をオプションとして追加
+                    const customOption = document.createElement('option');
+                    customOption.value = input.value;
+                    customOption.textContent = input.value;
+                    customOption.selected = true;
+                    e.target.appendChild(customOption);
+                }
+                e.target.style.display = 'block';
+                input.remove();
+            });
+        }
+    });
+    
+    // 詳細な場所で「その他」が選択された時の処理
+    document.getElementById('stone-location-detail').addEventListener('change', function(e) {
+        if (e.target.value === 'その他') {
+            // inputに変更
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'stone-location-detail-custom';
+            input.className = 'form-control';
+            input.placeholder = '詳細な場所を入力';
+            input.style.width = '100%';
+            input.style.padding = '8px 12px';
+            input.style.border = '1px solid #ddd';
+            input.style.borderRadius = '4px';
+            
+            // selectを隠してinputを表示
+            e.target.style.display = 'none';
+            e.target.parentNode.appendChild(input);
+            input.focus();
+            
+            // フォーカスが外れたらselectに戻す
+            input.addEventListener('blur', function() {
+                if (input.value) {
+                    // カスタム値をオプションとして追加
+                    const customOption = document.createElement('option');
+                    customOption.value = input.value;
+                    customOption.textContent = input.value;
+                    customOption.selected = true;
+                    e.target.appendChild(customOption);
+                }
+                e.target.style.display = 'block';
+                input.remove();
+            });
+        }
+    });
+    </script>
 </body>
 </html>

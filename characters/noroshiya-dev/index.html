@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【感覚的性質追加】V4デジタルスケッチブック</title>
+    <title>【感覚的性質レイアウト最適化】V4デジタルスケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -436,6 +436,15 @@
         textarea {
             min-height: 120px;
             resize: vertical;
+        }
+        
+        /* 感覚的性質セクションの特別なスタイル */
+        .form-section.sensory-properties textarea {
+            min-height: 200px;
+        }
+        
+        .form-section.sensory-properties .form-group.sensory-second {
+            margin-top: 2.5rem;
         }
         
         /* 画像プレビュー */
@@ -976,6 +985,19 @@
             /* モバイルでのテキストエリア */
             textarea {
                 min-height: 100px;
+            }
+            
+            /* モバイルでの感覚的性質セクション */
+            .form-section.sensory-properties {
+                padding-bottom: 2rem;
+            }
+            
+            .form-section.sensory-properties textarea {
+                min-height: 180px;
+            }
+            
+            .form-section.sensory-properties .form-group.sensory-second {
+                margin-top: 2rem;
             }
             
             /* カラーピッカーセクションをよりコンパクトに */
@@ -1740,11 +1762,11 @@
                         <h2>感覚的性質</h2>
                         <div class="form-group">
                             <label>特徴</label>
-                            <textarea id="stone-features" placeholder="鉄分により赤く染まっている、割ると鋭い刃物になるなど" rows="5"></textarea>
+                            <textarea id="stone-features" placeholder="鉄分により赤く染まっている、割ると鋭い刃物になるなど" rows="8"></textarea>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group sensory-second">
                             <label>狼煙屋的見立て</label>
-                            <textarea id="stone-noroshiya-interpretation" placeholder="この石から感じる物語性や、狼煙屋との相性など" rows="5"></textarea>
+                            <textarea id="stone-noroshiya-interpretation" placeholder="この石から感じる物語性や、狼煙屋との相性など" rows="8"></textarea>
                         </div>
                     </div>
                     

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>改改デジタルスケッチブック</title>
+    <title>V3デジタルスケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -723,7 +723,7 @@
                 z-index: 10;
                 background: white;
                 box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-                transform: translateX(0);
+                transform: translateX(-100%); /* 初期状態で非表示 */
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
             }
@@ -1057,11 +1057,11 @@
             
             @media (max-width: 768px) {
                 .slide-indicator {
-                    display: block;
+                    display: block !important;
                 }
                 
                 .slide-indicator.hidden {
-                    display: none;
+                    display: none !important;
                 }
             }
             
@@ -1074,6 +1074,37 @@
         /* デスクトップでは選択中の情報を非表示 */
         .mobile-selected-info {
             display: none;
+        }
+        
+        /* 初期読み込み時のレイアウトを修正 */
+        @media (max-width: 768px) {
+            .tab-content {
+                opacity: 1;
+            }
+            
+            .tab-content:not(.active) {
+                display: none !important;
+            }
+            
+            /* コンテンツ表示を確保 */
+            .main-content {
+                background: white;
+            }
+        }
+        
+        /* デスクトップではサイドバーを表示 */
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0) !important;
+            }
+            
+            .sidebar.hidden {
+                transform: translateX(0) !important;
+            }
+            
+            .slide-indicator {
+                display: none !important;
+            }
         }
     </style>
 </head>
@@ -1114,8 +1145,7 @@
         <button class="tab-btn" data-tab="noroshiya">狼煙屋</button>
     </div>
     
-    <!-- フローティングタブ -->
-    <div class="floating-tab" id="floating-tab" onclick="toggleSidebar()">&lt;</div>
+    <!-- フローティングタブ（削除） -->
     
     <!-- 狼煙屋タブ -->
     <div class="tab-content" id="noroshiya-tab">

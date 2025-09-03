@@ -72,7 +72,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // モバイルの初期設定
     if (window.innerWidth <= 768) {
         // 初期状態でサイドバーを非表示に
-        hideSidebar();
+        setTimeout(() => {
+            hideSidebar();
+        }, 10);
         
         // メインコンテンツクリックでサイドバーを閉じる
         setTimeout(() => {

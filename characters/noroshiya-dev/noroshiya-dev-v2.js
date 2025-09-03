@@ -75,17 +75,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         hideSidebar();
         
         // メインコンテンツクリックでサイドバーを閉じる
-        document.addEventListener('click', (e) => {
-            if (sidebarVisible) {
-                const sidebar = document.querySelector('.tab-content.active .sidebar');
-                const isClickInsideSidebar = sidebar && sidebar.contains(e.target);
-                const isClickOnIndicator = e.target.id === 'slide-indicator';
-                
-                if (!isClickInsideSidebar && !isClickOnIndicator) {
-                    hideSidebar();
+        setTimeout(() => {
+            document.addEventListener('click', (e) => {
+                if (sidebarVisible) {
+                    const sidebar = document.querySelector('.tab-content.active .sidebar');
+                    const mainContent = document.querySelector('.tab-content.active .main-content');
+                    const isClickInsideSidebar = sidebar && sidebar.contains(e.target);
+                    const isClickOnIndicator = e.target.id === 'slide-indicator' || e.target.classList.contains('slide-indicator');
+                    const isClickOnMainContent = mainContent && mainContent.contains(e.target);
+                    
+                    if (isClickOnMainContent && !isClickInsideSidebar && !isClickOnIndicator) {
+                        hideSidebar();
+                    }
                 }
-            }
-        });
+            }, true);
+        }, 100);
     }
 });
 
@@ -251,7 +255,15 @@ function displayNoroshiyaList() {
     noroshiyaList.forEach(noroshiya => {
         const card = document.createElement('div');
         card.className = 'item-card';
-        card.onclick = () => selectNoroshiya(noroshiya.id);
+        card.onclick = () => {
+            selectNoroshiya(noroshiya.id);
+            // モバイルの場合、狼煙屋を選択したらサイドバーを自動で閉じる
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    hideSidebar();
+                }, 100);
+            }
+        };
         
         if (noroshiya.id === currentNoroshiyaId) {
             card.classList.add('active');
@@ -435,7 +447,15 @@ function displayBirdsList() {
     birdsList.forEach(bird => {
         const card = document.createElement('div');
         card.className = 'item-card';
-        card.onclick = () => selectBird(bird.id);
+        card.onclick = () => {
+            selectBird(bird.id);
+            // モバイルの場合、鳥を選択したらサイドバーを自動で閉じる
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    hideSidebar();
+                }, 100);
+            }
+        };
         
         if (bird.id === currentBirdId) {
             card.classList.add('active');
@@ -567,7 +587,15 @@ function displayStonesList() {
             card.classList.add('hiuchiishi');
         }
         
-        card.onclick = () => selectStone(stone.id);
+        card.onclick = () => {
+            selectStone(stone.id);
+            // モバイルの場合、石を選択したらサイドバーを自動で閉じる
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    hideSidebar();
+                }, 100);
+            }
+        };
         
         if (stone.id === currentStoneId) {
             card.classList.add('active');

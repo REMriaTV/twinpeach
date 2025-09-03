@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V3デジタルスケッチブック</title>
+    <title>V4デジタルスケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -714,11 +714,11 @@
                 width: 75%;
                 min-width: 280px;
                 max-width: 320px;
-                position: absolute;
+                position: fixed; /* absoluteからfixedに変更 */
                 left: 0;
                 top: 0;
                 bottom: 0;
-                height: 100%;
+                height: 100vh; /* 画面全体の高さ */
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 z-index: 10;
                 background: white;
@@ -726,6 +726,8 @@
                 transform: translateX(-100%); /* 初期状態で非表示 */
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
+                padding-top: calc(60px + 48px); /* ヘッダー + タブの高さ */
+                padding-bottom: 20px; /* 下部の余白 */
             }
             
             .sidebar.hidden {
@@ -735,7 +737,7 @@
             .sidebar-header {
                 padding: 1rem;
                 position: sticky;
-                top: 0;
+                top: calc(60px + 48px); /* ヘッダー + タブの高さに合わせる */
                 background: white;
                 z-index: 10;
                 border-bottom: 1px solid #e0e0e0;

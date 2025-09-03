@@ -322,6 +322,17 @@ function selectNoroshiya(id) {
     
     // リスト更新
     displayNoroshiyaList();
+    
+    // メインコンテンツを最上部にスクロール
+    const mainContent = document.querySelector('.tab-content.active .main-content');
+    if (mainContent) {
+        mainContent.scrollTop = 0;
+    }
+    
+    // モバイルの場合はサイドバーを隠す
+    if (window.innerWidth <= 768) {
+        hideSidebar();
+    }
 }
 
 // 新規狼煙屋追加
@@ -492,6 +503,17 @@ function selectBird(id) {
     document.getElementById('bird-rarity').value = bird.rarity || 'common';
     
     displayBirdsList();
+    
+    // メインコンテンツを最上部にスクロール
+    const mainContent = document.querySelector('.tab-content.active .main-content');
+    if (mainContent) {
+        mainContent.scrollTop = 0;
+    }
+    
+    // モバイルの場合はサイドバーを隠す
+    if (window.innerWidth <= 768) {
+        hideSidebar();
+    }
 }
 
 // 新規鳥追加
@@ -750,6 +772,17 @@ function selectStone(id) {
     }
     
     displayStonesList();
+    
+    // メインコンテンツを最上部にスクロール
+    const mainContent = document.querySelector('.tab-content.active .main-content');
+    if (mainContent) {
+        mainContent.scrollTop = 0;
+    }
+    
+    // モバイルの場合はサイドバーを隠す
+    if (window.innerWidth <= 768) {
+        hideSidebar();
+    }
 }
 
 // 新規石追加

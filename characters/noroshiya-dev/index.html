@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【物理的描写改修】V4デジタルスケッチブック</title>
+    <title>【感覚的性質追加】V4デジタルスケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -421,6 +421,21 @@
         
         .form-group-pair .form-group {
             margin-bottom: 0;
+        }
+        
+        /* セクション間の余白調整 */
+        .form-section.sensory-properties {
+            margin-top: 2rem;
+        }
+        
+        .form-section.sensory-properties + .form-section {
+            margin-top: 2rem;
+        }
+        
+        /* テキストエリアのスタイル */
+        textarea {
+            min-height: 120px;
+            resize: vertical;
         }
         
         /* 画像プレビュー */
@@ -947,6 +962,20 @@
             .form-group-pair select {
                 font-size: 16px;
                 padding: 0.4rem 0.6rem;
+            }
+            
+            /* モバイルでのセクション間余白 */
+            .form-section.sensory-properties {
+                margin-top: 1.5rem;
+            }
+            
+            .form-section.sensory-properties + .form-section {
+                margin-top: 1.5rem;
+            }
+            
+            /* モバイルでのテキストエリア */
+            textarea {
+                min-height: 100px;
             }
             
             /* カラーピッカーセクションをよりコンパクトに */
@@ -1627,7 +1656,7 @@
                     </div>
                     
                     <div class="form-section">
-                        <h2>物理的描写</h2>
+                        <h2>数量的性質</h2>
                         <div class="form-grid physical-description">
                             <!-- 硬さ -->
                             <div class="form-group-pair">
@@ -1707,11 +1736,15 @@
                         </div>
                     </div>
                     
-                    <div class="form-section">
-                        <h2>その他の情報</h2>
+                    <div class="form-section sensory-properties">
+                        <h2>感覚的性質</h2>
                         <div class="form-group">
                             <label>特徴</label>
-                            <textarea id="stone-features" placeholder="鉄分により赤く染まっている、割ると鋭い刃物になるなど"></textarea>
+                            <textarea id="stone-features" placeholder="鉄分により赤く染まっている、割ると鋭い刃物になるなど" rows="5"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>狼煙屋的見立て</label>
+                            <textarea id="stone-noroshiya-interpretation" placeholder="この石から感じる物語性や、狼煙屋との相性など" rows="5"></textarea>
                         </div>
                     </div>
                     

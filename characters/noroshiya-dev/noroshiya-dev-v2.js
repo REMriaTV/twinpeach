@@ -724,6 +724,7 @@ function selectStone(id) {
     document.getElementById('stone-texture').value = stone.texture || '';
     document.getElementById('stone-transparency').value = stone.transparency || '不透明';
     document.getElementById('stone-features').value = stone.special_features || '';
+    document.getElementById('stone-noroshiya-interpretation').value = stone.noroshiya_interpretation || '';
     
     // 位置情報フィールドの復元
     document.getElementById('stone-location-name').value = stone.location_name || '';
@@ -807,6 +808,7 @@ function addNewStone() {
         texture: '',
         transparency: '不透明',
         special_features: '',
+        noroshiya_interpretation: '',
         is_hiuchiishi: true,
         image_url: null,
         // 位置情報フィールド
@@ -853,6 +855,7 @@ async function saveStone() {
         texture: document.getElementById('stone-texture').value,
         transparency: document.getElementById('stone-transparency').value,
         special_features: document.getElementById('stone-features').value,
+        noroshiya_interpretation: document.getElementById('stone-noroshiya-interpretation').value,
         found_locations: document.getElementById('stone-locations').value,
         rarity: document.getElementById('stone-rarity').value,
         is_hiuchiishi: document.getElementById('stone-hiuchiishi').value === 'true',

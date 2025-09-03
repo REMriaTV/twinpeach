@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【基本情報コンパクト】V4デジタルスケッチブック</title>
+    <title>【物理的描写改修】V4デジタルスケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -403,6 +403,24 @@
         .empty-state h3 {
             font-size: 1.2rem;
             margin-bottom: 0.5rem;
+        }
+        
+        /* 物理的描写の横並びレイアウト */
+        .form-group-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            width: 100%;
+        }
+        
+        .physical-description {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .form-group-pair .form-group {
+            margin-bottom: 0;
         }
         
         /* 画像プレビュー */
@@ -910,6 +928,25 @@
             .form-section.basic-info select {
                 padding: 0.4rem 0.6rem;
                 font-size: 16px;
+            }
+            
+            /* 物理的描写モバイル調整 */
+            .form-group-pair {
+                gap: 0.5rem;
+            }
+            
+            .physical-description {
+                gap: 0.6rem;
+            }
+            
+            .form-group-pair .form-group label {
+                font-size: 0.85rem;
+            }
+            
+            .form-group-pair input,
+            .form-group-pair select {
+                font-size: 16px;
+                padding: 0.4rem 0.6rem;
             }
             
             /* カラーピッカーセクションをよりコンパクトに */
@@ -1590,32 +1627,82 @@
                     </div>
                     
                     <div class="form-section">
-                        <h2>物理的特性</h2>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>硬度（モース硬度 1-10）</label>
-                                <input type="number" id="stone-hardness" min="1" max="10" step="0.5" placeholder="7.0">
+                        <h2>物理的描写</h2>
+                        <div class="form-grid physical-description">
+                            <!-- 硬さ -->
+                            <div class="form-group-pair">
+                                <div class="form-group">
+                                    <label>モース硬度</label>
+                                    <select id="stone-hardness">
+                                        <option value="">選択</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>感触</label>
+                                    <select id="stone-hardness-feel">
+                                        <option value="かたい">かたい</option>
+                                        <option value="ふつう" selected>ふつう</option>
+                                        <option value="やわらかい">やわらかい</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>大きさの範囲</label>
-                                <input type="text" id="stone-size" placeholder="親指大〜握りこぶし大">
+                            
+                            <!-- 重さ -->
+                            <div class="form-group-pair">
+                                <div class="form-group">
+                                    <label>重さ (g)</label>
+                                    <input type="number" id="stone-weight" placeholder="100" min="0" step="0.1">
+                                </div>
+                                <div class="form-group">
+                                    <label>感覚</label>
+                                    <select id="stone-weight-feel">
+                                        <option value="おもい">おもい</option>
+                                        <option value="ふつう" selected>ふつう</option>
+                                        <option value="かるい">かるい</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>質感</label>
-                                <select id="stone-texture">
-                                    <option value="ツルツル">ツルツル</option>
-                                    <option value="ザラザラ">ザラザラ</option>
-                                    <option value="ゴツゴツ">ゴツゴツ</option>
-                                    <option value="すべすべ">すべすべ</option>
-                                </select>
+                            
+                            <!-- 大きさ -->
+                            <div class="form-group-pair">
+                                <div class="form-group">
+                                    <label>大きさ (cm)</label>
+                                    <input type="number" id="stone-size" placeholder="5" min="0" step="0.1">
+                                </div>
+                                <div class="form-group">
+                                    <label>感覚</label>
+                                    <select id="stone-size-feel">
+                                        <option value="大きい">大きい</option>
+                                        <option value="ふつう" selected>ふつう</option>
+                                        <option value="小さい">小さい</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>透明度</label>
-                                <select id="stone-transparency">
-                                    <option value="不透明">不透明</option>
-                                    <option value="半透明">半透明</option>
-                                    <option value="透明">透明</option>
-                                </select>
+                            
+                            <!-- 質感と透明度 -->
+                            <div class="form-group-pair">
+                                <div class="form-group">
+                                    <label>質感</label>
+                                    <input type="text" id="stone-texture" placeholder="ツルツル、ザラザラなど">
+                                </div>
+                                <div class="form-group">
+                                    <label>透明度</label>
+                                    <select id="stone-transparency">
+                                        <option value="不透明">不透明</option>
+                                        <option value="半透明">半透明</option>
+                                        <option value="透明">透明</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>

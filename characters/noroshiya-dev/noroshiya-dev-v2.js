@@ -714,9 +714,14 @@ function selectStone(id) {
     document.getElementById('stone-color-primary').value = colors.primary || '';
     document.getElementById('stone-color-secondary').value = colors.secondary || '';
     document.getElementById('stone-pattern').value = colors.pattern || '';
+    // 物理的描写フィールドの復元
     document.getElementById('stone-hardness').value = stone.hardness || '';
-    document.getElementById('stone-size').value = stone.size_range || '';
-    document.getElementById('stone-texture').value = stone.texture || 'ツルツル';
+    document.getElementById('stone-hardness-feel').value = stone.hardness_feel || 'ふつう';
+    document.getElementById('stone-weight').value = stone.weight || '';
+    document.getElementById('stone-weight-feel').value = stone.weight_feel || 'ふつう';
+    document.getElementById('stone-size').value = stone.size || '';
+    document.getElementById('stone-size-feel').value = stone.size_feel || 'ふつう';
+    document.getElementById('stone-texture').value = stone.texture || '';
     document.getElementById('stone-transparency').value = stone.transparency || '不透明';
     document.getElementById('stone-features').value = stone.special_features || '';
     
@@ -793,9 +798,13 @@ function addNewStone() {
         name: '',
         type: '',
         colors: { primary: '', secondary: '', pattern: '' },
-        hardness: 7.0,
-        size_range: '',
-        texture: 'ツルツル',
+        hardness: null,
+        hardness_feel: 'ふつう',
+        weight: null,
+        weight_feel: 'ふつう',
+        size: null,
+        size_feel: 'ふつう',
+        texture: '',
         transparency: '不透明',
         special_features: '',
         is_hiuchiishi: true,
@@ -836,7 +845,11 @@ async function saveStone() {
             pattern: document.getElementById('stone-pattern').value || null
         },
         hardness: parseFloat(document.getElementById('stone-hardness').value) || null,
-        size_range: document.getElementById('stone-size').value,
+        hardness_feel: document.getElementById('stone-hardness-feel').value,
+        weight: parseFloat(document.getElementById('stone-weight').value) || null,
+        weight_feel: document.getElementById('stone-weight-feel').value,
+        size: parseFloat(document.getElementById('stone-size').value) || null,
+        size_feel: document.getElementById('stone-size-feel').value,
         texture: document.getElementById('stone-texture').value,
         transparency: document.getElementById('stone-transparency').value,
         special_features: document.getElementById('stone-features').value,

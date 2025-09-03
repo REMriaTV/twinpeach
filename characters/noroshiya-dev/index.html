@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>デジタルスケッチブック</title>
+    <title>改デジタルスケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -918,24 +918,98 @@
             
             /* モバイルでサブカラーの色コードを非表示 */
             @media (max-width: 768px) {
-                .color-selection-item:not(:first-child) .color-hex {
-                    display: none;
+                /* モバイルで全ての色コードを非表示 */
+                .color-hex {
+                    display: none !important;
                 }
                 
                 .color-input-group {
                     align-items: center;
                     justify-content: space-between;
+                    gap: 8px;
                 }
                 
                 .color-ratio {
                     flex: 1;
-                    margin: 0 10px;
+                    margin: 0 5px;
                 }
                 
                 .ratio-label {
-                    min-width: 35px;
+                    min-width: 30px;
                     text-align: right;
+                    font-size: 0.8rem;
+                }
+                
+                .ratio-value {
+                    min-width: 35px;
+                    font-size: 0.8rem;
+                }
+                
+                /* 色セクションをさらにコンパクトに */
+                .color-picker-section {
+                    padding: 0.3rem;
+                }
+                
+                .color-picker-section h3 {
+                    margin-bottom: 0.3rem;
                     font-size: 0.85rem;
+                }
+                
+                .color-selections {
+                    gap: 0.4rem;
+                }
+                
+                .color-selection-item {
+                    padding: 0.3rem;
+                    margin-bottom: 0.3rem;
+                }
+                
+                .color-selection-item label {
+                    font-size: 0.8rem;
+                    margin-bottom: 0.15rem;
+                }
+                
+                .color-picker {
+                    width: 40px;
+                    height: 30px;
+                }
+                
+                /* 調合結果セクションをコンパクトに */
+                .blended-color-section {
+                    padding: 0.3rem;
+                }
+                
+                .blended-color-section h3 {
+                    margin-bottom: 0.3rem;
+                    font-size: 0.85rem;
+                }
+                
+                .blended-color-display {
+                    gap: 0.5rem;
+                }
+                
+                #blended-color-preview {
+                    width: 60px;
+                    height: 60px;
+                }
+                
+                .blended-color-info {
+                    font-size: 0.9rem;
+                }
+                
+                /* テーマカラーの色コードは常に表示 */
+                #blended-color-hex {
+                    display: inline !important;
+                    font-family: monospace;
+                    font-size: 1rem;
+                    font-weight: bold;
+                }
+                
+                /* 画像プレビューをさらに小さく */
+                .image-preview {
+                    width: 120px;
+                    height: 120px;
+                    margin-bottom: 0.5rem;
                 }
             }
             
@@ -958,89 +1032,41 @@
                 max-width: 100%;
             }
             
-            /* ハンバーガーメニュー */
-            .hamburger-menu {
+            /* 左端のスライドインジケーター */
+            .slide-indicator {
                 display: none;
                 position: fixed;
-                left: 20px;
-                top: 80px;
-                z-index: 1001;
-                background: #2c3e50;
-                border: none;
-                padding: 12px;
-                cursor: pointer;
-                border-radius: 4px;
-                width: 48px;
-                height: 48px;
-                justify-content: center;
-                align-items: center;
-                flex-direction: column;
-                gap: 4px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-                transition: background 0.3s;
-            }
-            
-            .hamburger-menu:hover {
-                background: #34495e;
-            }
-            
-            @media (max-width: 768px) {
-                .hamburger-menu {
-                    display: flex;
-                }
-            }
-            
-            .hamburger-menu span {
-                display: block;
-                width: 24px;
-                height: 3px;
-                background: white;
-                transition: all 0.3s ease;
-                border-radius: 2px;
-            }
-            
-            .hamburger-menu.active span:nth-child(1) {
-                transform: rotate(45deg) translate(5px, 5px);
-            }
-            
-            .hamburger-menu.active span:nth-child(2) {
-                opacity: 0;
-            }
-            
-            .hamburger-menu.active span:nth-child(3) {
-                transform: rotate(-45deg) translate(7px, -6px);
-            }
-            
-            /* オーバーレイ */
-            .sidebar-overlay {
-                display: none;
-                position: fixed;
-                top: 0;
                 left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.3);
-                z-index: 999;
-                opacity: 0;
-                transition: opacity 0.3s ease;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 20px;
+                height: 120px;
+                background: rgba(0, 0, 0, 0.1);
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
+                cursor: pointer;
+                z-index: 1001;
+                transition: all 0.3s ease;
             }
             
-            .sidebar-overlay.visible {
-                display: block;
-                opacity: 1;
+            .slide-indicator:hover {
+                background: rgba(0, 0, 0, 0.2);
+                width: 25px;
             }
             
             @media (max-width: 768px) {
-                .sidebar-overlay {
+                .slide-indicator {
                     display: block;
-                    opacity: 0;
-                    pointer-events: none;
                 }
                 
-                .sidebar-overlay.visible {
-                    opacity: 1;
-                    pointer-events: auto;
+                .slide-indicator.hidden {
+                    display: none;
                 }
+            }
+            
+            /* オーバーレイ（削除） */
+            .sidebar-overlay {
+                display: none !important;
             }
         }
         
@@ -1051,15 +1077,11 @@
     </style>
 </head>
 <body>
-    <!-- ハンバーガーメニュー -->
-    <button class="hamburger-menu" id="hamburger-menu" onclick="toggleSidebar()">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
+    <!-- 左端のスライドインジケーター -->
+    <div class="slide-indicator" id="slide-indicator" onclick="showSidebar()"></div>
     
-    <!-- サイドバーオーバーレイ -->
-    <div class="sidebar-overlay" id="sidebar-overlay" onclick="hideSidebar()"></div>
+    <!-- サイドバーオーバーレイ（無効化） -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
     
     <div class="header">
         <div class="header-content">

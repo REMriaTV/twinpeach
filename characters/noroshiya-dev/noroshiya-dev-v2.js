@@ -73,6 +73,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.innerWidth <= 768) {
         // 初期状態でサイドバーを非表示に
         hideSidebar();
+        
+        // メインコンテンツクリックでサイドバーを閉じる
+        document.addEventListener('click', (e) => {
+            if (sidebarVisible) {
+                const sidebar = document.querySelector('.tab-content.active .sidebar');
+                const isClickInsideSidebar = sidebar && sidebar.contains(e.target);
+                const isClickOnIndicator = e.target.id === 'slide-indicator';
+                
+                if (!isClickInsideSidebar && !isClickOnIndicator) {
+                    hideSidebar();
+                }
+            }
+        });
     }
 });
 
@@ -1394,15 +1407,13 @@ function showSidebar() {
     
     const sidebar = activeTab.querySelector('.sidebar');
     const container = activeTab.querySelector('.container');
-    const hamburger = document.getElementById('hamburger-menu');
-    const overlay = document.getElementById('sidebar-overlay');
+    const indicator = document.getElementById('slide-indicator');
     
     if (!sidebar || !container) return;
     
     sidebar.classList.remove('hidden');
     container.classList.remove('sidebar-hidden');
-    hamburger.classList.add('active');
-    overlay.classList.add('visible');
+    if (indicator) indicator.classList.add('hidden');
     sidebarVisible = true;
 }
 
@@ -1413,15 +1424,13 @@ function hideSidebar() {
     
     const sidebar = activeTab.querySelector('.sidebar');
     const container = activeTab.querySelector('.container');
-    const hamburger = document.getElementById('hamburger-menu');
-    const overlay = document.getElementById('sidebar-overlay');
+    const indicator = document.getElementById('slide-indicator');
     
     if (!sidebar || !container) return;
     
     sidebar.classList.add('hidden');
     container.classList.add('sidebar-hidden');
-    hamburger.classList.remove('active');
-    overlay.classList.remove('visible');
+    if (indicator) indicator.classList.remove('hidden');
     sidebarVisible = false;
 }
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【位置情報横並びレイアウト】V4デジタルスケッチブック</title>
+    <title>【背景色でセクション区分け】V4デジタルスケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -426,10 +426,11 @@
         /* セクション間の余白調整 */
         .form-section.sensory-properties {
             margin-top: 2rem;
+            margin-bottom: 1.5rem;
         }
         
         .form-section.sensory-properties + .form-section {
-            margin-top: 2rem;
+            margin-top: 0;
         }
         
         /* テキストエリアのスタイル */
@@ -444,7 +445,23 @@
         }
         
         .form-section.sensory-properties .form-group.sensory-second {
-            margin-top: 2.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        /* セクションに薄い背景色 */
+        .form-section {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        
+        .form-section.sensory-properties {
+            background-color: #fff5f5;
+        }
+        
+        /* 色の設定セクションのスタイル統一 */
+        .form-section:has(.color-picker-section) {
+            background-color: #f0f7ff;
         }
         
         /* 画像プレビュー */
@@ -997,7 +1014,16 @@
             }
             
             .form-section.sensory-properties .form-group.sensory-second {
-                margin-top: 2rem;
+                margin-top: 1.2rem;
+            }
+            
+            /* モバイルでのセクション間余白調整 */
+            .form-section.sensory-properties {
+                margin-bottom: 1.2rem;
+            }
+            
+            .form-section.sensory-properties + .form-section {
+                margin-top: 0;
             }
             
             /* カラーピッカーセクションをよりコンパクトに */

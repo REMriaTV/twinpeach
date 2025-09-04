@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     document.getElementById('stone-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        saveStone();
+        saveStoneWithImage();
     });
     
     // 石の色調合システムを初期化
@@ -1056,6 +1056,14 @@ async function handleStoneImageSelect(event) {
 async function saveStoneWithImage() {
     if (!currentStoneId) return;
     
+    // デバッグ用：保存前の値を確認
+    console.log('保存する位置情報:', {
+        prefecture: document.getElementById('stone-prefecture').value,
+        city: document.getElementById('stone-city').value,
+        location_tag: document.getElementById('stone-location-tag').value,
+        location_detail: document.getElementById('stone-location-detail').value
+    });
+    
     const formData = {
         id: currentStoneId,
         name: document.getElementById('stone-name').value,
@@ -1095,20 +1103,40 @@ async function saveStoneWithImage() {
         lng: document.getElementById('stone-lng').value ? parseFloat(document.getElementById('stone-lng').value) : null
     };
     
+    // デバッグ用：保存するデータの詳細を確認
+    console.log('保存するデータ:', formData);
+    
     try {
-        const { error } = await supabase
+        const { data: savedData, error } = await supabase
             .from('stones')
-            .upsert(formData);
+            .upsert(formData)
+            .select()
+            .single();
         
         if (error) throw error;
         
+        console.log('Supabaseから返されたデータ:', savedData);
+        
+        // Supabaseから返されたデータで更新（これにより全てのフィールドが確実に更新される）
         const index = stonesList.findIndex(s => s.id === currentStoneId);
         if (index !== -1) {
-            stonesList[index] = formData;
+            stonesList[index] = savedData;
         }
         
         displayStonesList();
         alert('保存しました！');
+        
+        // 保存後、すぐにデータを再読み込みしてみる（デバッグ用）
+        console.log('保存後、データを再確認...');
+        const { data: checkData, error: checkError } = await supabase
+            .from('stones')
+            .select('*')
+            .eq('id', currentStoneId)
+            .single();
+        
+        if (!checkError) {
+            console.log('データベースに保存されているデータ:', checkData);
+        }
     } catch (error) {
         console.error('保存エラー:', error);
         alert('保存に失敗しました: ' + error.message);

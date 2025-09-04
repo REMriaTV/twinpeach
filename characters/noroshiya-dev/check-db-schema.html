@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>データベーススキーマ確認</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        pre { background: #f0f0f0; padding: 10px; overflow: auto; }
+        button { padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Stonesテーブルのスキーマと保存テスト</h1>
+    
+    <button onclick="testSave()">テスト保存実行</button>
+    <button onclick="loadData()">データ読み込み</button>
+    
+    <h2>結果:</h2>
+    <pre id="result"></pre>
+
+    <script>
+        const SUPABASE_URL = 'https://roaucowddadmvxgzrvnu.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvYXVjb3dkZGFkbXZ4Z3pydm51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNDQxMDMsImV4cCI6MjA2NzgyMDEwM30.Tqs__X1JOfPiKsb5llj93jVLnyszF_ZrZjfp_UaIiNw';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        async function testSave() {
+            const result = document.getElementById('result');
+            result.textContent = 'テスト保存中...\n';
+            
+            const testData = {
+                id: 'test_stone_001',
+                name: 'テスト石',
+                prefecture: '東京都',
+                city: '世田谷区',
+                location_tag: 'テスト',
+                location_detail: 'テスト詳細場所',
+                type: 'テスト',
+                colors: { primary: '#000000' }
+            };
+            
+            try {
+                // 保存
+                result.textContent += '\n1. 保存データ:\n' + JSON.stringify(testData, null, 2) + '\n';
+                
+                const { error: upsertError } = await supabase
+                    .from('stones')
+                    .upsert(testData);
+                    
+                if (upsertError) {
+                    result.textContent += '\n保存エラー: ' + JSON.stringify(upsertError, null, 2);
+                    return;
+                }
+                
+                result.textContent += '\n2. 保存成功！\n';
+                
+                // 読み込み
+                const { data, error: selectError } = await supabase
+                    .from('stones')
+                    .select('*')
+                    .eq('id', 'test_stone_001')
+                    .single();
+                    
+                if (selectError) {
+                    result.textContent += '\n読み込みエラー: ' + JSON.stringify(selectError, null, 2);
+                    return;
+                }
+                
+                result.textContent += '\n3. 読み込んだデータ:\n' + JSON.stringify(data, null, 2);
+                
+                // フィールドの存在確認
+                result.textContent += '\n\n4. フィールド確認:\n';
+                result.textContent += '- prefecture: ' + (data.prefecture ? '✓ 存在 (' + data.prefecture + ')' : '✗ なし') + '\n';
+                result.textContent += '- city: ' + (data.city ? '✓ 存在 (' + data.city + ')' : '✗ なし') + '\n';
+                result.textContent += '- location_tag: ' + (data.location_tag ? '✓ 存在 (' + data.location_tag + ')' : '✗ なし') + '\n';
+                result.textContent += '- location_detail: ' + (data.location_detail ? '✓ 存在 (' + data.location_detail + ')' : '✗ なし') + '\n';
+                
+                // クリーンアップ
+                await supabase
+                    .from('stones')
+                    .delete()
+                    .eq('id', 'test_stone_001');
+                    
+            } catch (err) {
+                result.textContent += '\nエラー: ' + err.message;
+            }
+        }
+        
+        async function loadData() {
+            const result = document.getElementById('result');
+            result.textContent = '読み込み中...\n';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('stones')
+                    .select('*')
+                    .order('id', { ascending: false })
+                    .limit(3);
+                    
+                if (error) {
+                    result.textContent += '\nエラー: ' + JSON.stringify(error, null, 2);
+                    return;
+                }
+                
+                result.textContent = '最新3件のデータ:\n';
+                data.forEach((stone, index) => {
+                    result.textContent += `\n${index + 1}. ${stone.id} - ${stone.name}\n`;
+                    result.textContent += `   prefecture: ${stone.prefecture || 'null'}\n`;
+                    result.textContent += `   city: ${stone.city || 'null'}\n`;
+                    result.textContent += `   location_tag: ${stone.location_tag || 'null'}\n`;
+                    result.textContent += `   location_detail: ${stone.location_detail || 'null'}\n`;
+                });
+            } catch (err) {
+                result.textContent += '\nエラー: ' + err.message;
+            }
+        }
+    </script>
+</body>
+</html>

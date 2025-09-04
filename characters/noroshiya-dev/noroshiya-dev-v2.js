@@ -579,12 +579,34 @@ async function saveBird() {
 // 石データ読み込み
 async function loadStonesData() {
     try {
+        // 明示的に全フィールドを指定してみる
         const { data, error } = await supabase
             .from('stones')
-            .select('*')
+            .select(`
+                id, name, type, colors, hardness, hardness_feel, weight, weight_feel,
+                size, size_feel, texture, transparency, special_features,
+                noroshiya_interpretation, found_locations, rarity, is_hiuchiishi,
+                ng_keywords, found_date, image_url, location_name, prefecture,
+                city, location_tag, location_detail, location_notes, address,
+                map_url, lat, lng, size_range
+            `)
             .order('id', { ascending: false });
         
         if (error) throw error;
+        
+        console.log('読み込んだ石データ:', data);
+        
+        // 特定の石の詳細を確認（最新のもの）
+        if (data && data.length > 0) {
+            console.log('最新の石の詳細:', {
+                id: data[0].id,
+                name: data[0].name,
+                prefecture: data[0].prefecture,
+                city: data[0].city,
+                location_tag: data[0].location_tag,
+                location_detail: data[0].location_detail
+            });
+        }
         
         stonesList = data || [];
         displayStonesList();
@@ -741,6 +763,14 @@ function selectStone(id) {
     }
     
     // 位置情報フィールドの復元
+    console.log('選択した石の位置情報:', {
+        location_name: stone.location_name,
+        prefecture: stone.prefecture,
+        city: stone.city,
+        location_tag: stone.location_tag,
+        location_detail: stone.location_detail
+    });
+    
     document.getElementById('stone-location-name').value = stone.location_name || '';
     document.getElementById('stone-prefecture').value = stone.prefecture || '';
     document.getElementById('stone-city').value = stone.city || '';

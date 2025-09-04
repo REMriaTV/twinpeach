@@ -726,6 +726,11 @@ function selectStone(id) {
     document.getElementById('stone-features').value = stone.special_features || '';
     document.getElementById('stone-noroshiya-interpretation').value = stone.noroshiya_interpretation || '';
     
+    // 拾った日フィールドの復元
+    if (document.getElementById('stone-found-date')) {
+        document.getElementById('stone-found-date').value = stone.found_date || '';
+    }
+    
     // 位置情報フィールドの復元
     document.getElementById('stone-location-name').value = stone.location_name || '';
     document.getElementById('stone-prefecture').value = stone.prefecture || '';
@@ -1066,6 +1071,7 @@ async function saveStoneWithImage() {
         transparency: document.getElementById('stone-transparency').value,
         special_features: document.getElementById('stone-features').value,
         is_hiuchiishi: document.getElementById('stone-hiuchiishi').value === 'true',
+        found_date: document.getElementById('stone-found-date').value || null, // 拾った日
         image_url: currentStoneImage, // 画像データを追加
         // 位置情報フィールド
         location_name: document.getElementById('stone-location-name').value || null,

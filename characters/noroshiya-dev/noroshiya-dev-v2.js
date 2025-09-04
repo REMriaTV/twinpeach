@@ -19,9 +19,7 @@ let currentStoneImage = null; // 現在選択中の石の画像
 let savedLocations = []; // 保存された採取ポイント
 
 // 都道府県別の市区町村データ
-// すでに定義されている場合はスキップ
-if (typeof cityData === 'undefined') {
-var cityData = {
+const cityDataList = {
     "北海道": ["札幌市", "函館市", "小樽市", "旭川市", "室蘭市", "釧路市", "帯広市", "北見市", "夕張市", "岩見沢市", "網走市", "留萌市", "苫小牧市", "稚内市", "美唄市", "芦別市", "江別市", "赤平市", "紋別市", "士別市", "名寄市", "三笠市", "根室市", "千歳市", "滝川市", "砂川市", "歌志内市", "深川市", "富良野市", "登別市", "恵庭市", "伊達市", "北広島市", "石狩市", "北斗市"],
     "青森県": ["青森市", "弘前市", "八戸市", "黒石市", "五所川原市", "十和田市", "三沢市", "むつ市", "つがる市", "平川市"],
     "岩手県": ["盛岡市", "宮古市", "大船渡市", "花巻市", "北上市", "久慈市", "遠野市", "一関市", "陸前高田市", "釜石市", "二戸市", "八幡平市", "奥州市", "滝沢市"],
@@ -70,16 +68,13 @@ var cityData = {
     "鹿児島県": ["鹿児島市", "鹿屋市", "枕崎市", "阿久根市", "出水市", "指宿市", "西之表市", "垂水市", "薩摩川内市", "日置市", "曽於市", "霧島市", "いちき串木野市", "南さつま市", "志布志市", "奄美市", "南九州市", "伊佐市", "姶良市"],
     "沖縄県": ["那覇市", "宜野湾市", "石垣市", "浦添市", "名護市", "糸満市", "沖縄市", "豊見城市", "うるま市", "宮古島市", "南城市"]
 };
-}
 
 // 詳細な場所のオプション
-if (typeof locationDetailData === 'undefined') {
-var locationDetailData = {
+const locationDetailDataList = {
     "川・河原": ["上流", "中流", "下流", "源流", "河口付近", "川岸", "中州", "支流合流点"],
     "海岸": ["砂浜", "磯", "岩場", "防波堤", "港湾", "入り江", "岬"],
     "山・その他": ["山頂", "山腹", "麓", "登山道", "林道", "公園", "その他"]
 };
-}
 
 // 初期化
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1395,7 +1390,7 @@ function updateCityOptions(prefecture) {
     citySelect.innerHTML = '<option value="">選択してください</option>';
     
     // 選択された都道府県の市区町村を追加
-    const cities = cityData[prefecture];
+    const cities = cityDataList[prefecture];
     if (cities) {
         cities.forEach(city => {
             const option = document.createElement('option');
@@ -1423,7 +1418,7 @@ function updateLocationDetailOptions(tag) {
     detailSelect.innerHTML = '<option value="">選択してください</option>';
     
     // 選択されたタグの詳細場所を追加
-    const details = locationDetailData[tag];
+    const details = locationDetailDataList[tag];
     if (details) {
         details.forEach(detail => {
             const option = document.createElement('option');

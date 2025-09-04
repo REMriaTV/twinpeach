@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【サイドパネル表示改善】V8デジタルスケッチブック</title>
+    <title>【モバイルレイアウト最適化】V9デジタルスケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -717,18 +717,19 @@
         /* モバイル用スタイル */
         @media (max-width: 768px) {
             .header {
-                padding: 0.6rem 1rem;
-                gap: 0.8rem;
+                padding: 0.5rem 0.8rem;
+                gap: 0.5rem;
             }
             
             .header h1 {
-                font-size: 1.3rem;
+                font-size: 1.1rem;
                 margin: 0;
             }
             
             .header .subtitle {
-                font-size: 0.75rem;
+                font-size: 0.7rem;
                 opacity: 0.7;
+                margin-top: 0;
             }
             
             .header-links {
@@ -920,7 +921,8 @@
             .save-section button {
                 flex: 1;
                 min-width: 80px;
-                padding: 0.5rem 1rem;
+                padding: 0.5rem 0.8rem;
+                font-size: 0.9rem;
             }
             
             /* 選択中の石の表示エリアを削除 */
@@ -1631,9 +1633,16 @@
                     <div class="form-section basic-info">
                         <h2>基本情報</h2>
                         <div class="form-grid">
-                            <div class="form-group">
-                                <label>ID</label>
-                                <input type="text" id="stone-id" readonly>
+                            <!-- IDと拾った日を横並び -->
+                            <div class="form-group-pair">
+                                <div class="form-group">
+                                    <label>ID</label>
+                                    <input type="text" id="stone-id" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label>拾った日</label>
+                                    <input type="date" id="stone-found-date" value="">
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>石の名前</label>
@@ -1649,10 +1658,6 @@
                                     <option value="true">はい</option>
                                     <option value="false">いいえ</option>
                                 </select>
-                            </div>
-                            <div class="form-group">
-                                <label>拾った日</label>
-                                <input type="date" id="stone-found-date" value="">
                             </div>
                         </div>
                     </div>

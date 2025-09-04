@@ -653,17 +653,9 @@ async function saveBird() {
 // 石データ読み込み
 async function loadStonesData() {
     try {
-        // 明示的に全フィールドを指定してみる
         const { data, error } = await supabase
             .from('stones')
-            .select(`
-                id, name, type, colors, hardness, hardness_feel, weight, weight_feel,
-                size, size_feel, texture, transparency, special_features,
-                noroshiya_interpretation, found_locations, rarity, is_hiuchiishi,
-                ng_keywords, found_date, image_url, location_name, prefecture,
-                city, location_tag, location_detail, location_notes, address,
-                map_url, lat, lng, size_range
-            `)
+            .select('*')
             .order('id', { ascending: false });
         
         if (error) throw error;
@@ -821,15 +813,32 @@ function selectStone(id) {
     document.getElementById('stone-pattern').value = colors.pattern || '';
     // 物理的描写フィールドの復元
     document.getElementById('stone-hardness').value = stone.hardness || '';
-    document.getElementById('stone-hardness-feel').value = stone.hardness_feel || 'ふつう';
-    document.getElementById('stone-weight').value = stone.weight || '';
-    document.getElementById('stone-weight-feel').value = stone.weight_feel || 'ふつう';
-    document.getElementById('stone-size').value = stone.size || '';
-    document.getElementById('stone-size-feel').value = stone.size_feel || 'ふつう';
+    
+    // 古いフィールドは存在する場合のみ設定
+    if (document.getElementById('stone-hardness-feel')) {
+        document.getElementById('stone-hardness-feel').value = stone.hardness_feel || 'ふつう';
+    }
+    if (document.getElementById('stone-weight')) {
+        document.getElementById('stone-weight').value = stone.weight || '';
+    }
+    if (document.getElementById('stone-weight-feel')) {
+        document.getElementById('stone-weight-feel').value = stone.weight_feel || 'ふつう';
+    }
+    if (document.getElementById('stone-size')) {
+        document.getElementById('stone-size').value = stone.size || '';
+    }
+    if (document.getElementById('stone-size-feel')) {
+        document.getElementById('stone-size-feel').value = stone.size_feel || 'ふつう';
+    }
+    
     document.getElementById('stone-texture').value = stone.texture || '';
     document.getElementById('stone-transparency').value = stone.transparency || '不透明';
     document.getElementById('stone-features').value = stone.special_features || '';
-    document.getElementById('stone-noroshiya-interpretation').value = stone.noroshiya_interpretation || '';
+    
+    // 狼煙屋的見立てフィールド
+    if (document.getElementById('stone-noroshiya-interpretation')) {
+        document.getElementById('stone-noroshiya-interpretation').value = stone.noroshiya_interpretation || '';
+    }
     
     // 拾った日フィールドの復元
     if (document.getElementById('stone-found-date')) {
@@ -940,17 +949,13 @@ function addNewStone() {
         type: '',
         colors: { primary: '', secondary: '', pattern: '' },
         hardness: null,
-        hardness_feel: 'ふつう',
-        weight: null,
-        weight_feel: 'ふつう',
-        size: null,
-        size_feel: 'ふつう',
+        size_range: '',
         texture: '',
         transparency: '不透明',
         special_features: '',
-        noroshiya_interpretation: '',
         is_hiuchiishi: true,
         image_url: null,
+        found_date: null,
         // 位置情報フィールド
         location_name: '',
         prefecture: '',

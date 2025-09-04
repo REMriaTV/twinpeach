@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【調合色位置調整】V4デジタルスケッチブック</title>
+    <title>【画像処理＆位置情報機能追加】V6デジタルスケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -607,7 +607,7 @@
             padding: 0.8rem;
             border-radius: 6px;
             text-align: center;
-            margin-top: -0.5rem;
+            margin-top: -1.2rem;
         }
         
         .blended-color-display {
@@ -1578,7 +1578,55 @@
                     <button type="button" class="image-upload-btn" onclick="document.getElementById('stone-image-input').click()">
                         画像を選択
                     </button>
-                    <input type="file" id="stone-image-input" accept="image/*" onchange="handleStoneImageSelect(event)">
+                    <input type="file" id="stone-image-input" accept="image/*" onchange="handleStoneImageSelectWithProcessing(event)">
+                    
+                    <!-- 画像処理オプション -->
+                    <div id="image-processing-options" style="display: none; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                        <h3 style="font-size: 1rem; margin-bottom: 0.8rem;">画像処理オプション</h3>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                            <!-- モザイク処理 -->
+                            <div style="background: white; padding: 0.8rem; border-radius: 6px;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" id="apply-mosaic" checked>
+                                    <span>モザイク処理を適用</span>
+                                </label>
+                                <div id="mosaic-controls" style="margin-top: 0.5rem;">
+                                    <label style="display: block; margin-bottom: 0.3rem;">モザイクサイズ:</label>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="range" id="mosaic-size" min="5" max="50" value="20" style="flex: 1;">
+                                        <span id="mosaic-size-value" style="min-width: 40px;">20px</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 背景除去 -->
+                            <div style="background: white; padding: 0.8rem; border-radius: 6px;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" id="remove-background">
+                                    <span>背景を透過</span>
+                                </label>
+                                <div id="bg-removal-controls" style="margin-top: 0.5rem; display: none;">
+                                    <label style="display: block; margin-bottom: 0.3rem;">背景除去方法:</label>
+                                    <select id="bg-removal-method" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                                        <option value="white">白背景を透過</option>
+                                        <option value="auto">自動検出（四隅の色）</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- 処理実行ボタン -->
+                            <button type="button" onclick="processStoneImage()" style="background: #3498db; color: white; border: none; padding: 0.6rem 1rem; border-radius: 4px; cursor: pointer;">
+                                画像を処理
+                            </button>
+                        </div>
+                        
+                        <!-- 処理済み画像プレビュー -->
+                        <div id="processed-image-container" style="display: none; margin-top: 1rem;">
+                            <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;">処理済み画像:</h4>
+                            <canvas id="processed-canvas" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;"></canvas>
+                        </div>
+                    </div>
                     
                     <div class="form-section basic-info">
                         <h2>基本情報</h2>
@@ -1904,6 +1952,28 @@
                             <input type="text" id="stone-address" placeholder="住所またはGoogleマップのURLを入力">
                         </div>
                         
+                        <!-- 位置情報入力方法 -->
+                        <div class="location-input-methods" style="margin-bottom: 1rem; padding: 1rem; background: #f0f7ff; border-radius: 8px;">
+                            <p style="margin-bottom: 0.8rem; font-size: 0.9rem;">位置情報の取得方法:</p>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button type="button" onclick="getCurrentLocationGPS()" style="background: #3498db; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                                    📍 現在地を使用
+                                </button>
+                                <button type="button" onclick="openMapSelection()" style="background: #27ae60; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                                    🗺️ 地図から選択
+                                </button>
+                                <button type="button" onclick="extractFromGoogleMapUrl()" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                                    🔗 URLから抽出
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 地図表示エリア（必要時に表示） -->
+                        <div id="map-container" style="display: none; margin-bottom: 1rem;">
+                            <div id="location-map" style="height: 300px; border: 1px solid #ddd; border-radius: 4px;"></div>
+                            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">地図上をクリック/タップして位置を指定してください</p>
+                        </div>
+                        
                         <!-- 緯度と経度を横並び -->
                         <div class="form-group-pair">
                             <div class="form-group">
@@ -1934,10 +2004,14 @@
         </div>
     </div>
     
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Color Thief -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- メインJS -->
     <script src="noroshiya-dev-v2.js"></script>
     
@@ -2092,5 +2166,7 @@
         }
     });
     </script>
+    <script src="image-processing.js"></script>
+    <script src="location-input.js"></script>
 </body>
 </html>

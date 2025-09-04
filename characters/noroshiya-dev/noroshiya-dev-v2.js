@@ -600,6 +600,13 @@ async function loadStonesData() {
 // 石リスト表示
 function displayStonesList() {
     const listEl = document.getElementById('stones-list');
+    const titleEl = document.getElementById('stones-list-title');
+    
+    // タイトルを更新（石の数を表示）
+    if (titleEl) {
+        titleEl.textContent = `ひろった石：${stonesList.length}こ`;
+    }
+    
     listEl.innerHTML = '';
     
     stonesList.forEach(stone => {
@@ -625,28 +632,30 @@ function displayStonesList() {
             card.classList.add('active');
         }
         
-        // サブテキストの構成
+        // サブテキストの構成: 色コード + 都道府県
         let subText = '';
         
-        // 火打石の場合は「火打石」と表示
-        if (stone.is_hiuchiishi) {
-            subText = '火打石';
-        } else {
-            // 火打石でない場合は色情報を表示
-            const colors = stone.colors || {};
-            const colorText = [colors.primary, colors.secondary].filter(c => c).join('・');
-            if (colorText) {
-                subText = colorText;
-            }
-            // タイプがあれば追加
-            if (stone.type) {
-                subText += (subText ? ' / ' : '') + stone.type;
-            }
+        // 色コードを取得（調合色 > プライマリ色の優先順位）
+        const colors = stone.colors || {};
+        const colorCode = colors.blended || colors.primary || '';
+        
+        if (colorCode) {
+            subText = colorCode;
         }
         
-        // エリア名を追加
-        if (stone.location_name) {
-            subText += ' / ' + stone.location_name;
+        // 都道府県を追加
+        if (stone.prefecture) {
+            subText += (subText ? ' / ' : '') + stone.prefecture;
+        }
+        
+        // サブテキストが空の場合のフォールバック
+        if (!subText) {
+            // 火打石の場合は「火打石」と表示
+            if (stone.is_hiuchiishi) {
+                subText = '火打石';
+            } else if (stone.type) {
+                subText = stone.type;
+            }
         }
         
         // IDを小さく表示

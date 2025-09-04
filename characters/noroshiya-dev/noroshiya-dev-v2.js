@@ -1107,17 +1107,25 @@ async function saveStoneWithImage() {
     console.log('保存するデータ:', formData);
     
     try {
-        const { data: savedData, error } = await supabase
+        // まず、upsertを実行
+        const { error: upsertError } = await supabase
             .from('stones')
-            .upsert(formData)
-            .select()
+            .upsert(formData);
+        
+        if (upsertError) throw upsertError;
+        
+        // upsert後、別途selectで全データを取得
+        const { data: savedData, error: selectError } = await supabase
+            .from('stones')
+            .select('*')
+            .eq('id', currentStoneId)
             .single();
         
-        if (error) throw error;
+        if (selectError) throw selectError;
         
-        console.log('Supabaseから返されたデータ:', savedData);
+        console.log('Supabaseから取得したデータ:', savedData);
         
-        // Supabaseから返されたデータで更新（これにより全てのフィールドが確実に更新される）
+        // 取得したデータで更新
         const index = stonesList.findIndex(s => s.id === currentStoneId);
         if (index !== -1) {
             stonesList[index] = savedData;
@@ -1125,18 +1133,6 @@ async function saveStoneWithImage() {
         
         displayStonesList();
         alert('保存しました！');
-        
-        // 保存後、すぐにデータを再読み込みしてみる（デバッグ用）
-        console.log('保存後、データを再確認...');
-        const { data: checkData, error: checkError } = await supabase
-            .from('stones')
-            .select('*')
-            .eq('id', currentStoneId)
-            .single();
-        
-        if (!checkError) {
-            console.log('データベースに保存されているデータ:', checkData);
-        }
     } catch (error) {
         console.error('保存エラー:', error);
         alert('保存に失敗しました: ' + error.message);

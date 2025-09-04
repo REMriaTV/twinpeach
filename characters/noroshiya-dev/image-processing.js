@@ -33,6 +33,12 @@ function handleStoneImageSelectWithProcessing(event) {
             noImagePlaceholder.style.display = 'none';
         }
         
+        // 「画像から色を抽出」ボタンを表示
+        const extractColorsBtn = document.getElementById('extract-colors-btn');
+        if (extractColorsBtn) {
+            extractColorsBtn.style.display = 'block';
+        }
+        
         // 画像処理オプションを表示
         document.getElementById('image-processing-options').style.display = 'block';
         

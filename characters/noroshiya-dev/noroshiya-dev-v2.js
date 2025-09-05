@@ -692,7 +692,7 @@ function displayStonesList() {
     
     // タイトルを更新（石の数を表示）
     if (titleEl) {
-        titleEl.textContent = `ひろった石：${stonesList.length}こ`;
+        titleEl.textContent = `石の数：${stonesList.length}コ`;
     }
     
     listEl.innerHTML = '';

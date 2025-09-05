@@ -10,10 +10,14 @@ function getCurrentLocationGPS() {
         return;
     }
     
-    // ローディング表示など
-    const originalText = event.target.textContent;
-    event.target.textContent = '⏳ 取得中...';
-    event.target.disabled = true;
+    // ボタン要素を取得（eventがない場合のため）
+    const button = event && event.target ? event.target : document.querySelector('button[onclick*="getCurrentLocationGPS"]');
+    const originalText = button ? button.textContent : '📍 現在地を使用';
+    
+    if (button) {
+        button.textContent = '⏳ 取得中...';
+        button.disabled = true;
+    }
     
     navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -29,19 +33,26 @@ function getCurrentLocationGPS() {
             alert(`現在地を取得しました！\n精度: 約${Math.round(accuracy)}m`);
             
             // ボタンを元に戻す
-            event.target.textContent = originalText;
-            event.target.disabled = false;
+            if (button) {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
             
             // 地図が表示されていたら更新
+            console.log('Updating map with current location:', lat, lng);
+            console.log('locationMap exists:', !!locationMap);
+            
             if (locationMap) {
                 locationMap.setView([lat, lng], 15);
                 
                 if (locationMarker) {
                     // 既存のマーカーを移動
                     locationMarker.setLatLng([lat, lng]);
+                    console.log('Marker moved to current location');
                 } else {
                     // マーカーがなければ新規作成
                     locationMarker = L.marker([lat, lng], {draggable: true}).addTo(locationMap);
+                    console.log('New marker created at current location');
                     
                     // マーカーのドラッグイベント
                     locationMarker.on('dragend', function(event) {
@@ -49,6 +60,8 @@ function getCurrentLocationGPS() {
                         updateLocationFields(position.lat, position.lng);
                     });
                 }
+            } else {
+                console.log('Map not initialized yet');
             }
         },
         (error) => {
@@ -69,8 +82,10 @@ function getCurrentLocationGPS() {
             alert(errorMessage);
             
             // ボタンを元に戻す
-            event.target.textContent = originalText;
-            event.target.disabled = false;
+            if (button) {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
         },
         {
             enableHighAccuracy: true,

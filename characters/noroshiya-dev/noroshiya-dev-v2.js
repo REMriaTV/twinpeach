@@ -544,6 +544,13 @@ async function loadBirdsData() {
 // 鳥リスト表示
 function displayBirdsList() {
     const listEl = document.getElementById('birds-list');
+    const titleEl = document.getElementById('birds-list-title');
+    
+    // タイトルを更新（鳥の数を表示）
+    if (titleEl) {
+        titleEl.textContent = `鳥の数：${birdsList.length}種`;
+    }
+    
     listEl.innerHTML = '';
     
     birdsList.forEach(bird => {
@@ -563,9 +570,21 @@ function displayBirdsList() {
             card.classList.add('active');
         }
         
+        // 画像がある場合は表示
+        const imageHtml = bird.image_url ? `<img src="${bird.image_url}" alt="${bird.name}" class="item-image">` : '';
+        
+        // 詳細情報: サイズと都道府県（あれば）
+        let details = bird.size || '';
+        if (bird.prefecture) {
+            details += (details ? ' / ' : '') + bird.prefecture;
+        } else if (bird.habitat) {
+            details += (details ? ' / ' : '') + bird.habitat;
+        }
+        
         card.innerHTML = `
+            ${imageHtml}
             <div class="name">${bird.name}</div>
-            <div class="details">${bird.size} / ${bird.habitat}</div>
+            <div class="details">${details}</div>
         `;
         
         listEl.appendChild(card);
@@ -579,6 +598,7 @@ function selectBird(id) {
     
     if (!bird) return;
     
+    // 基本情報
     document.getElementById('bird-id').value = bird.id;
     document.getElementById('bird-name').value = bird.name || '';
     document.getElementById('bird-scientific-name').value = bird.scientific_name || '';
@@ -590,6 +610,45 @@ function selectBird(id) {
     document.getElementById('bird-symbolism').value = bird.symbolism || '';
     document.getElementById('bird-season').value = bird.season || '';
     document.getElementById('bird-rarity').value = bird.rarity || 'common';
+    
+    // 画像プレビュー
+    const previewEl = document.getElementById('bird-image-preview');
+    if (bird.image_url) {
+        previewEl.innerHTML = `<img src="${bird.image_url}" alt="${bird.name}">`;
+        currentBirdImage = bird.image_url;
+    } else {
+        previewEl.innerHTML = '<div class="placeholder">画像なし</div>';
+        currentBirdImage = null;
+    }
+    
+    // 目撃情報フィールド
+    document.getElementById('bird-location-name').value = bird.location_name || '';
+    document.getElementById('bird-prefecture').value = bird.prefecture || '';
+    
+    // 都道府県が設定されている場合は市区町村を更新
+    if (bird.prefecture && window.updateBirdCityOptions) {
+        window.updateBirdCityOptions(bird.prefecture);
+        // 市区町村の値を設定
+        setTimeout(() => {
+            document.getElementById('bird-city').value = bird.city || '';
+        }, 10);
+    } else {
+        document.getElementById('bird-city').value = '';
+    }
+    
+    document.getElementById('bird-sighting-date').value = bird.sighting_date || '';
+    document.getElementById('bird-sighting-time').value = bird.sighting_time || '';
+    document.getElementById('bird-sighting-notes').value = bird.sighting_notes || '';
+    document.getElementById('bird-address').value = bird.address || '';
+    document.getElementById('bird-lat').value = bird.lat || '';
+    document.getElementById('bird-lng').value = bird.lng || '';
+    
+    // 鳥タブが選択されていたら地図を初期化
+    if (document.getElementById('birds-tab').classList.contains('active') && window.initializeBirdLocationMap) {
+        setTimeout(() => {
+            window.initializeBirdLocationMap();
+        }, 100);
+    }
     
     displayBirdsList();
     
@@ -619,8 +678,23 @@ function addNewBird() {
         call_description: '',
         symbolism: '',
         season: '',
-        rarity: 'common'
+        rarity: 'common',
+        image_url: null,
+        // 目撃情報フィールド
+        location_name: '',
+        prefecture: '',
+        city: '',
+        sighting_date: null,
+        sighting_time: '',
+        sighting_notes: '',
+        address: '',
+        lat: null,
+        lng: null
     };
+    
+    // 画像プレビューをクリア
+    document.getElementById('bird-image-preview').innerHTML = '<div class="placeholder">画像なし</div>';
+    currentBirdImage = null;
     
     birdsList.push(newBird);
     displayBirdsList();
@@ -642,19 +716,41 @@ async function saveBird() {
         call_description: document.getElementById('bird-call').value,
         symbolism: document.getElementById('bird-symbolism').value,
         season: document.getElementById('bird-season').value,
-        rarity: document.getElementById('bird-rarity').value
+        rarity: document.getElementById('bird-rarity').value,
+        image_url: currentBirdImage, // 画像データを追加
+        // 目撃情報フィールド
+        location_name: document.getElementById('bird-location-name').value || null,
+        prefecture: document.getElementById('bird-prefecture').value || null,
+        city: document.getElementById('bird-city').value || null,
+        sighting_date: document.getElementById('bird-sighting-date').value || null,
+        sighting_time: document.getElementById('bird-sighting-time').value || null,
+        sighting_notes: document.getElementById('bird-sighting-notes').value || null,
+        address: document.getElementById('bird-address').value || null,
+        lat: document.getElementById('bird-lat').value ? parseFloat(document.getElementById('bird-lat').value) : null,
+        lng: document.getElementById('bird-lng').value ? parseFloat(document.getElementById('bird-lng').value) : null
     };
     
     try {
-        const { error } = await supabase
+        // まず、upsertを実行
+        const { error: upsertError } = await supabase
             .from('birds')
             .upsert(formData);
         
-        if (error) throw error;
+        if (upsertError) throw upsertError;
         
+        // upsert後、別途selectで全データを取得
+        const { data: savedData, error: selectError } = await supabase
+            .from('birds')
+            .select('*')
+            .eq('id', currentBirdId)
+            .single();
+        
+        if (selectError) throw selectError;
+        
+        // 取得したデータで更新
         const index = birdsList.findIndex(b => b.id === currentBirdId);
         if (index !== -1) {
-            birdsList[index] = formData;
+            birdsList[index] = savedData;
         }
         
         displayBirdsList();
@@ -1804,3 +1900,193 @@ window.switchTab = function(tabName) {
         }, 200);
     }
 };
+
+// 鳥画像選択処理
+let currentBirdImage = null;
+
+async function handleBirdImageSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // ファイルサイズチェック（5MB以下）
+    if (file.size > 5 * 1024 * 1024) {
+        alert('画像サイズは5MB以下にしてください。');
+        return;
+    }
+    
+    // 画像プレビュー表示
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const previewEl = document.getElementById('bird-image-preview');
+        previewEl.innerHTML = `<img src="${e.target.result}" alt="プレビュー">`;
+        currentBirdImage = e.target.result; // Base64データとして保存
+    };
+    reader.readAsDataURL(file);
+}
+
+// 鳥の現在地取得
+function getBirdCurrentLocation() {
+    if (!navigator.geolocation) {
+        alert('お使いのブラウザは位置情報取得に対応していません');
+        return;
+    }
+    
+    const button = event && event.target ? event.target : document.querySelector('button[onclick*="getBirdCurrentLocation"]');
+    const originalText = button ? button.textContent : '📍 現在地を使用';
+    
+    if (button) {
+        button.textContent = '⏳ 取得中...';
+        button.disabled = true;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+            
+            // 緯度経度フィールドに設定
+            document.getElementById('bird-lat').value = lat.toFixed(7);
+            document.getElementById('bird-lng').value = lng.toFixed(7);
+            
+            // 成功メッセージ
+            alert(`現在地を取得しました！\n精度: 約${Math.round(accuracy)}m`);
+            
+            // ボタンを元に戻す
+            if (button) {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+            
+            // 地図が表示されていたら更新
+            if (window.birdLocationMap) {
+                window.birdLocationMap.setView([lat, lng], 15);
+                
+                if (window.birdLocationMarker) {
+                    window.birdLocationMarker.setLatLng([lat, lng]);
+                } else {
+                    window.birdLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(window.birdLocationMap);
+                    
+                    window.birdLocationMarker.on('dragend', function(event) {
+                        const position = window.birdLocationMarker.getLatLng();
+                        document.getElementById('bird-lat').value = position.lat.toFixed(7);
+                        document.getElementById('bird-lng').value = position.lng.toFixed(7);
+                    });
+                }
+            }
+        },
+        (error) => {
+            let errorMessage = '位置情報の取得に失敗しました: ';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage += '位置情報の使用が許可されていません';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage += '位置情報が利用できません';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage += 'タイムアウトしました';
+                    break;
+                default:
+                    errorMessage += '不明なエラー';
+            }
+            alert(errorMessage);
+            
+            // ボタンを元に戻す
+            if (button) {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+}
+
+// GoogleマップURLから位置情報抽出（鳥用）
+function extractBirdLocationFromUrl() {
+    const url = document.getElementById('bird-address').value.trim();
+    
+    if (!url) {
+        alert('住所またはGoogleマップURLフィールドにURLを入力してください');
+        return;
+    }
+    
+    let lat, lng;
+    
+    // @緯度,経度 形式
+    const atMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (atMatch) {
+        lat = parseFloat(atMatch[1]);
+        lng = parseFloat(atMatch[2]);
+    }
+    
+    // place/緯度,経度 形式
+    const placeMatch = url.match(/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (placeMatch) {
+        lat = parseFloat(placeMatch[1]);
+        lng = parseFloat(placeMatch[2]);
+    }
+    
+    // ll=緯度,経度 形式
+    const llMatch = url.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (llMatch) {
+        lat = parseFloat(llMatch[1]);
+        lng = parseFloat(llMatch[2]);
+    }
+    
+    if (lat && lng) {
+        document.getElementById('bird-lat').value = lat.toFixed(7);
+        document.getElementById('bird-lng').value = lng.toFixed(7);
+        alert('URLから位置情報を取得しました！');
+        
+        // 地図が表示されていたら更新
+        if (window.birdLocationMap) {
+            window.birdLocationMap.setView([lat, lng], 15);
+            
+            if (window.birdLocationMarker) {
+                window.birdLocationMarker.setLatLng([lat, lng]);
+            } else {
+                window.birdLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(window.birdLocationMap);
+                
+                window.birdLocationMarker.on('dragend', function(event) {
+                    const position = window.birdLocationMarker.getLatLng();
+                    document.getElementById('bird-lat').value = position.lat.toFixed(7);
+                    document.getElementById('bird-lng').value = position.lng.toFixed(7);
+                });
+            }
+        }
+    } else {
+        // 短縮URLの場合の注意
+        if (url.includes('maps.app.goo.gl') || url.includes('goo.gl/maps')) {
+            alert('短縮URLからは直接位置情報を取得できません。\n\n次の手順でお試しください：\n1. URLをブラウザで開く\n2. 展開された完全なURLをコピー\n3. 再度このフィールドに貼り付けて実行');
+        } else {
+            alert('URLから位置情報を取得できませんでした。\n正しいGoogleマップのURLか確認してください。');
+        }
+    }
+}
+
+// 鳥の都道府県選択時の市区町村更新
+function updateBirdCityOptions(prefecture) {
+    const citySelect = document.getElementById('bird-city');
+    citySelect.innerHTML = '<option value="">選択してください</option>';
+    
+    if (!prefecture || !window.cityDataList) return;
+    
+    const cities = window.cityDataList[prefecture] || [];
+    cities.forEach(city => {
+        const option = document.createElement('option');
+        option.value = city;
+        option.textContent = city;
+        citySelect.appendChild(option);
+    });
+}
+
+// グローバル関数として公開
+window.handleBirdImageSelect = handleBirdImageSelect;
+window.getBirdCurrentLocation = getBirdCurrentLocation;
+window.extractBirdLocationFromUrl = extractBirdLocationFromUrl;
+window.updateBirdCityOptions = updateBirdCityOptions;

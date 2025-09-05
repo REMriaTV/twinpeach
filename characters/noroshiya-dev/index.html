@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【モバイルレイアウト最適化】V9デジタルスケッチブック</title>
+    <title>【モバイルレイアウト最適化】V10デジタルスケッチブック</title>
     <style>
         * {
             margin: 0;
@@ -1275,7 +1275,7 @@
     
     <div class="header">
         <div class="header-content">
-            <h1>V3デジタルスケッチブック</h1>
+            <h1>V10デジタルスケッチブック</h1>
             <div class="subtitle">狼煙屋のマッチングシステム用データベース</div>
         </div>
         <div class="header-links">
@@ -1473,7 +1473,7 @@
         <div class="container">
             <div class="sidebar">
                 <div class="sidebar-header">
-                    <h3>鳥一覧</h3>
+                    <h3 id="birds-list-title">鳥の数：0種</h3>
                     <button class="add-btn" onclick="addNewBird()">+ 新規追加</button>
                 </div>
                 <div class="item-list" id="birds-list">
@@ -1483,6 +1483,15 @@
             
             <div class="main-content">
                 <form id="bird-form">
+                    <!-- 画像プレビューエリア -->
+                    <div class="image-preview" id="bird-image-preview">
+                        <div class="placeholder">画像なし</div>
+                    </div>
+                    <button type="button" class="image-upload-btn" onclick="document.getElementById('bird-image-input').click()">
+                        画像を選択
+                    </button>
+                    <input type="file" id="bird-image-input" accept="image/*" onchange="handleBirdImageSelect(event)">
+                    
                     <div class="form-section">
                         <h2>基本情報</h2>
                         <div class="form-grid">
@@ -1544,6 +1553,141 @@
                                     <option value="rare">めったに見ない</option>
                                     <option value="very_rare">非常に珍しい</option>
                                 </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 目撃情報セクション -->
+                    <div class="form-section">
+                        <h2>目撃情報</h2>
+                        
+                        <!-- 地図表示エリア -->
+                        <div id="bird-map-container" style="margin: 1.5rem 0;">
+                            <div id="bird-location-map" style="height: 250px; border: 1px solid #ddd; border-radius: 8px; background-color: #f0f0f0;"></div>
+                            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">地図上をクリック/タップして目撃位置を記録してください</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>目撃場所名</label>
+                            <input type="text" id="bird-location-name" placeholder="例: 日野川河川敷">
+                        </div>
+                        
+                        <!-- 都道府県と市区町村を横並び -->
+                        <div class="form-group-pair">
+                            <div class="form-group">
+                                <label>都道府県</label>
+                                <select id="bird-prefecture">
+                                    <option value="">選択してください</option>
+                                    <option value="北海道">北海道</option>
+                                    <option value="青森県">青森県</option>
+                                    <option value="岩手県">岩手県</option>
+                                    <option value="宮城県">宮城県</option>
+                                    <option value="秋田県">秋田県</option>
+                                    <option value="山形県">山形県</option>
+                                    <option value="福島県">福島県</option>
+                                    <option value="茨城県">茨城県</option>
+                                    <option value="栃木県">栃木県</option>
+                                    <option value="群馬県">群馬県</option>
+                                    <option value="埼玉県">埼玉県</option>
+                                    <option value="千葉県">千葉県</option>
+                                    <option value="東京都">東京都</option>
+                                    <option value="神奈川県">神奈川県</option>
+                                    <option value="新潟県">新潟県</option>
+                                    <option value="富山県">富山県</option>
+                                    <option value="石川県">石川県</option>
+                                    <option value="福井県">福井県</option>
+                                    <option value="山梨県">山梨県</option>
+                                    <option value="長野県">長野県</option>
+                                    <option value="岐阜県">岐阜県</option>
+                                    <option value="静岡県">静岡県</option>
+                                    <option value="愛知県">愛知県</option>
+                                    <option value="三重県">三重県</option>
+                                    <option value="滋賀県">滋賀県</option>
+                                    <option value="京都府">京都府</option>
+                                    <option value="大阪府">大阪府</option>
+                                    <option value="兵庫県">兵庫県</option>
+                                    <option value="奈良県">奈良県</option>
+                                    <option value="和歌山県">和歌山県</option>
+                                    <option value="鳥取県">鳥取県</option>
+                                    <option value="島根県">島根県</option>
+                                    <option value="岡山県">岡山県</option>
+                                    <option value="広島県">広島県</option>
+                                    <option value="山口県">山口県</option>
+                                    <option value="徳島県">徳島県</option>
+                                    <option value="香川県">香川県</option>
+                                    <option value="愛媛県">愛媛県</option>
+                                    <option value="高知県">高知県</option>
+                                    <option value="福岡県">福岡県</option>
+                                    <option value="佐賀県">佐賀県</option>
+                                    <option value="長崎県">長崎県</option>
+                                    <option value="熊本県">熊本県</option>
+                                    <option value="大分県">大分県</option>
+                                    <option value="宮崎県">宮崎県</option>
+                                    <option value="鹿児島県">鹿児島県</option>
+                                    <option value="沖縄県">沖縄県</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>市区町村</label>
+                                <select id="bird-city">
+                                    <option value="">都道府県を先に選択してください</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- 目撃日時 -->
+                        <div class="form-group-pair">
+                            <div class="form-group">
+                                <label>目撃日</label>
+                                <input type="date" id="bird-sighting-date">
+                            </div>
+                            <div class="form-group">
+                                <label>時間帯</label>
+                                <select id="bird-sighting-time">
+                                    <option value="">選択してください</option>
+                                    <option value="早朝">早朝（5:00-7:00）</option>
+                                    <option value="朝">朝（7:00-9:00）</option>
+                                    <option value="午前">午前（9:00-12:00）</option>
+                                    <option value="昼">昼（12:00-14:00）</option>
+                                    <option value="午後">午後（14:00-17:00）</option>
+                                    <option value="夕方">夕方（17:00-19:00）</option>
+                                    <option value="夜">夜（19:00以降）</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>目撃時のメモ</label>
+                            <textarea id="bird-sighting-notes" placeholder="例: 川岸の石の上で休んでいた、群れで飛んでいた"></textarea>
+                        </div>
+                        
+                        <!-- 位置情報入力方法 -->
+                        <div class="location-input-methods" style="margin-bottom: 1rem; padding: 1rem; background: #f0f7ff; border-radius: 8px;">
+                            <p style="margin-bottom: 0.8rem; font-size: 0.9rem;">位置情報取得方法:</p>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button type="button" onclick="getBirdCurrentLocation()" style="background: #3498db; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                                    📍 現在地を使用
+                                </button>
+                                <button type="button" onclick="extractBirdLocationFromUrl()" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                                    🔗 URLから抽出
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>住所またはGoogleマップURL</label>
+                            <input type="text" id="bird-address" placeholder="住所またはGoogleマップのURLを入力">
+                        </div>
+                        
+                        <!-- 緯度と経度を横並び -->
+                        <div class="form-group-pair">
+                            <div class="form-group">
+                                <label>緯度</label>
+                                <input type="number" id="bird-lat" step="0.0000001" placeholder="例: 35.3439000">
+                            </div>
+                            <div class="form-group">
+                                <label>経度</label>
+                                <input type="number" id="bird-lng" step="0.0000001" placeholder="例: 133.4039000">
                             </div>
                         </div>
                     </div>
@@ -2020,6 +2164,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- 位置情報入力機能 -->
     <script src="location-input.js"></script>
+    <!-- 鳥の位置情報入力機能 -->
+    <script src="bird-location-input.js"></script>
     <!-- メインJS -->
     <script src="noroshiya-dev-v2.js"></script>
     

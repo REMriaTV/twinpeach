@@ -1,7 +1,12 @@
 // 位置情報入力機能 for デジタルスケッチブック
 
-let stoneLocationMap = null;
-let stoneLocationMarker = null;
+// グローバル変数（他ファイルでアクセスするためwindowに保存）
+window.stoneLocationMap = window.stoneLocationMap || null;
+window.stoneLocationMarker = window.stoneLocationMarker || null;
+
+// ローカル参照用
+const stoneLocationMap = window.stoneLocationMap;
+const stoneLocationMarker = window.stoneLocationMarker;
 
 // 現在地取得（GPS）
 function getCurrentLocationGPS() {
@@ -40,25 +45,24 @@ function getCurrentLocationGPS() {
             
             // 地図が表示されていたら更新
             console.log('Updating map with current location:', lat, lng);
-            console.log('stoneLocationMap exists:', !!stoneLocationMap);
+            console.log('stoneLocationMap exists:', !!window.stoneLocationMap);
             
-            if (stoneLocationMap) {
-                stoneLocationMap.setView([lat, lng], 15);
+            if (window.stoneLocationMap) {
+                window.stoneLocationMap.setView([lat, lng], 15);
                 
-                if (stoneLocationMarker) {
+                if (window.stoneLocationMarker) {
                     // 既存のマーカーを移動
-                    stoneLocationMarker.setLatLng([lat, lng]);
+                    window.stoneLocationMarker.setLatLng([lat, lng]);
                     console.log('Marker moved to current location');
                 } else {
                     // マーカーがなければ新規作成
-                    stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(stoneLocationMap);
-                    console.log('New marker created at current location');
+                    window.stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(window.stoneLocationMap);
                     
-                    // マーカーのドラッグイベント
-                    stoneLocationMarker.on('dragend', function(event) {
-                        const position = stoneLocationMarker.getLatLng();
+                    window.stoneLocationMarker.on('dragend', function(event) {
+                        const position = window.stoneLocationMarker.getLatLng();
                         updateLocationFields(position.lat, position.lng);
                     });
+                    console.log('New marker created at current location');
                 }
             } else {
                 console.log('Map not initialized yet');
@@ -102,28 +106,28 @@ function initializeStoneLocationMap() {
     const currentLng = document.getElementById('stone-lng').value || 139.767125;
     
     // 地図を初期化
-    stoneLocationMap = L.map('location-map').setView([currentLat, currentLng], 15);
+    window.stoneLocationMap = L.map('location-map').setView([currentLat, currentLng], 15);
     
     // CartoDBの明るいタイルレイヤー（石マップと同じスタイル）
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 20
-    }).addTo(stoneLocationMap);
+    }).addTo(window.stoneLocationMap);
     
     // クリックイベント
-    stoneLocationMap.on('click', function(e) {
+    window.stoneLocationMap.on('click', function(e) {
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
         
-        if (stoneLocationMarker) {
-            stoneLocationMarker.setLatLng(e.latlng);
+        if (window.stoneLocationMarker) {
+            window.stoneLocationMarker.setLatLng(e.latlng);
         } else {
-            stoneLocationMarker = L.marker(e.latlng, {draggable: true}).addTo(stoneLocationMap);
+            window.stoneLocationMarker = L.marker(e.latlng, {draggable: true}).addTo(window.stoneLocationMap);
             
             // マーカーのドラッグイベント
-            stoneLocationMarker.on('dragend', function(event) {
-                const position = stoneLocationMarker.getLatLng();
+            window.stoneLocationMarker.on('dragend', function(event) {
+                const position = window.stoneLocationMarker.getLatLng();
                 updateLocationFields(position.lat, position.lng);
             });
         }
@@ -133,10 +137,10 @@ function initializeStoneLocationMap() {
     
     // 既存のマーカーがあれば表示
     if (currentLat && currentLng && currentLat !== 35.681236) {
-        stoneLocationMarker = L.marker([currentLat, currentLng], {draggable: true}).addTo(stoneLocationMap);
+        window.stoneLocationMarker = L.marker([currentLat, currentLng], {draggable: true}).addTo(window.stoneLocationMap);
         
-        stoneLocationMarker.on('dragend', function(event) {
-            const position = stoneLocationMarker.getLatLng();
+        window.stoneLocationMarker.on('dragend', function(event) {
+            const position = window.stoneLocationMarker.getLatLng();
             updateLocationFields(position.lat, position.lng);
         });
     }
@@ -145,8 +149,8 @@ function initializeStoneLocationMap() {
 // 地図から選択（廃止予定だが互換性のため残す）
 function openMapSelection() {
     // すでに地図は表示されているので、何もしない
-    if (stoneLocationMap) {
-        stoneLocationMap.invalidateSize();
+    if (window.stoneLocationMap) {
+        window.stoneLocationMap.invalidateSize();
     }
 }
 
@@ -194,19 +198,16 @@ function extractFromGoogleMapUrl() {
         alert('URLから位置情報を取得しました！');
         
         // 地図が表示されていたら更新
-        if (stoneLocationMap) {
-            stoneLocationMap.setView([lat, lng], 15);
+        if (window.stoneLocationMap) {
+            window.stoneLocationMap.setView([lat, lng], 15);
             
-            if (stoneLocationMarker) {
-                // 既存のマーカーを移動
-                stoneLocationMarker.setLatLng([lat, lng]);
+            if (window.stoneLocationMarker) {
+                window.stoneLocationMarker.setLatLng([lat, lng]);
             } else {
-                // マーカーがなければ新規作成
-                stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(stoneLocationMap);
+                window.stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(window.stoneLocationMap);
                 
-                // マーカーのドラッグイベント
-                stoneLocationMarker.on('dragend', function(event) {
-                    const position = stoneLocationMarker.getLatLng();
+                window.stoneLocationMarker.on('dragend', function(event) {
+                    const position = window.stoneLocationMarker.getLatLng();
                     updateLocationFields(position.lat, position.lng);
                 });
             }
@@ -228,7 +229,7 @@ window.extractLatLngFromUrl = extractFromGoogleMapUrl;
 window.getCurrentLocationGPS = getCurrentLocationGPS;
 window.openMapSelection = openMapSelection;
 window.extractFromGoogleMapUrl = extractFromGoogleMapUrl;
-window.initializeLocationMap = initializeLocationMap;
+window.initializeStoneLocationMap = initializeStoneLocationMap;
 
 // 石タブが開かれた時に地図を初期化
 document.addEventListener('DOMContentLoaded', () => {
@@ -237,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const stonesTab = document.getElementById('stones-tab');
         if (stonesTab && stonesTab.classList.contains('active')) {
             // 石タブが最初から開いている場合は地図を初期化
-            initializeLocationMap();
+            initializeStoneLocationMap();
         }
     }, 500);
     
@@ -251,16 +252,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const lat = parseFloat(this.value);
             const lng = parseFloat(lngField.value);
             
-            if (!isNaN(lat) && !isNaN(lng) && stoneLocationMap) {
-                stoneLocationMap.setView([lat, lng], 15);
+            if (!isNaN(lat) && !isNaN(lng) && window.stoneLocationMap) {
+                window.stoneLocationMap.setView([lat, lng], 15);
                 
-                if (stoneLocationMarker) {
-                    stoneLocationMarker.setLatLng([lat, lng]);
+                if (window.stoneLocationMarker) {
+                    window.stoneLocationMarker.setLatLng([lat, lng]);
                 } else {
-                    stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(stoneLocationMap);
+                    window.stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(window.stoneLocationMap);
                     
-                    stoneLocationMarker.on('dragend', function(event) {
-                        const position = stoneLocationMarker.getLatLng();
+                    window.stoneLocationMarker.on('dragend', function(event) {
+                        const position = window.stoneLocationMarker.getLatLng();
                         updateLocationFields(position.lat, position.lng);
                     });
                 }
@@ -272,16 +273,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const lat = parseFloat(latField.value);
             const lng = parseFloat(this.value);
             
-            if (!isNaN(lat) && !isNaN(lng) && stoneLocationMap) {
-                stoneLocationMap.setView([lat, lng], 15);
+            if (!isNaN(lat) && !isNaN(lng) && window.stoneLocationMap) {
+                window.stoneLocationMap.setView([lat, lng], 15);
                 
-                if (stoneLocationMarker) {
-                    stoneLocationMarker.setLatLng([lat, lng]);
+                if (window.stoneLocationMarker) {
+                    window.stoneLocationMarker.setLatLng([lat, lng]);
                 } else {
-                    stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(stoneLocationMap);
+                    window.stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(window.stoneLocationMap);
                     
-                    stoneLocationMarker.on('dragend', function(event) {
-                        const position = stoneLocationMarker.getLatLng();
+                    window.stoneLocationMarker.on('dragend', function(event) {
+                        const position = window.stoneLocationMarker.getLatLng();
                         updateLocationFields(position.lat, position.lng);
                     });
                 }
@@ -289,8 +290,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-// グローバル関数として公開
-window.getCurrentLocationGPS = getCurrentLocationGPS;
-window.extractFromGoogleMapUrl = extractFromGoogleMapUrl;
-window.initializeStoneLocationMap = initializeStoneLocationMap;

@@ -1934,13 +1934,47 @@ async function handleBirdImageSelect(event) {
     reader.readAsDataURL(file);
 }
 
-// 削除（重複しているため）
-
-// 削除（重複しているため）
-
-// 削除（重複しているため）
-
-// 削除（重複しているため）
+// 録音リストを表示
+function displayBirdRecordings() {
+    const recordingsList = document.getElementById('bird-recordings-list');
+    if (!recordingsList) return;
+    
+    if (currentBirdRecordings.length === 0) {
+        recordingsList.innerHTML = '<div style="color: #999; font-size: 0.9rem;">録音ファイルがありません</div>';
+        return;
+    }
+    
+    let html = '';
+    currentBirdRecordings.forEach((recording, index) => {
+        const sizeInMB = (recording.size / (1024 * 1024)).toFixed(1);
+        html += `
+            <div class="recording-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500; margin-bottom: 4px;">🎵 ${recording.name}</div>
+                        <div style="font-size: 0.85rem; color: #666;">${sizeInMB}MB</div>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button type="button" class="small-btn" onclick="toggleAudioPlayer(${index})" style="background: #3498db; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                            再生
+                        </button>
+                        <button type="button" class="small-btn" onclick="removeBirdRecording(${index})" style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                            削除
+                        </button>
+                    </div>
+                </div>
+                <div id="audio-player-${index}" style="display: none; margin-top: 10px;">
+                    <audio controls style="width: 100%;">
+                        <source src="${recording.data}" type="${recording.type}">
+                        お使いのブラウザは音声再生に対応していません。
+                    </audio>
+                </div>
+            </div>
+        `;
+    });
+    
+    recordingsList.innerHTML = html;
+}
 
 // ファイルサイズのフォーマット
 function formatFileSize(bytes) {
@@ -2233,3 +2267,4 @@ window.updateBirdCityOptions = updateBirdCityOptions;
 window.handleBirdRecordingSelect = handleBirdRecordingSelect;
 window.toggleAudioPlayer = toggleAudioPlayer;
 window.removeBirdRecording = removeBirdRecording;
+window.displayBirdRecordings = displayBirdRecordings;

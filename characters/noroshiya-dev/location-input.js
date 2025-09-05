@@ -33,9 +33,22 @@ function getCurrentLocationGPS() {
             event.target.disabled = false;
             
             // 地図が表示されていたら更新
-            if (locationMap && locationMarker) {
+            if (locationMap) {
                 locationMap.setView([lat, lng], 15);
-                locationMarker.setLatLng([lat, lng]);
+                
+                if (locationMarker) {
+                    // 既存のマーカーを移動
+                    locationMarker.setLatLng([lat, lng]);
+                } else {
+                    // マーカーがなければ新規作成
+                    locationMarker = L.marker([lat, lng], {draggable: true}).addTo(locationMap);
+                    
+                    // マーカーのドラッグイベント
+                    locationMarker.on('dragend', function(event) {
+                        const position = locationMarker.getLatLng();
+                        updateLocationFields(position.lat, position.lng);
+                    });
+                }
             }
         },
         (error) => {
@@ -166,9 +179,22 @@ function extractFromGoogleMapUrl() {
         alert('URLから位置情報を取得しました！');
         
         // 地図が表示されていたら更新
-        if (locationMap && locationMarker) {
+        if (locationMap) {
             locationMap.setView([lat, lng], 15);
-            locationMarker.setLatLng([lat, lng]);
+            
+            if (locationMarker) {
+                // 既存のマーカーを移動
+                locationMarker.setLatLng([lat, lng]);
+            } else {
+                // マーカーがなければ新規作成
+                locationMarker = L.marker([lat, lng], {draggable: true}).addTo(locationMap);
+                
+                // マーカーのドラッグイベント
+                locationMarker.on('dragend', function(event) {
+                    const position = locationMarker.getLatLng();
+                    updateLocationFields(position.lat, position.lng);
+                });
+            }
         }
     } else {
         // 短縮URLの場合の注意
@@ -199,4 +225,52 @@ document.addEventListener('DOMContentLoaded', () => {
             initializeLocationMap();
         }
     }, 500);
+    
+    // 緯度経度フィールドの変更を監視
+    const latField = document.getElementById('stone-lat');
+    const lngField = document.getElementById('stone-lng');
+    
+    if (latField && lngField) {
+        // 緯度フィールドの変更時
+        latField.addEventListener('change', function() {
+            const lat = parseFloat(this.value);
+            const lng = parseFloat(lngField.value);
+            
+            if (!isNaN(lat) && !isNaN(lng) && locationMap) {
+                locationMap.setView([lat, lng], 15);
+                
+                if (locationMarker) {
+                    locationMarker.setLatLng([lat, lng]);
+                } else {
+                    locationMarker = L.marker([lat, lng], {draggable: true}).addTo(locationMap);
+                    
+                    locationMarker.on('dragend', function(event) {
+                        const position = locationMarker.getLatLng();
+                        updateLocationFields(position.lat, position.lng);
+                    });
+                }
+            }
+        });
+        
+        // 経度フィールドの変更時
+        lngField.addEventListener('change', function() {
+            const lat = parseFloat(latField.value);
+            const lng = parseFloat(this.value);
+            
+            if (!isNaN(lat) && !isNaN(lng) && locationMap) {
+                locationMap.setView([lat, lng], 15);
+                
+                if (locationMarker) {
+                    locationMarker.setLatLng([lat, lng]);
+                } else {
+                    locationMarker = L.marker([lat, lng], {draggable: true}).addTo(locationMap);
+                    
+                    locationMarker.on('dragend', function(event) {
+                        const position = locationMarker.getLatLng();
+                        updateLocationFields(position.lat, position.lng);
+                    });
+                }
+            }
+        });
+    }
 });

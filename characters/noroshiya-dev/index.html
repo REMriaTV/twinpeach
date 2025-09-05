@@ -1794,7 +1794,7 @@
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="form-group">
                             <label>目撃時のメモ</label>
                             <textarea id="bird-sighting-notes" placeholder="例: 川岸の石の上で休んでいた、群れで飛んでいた"></textarea>
@@ -1812,6 +1812,37 @@
                                 </button>
                             </div>
                         </div>
+
+                         <!-- 音声録音セクション -->
+  <div class="form-section">
+      <h2>音声録音</h2>
+      <div id="bird-recordings-list" style="margin-bottom: 1rem;">
+          <div style="color: #999; font-size: 0.9rem;">録音ファイルがありません</div>
+      </div>
+      <div class="form-group">
+          <label>ボイスメモをアップロード</label>
+          <button type="button" class="upload-recording-btn" 
+  onclick="document.getElementById('bird-recording-input').click()" style="background: #3498db; 
+  color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+              音声ファイルを選択
+          </button>
+          <input type="file" id="bird-recording-input" accept="audio/*,.m4a,.mp3,.wav,.aac" 
+  onchange="handleBirdRecordingSelect(event)" multiple style="display: none;">
+          <div style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">対応形式：m4a, mp3,
+  wav, aac（最大20MB）</div>
+      </div>
+      <div class="form-group">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" id="bird-unknown-species">
+              <span>何の鳥かわからない（種類不明）</span>
+          </label>
+      </div>
+      <div class="form-group">
+          <label for="bird-recording-notes">録音メモ</label>
+          <textarea id="bird-recording-notes" rows="2" 
+  placeholder="録音の状況や気づいたことなど"></textarea>
+      </div>
+  </div>
                         
                         <div class="form-group">
                             <label>住所またはGoogleマップURL</label>

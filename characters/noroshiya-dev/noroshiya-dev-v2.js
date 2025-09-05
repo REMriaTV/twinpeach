@@ -86,8 +86,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (tab === 'birds' && birdsList.length === 0) {
                 await loadBirdsData();
-            } else if (tab === 'stones' && stonesList.length === 0) {
-                await loadStonesData();
+            } else if (tab === 'stones') {
+                if (stonesList.length === 0) {
+                    await loadStonesData();
+                }
+                // 石タブが選択されたら地図を初期化
+                setTimeout(() => {
+                    if (typeof initializeLocationMap === 'function') {
+                        initializeLocationMap();
+                    }
+                }, 100);
             } else if (tab === 'noroshiya' && noroshiyaList.length === 0) {
                 await loadNoroshiyaData();
             }
@@ -142,6 +150,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 保存された採取ポイントを読み込み
     loadSavedLocations();
+    
+    // 石タブが最初から開いているので地図を初期化
+    setTimeout(() => {
+        if (typeof initializeLocationMap === 'function') {
+            initializeLocationMap();
+        }
+    }, 100);
     
     // モバイルの初期設定
     if (window.innerWidth <= 768) {
@@ -1778,5 +1793,14 @@ window.switchTab = function(tabName) {
                 }
             }
         }, 100);
+    }
+    
+    // 石タブが選択された場合、地図を初期化
+    if (tabName === 'stones') {
+        setTimeout(() => {
+            if (typeof initializeLocationMap === 'function') {
+                initializeLocationMap();
+            }
+        }, 200);
     }
 };

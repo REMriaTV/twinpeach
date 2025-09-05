@@ -217,6 +217,12 @@ function showTab(tab) {
         titleEl.textContent = tab === 'birds' ? '鳥類データ編集' : '石データ編集';
     }
     
+    // 石タブに切り替えた時の処理
+    if (tab === 'stones') {
+        // 既存の石データからGoogleマップURLを抽出して座標を取得
+        extractCoordinatesFromStones();
+    }
+    
     // モバイルでサイドバーを閉じる
     if (window.innerWidth <= 768) {
         const sidebar = document.querySelector('.sidebar');
@@ -1098,6 +1104,123 @@ document.addEventListener('click', (e) => {
         sidebar.classList.remove('open');
     }
 });
+
+// GoogleマップURLから座標を抽出する関数
+function extractCoordinatesFromStones() {
+    console.log('石データから座標を抽出中...');
+    
+    let extractedCount = 0;
+    let updatedStones = [];
+    
+    currentStones.forEach(stone => {
+        let updated = false;
+        
+        // addressフィールドまたはmap_urlフィールドにGoogleマップURLがある場合
+        const urlToCheck = stone.address || stone.map_url || '';
+        
+        if (urlToCheck.includes('google.com/maps')) {
+            // GoogleマップURLから座標を抽出
+            const coordinates = extractCoordinatesFromGoogleMapUrl(urlToCheck);
+            
+            if (coordinates) {
+                // 座標が取得できた場合、石データを更新
+                stone.lat = coordinates.lat;
+                stone.lng = coordinates.lng;
+                updated = true;
+                extractedCount++;
+                console.log(`${stone.name}: 座標抽出成功 (${coordinates.lat}, ${coordinates.lng})`);
+            }
+        }
+        
+        updatedStones.push(stone);
+    });
+    
+    if (extractedCount > 0) {
+        console.log(`${extractedCount}個の石データから座標を抽出しました`);
+        // 更新されたデータを保存
+        currentStones = updatedStones;
+        saveExtractedCoordinates();
+    } else {
+        console.log('座標を抽出できるGoogleマップURLが見つかりませんでした');
+    }
+}
+
+// GoogleマップURLから座標を抽出する関数
+function extractCoordinatesFromGoogleMapUrl(url) {
+    // パターン1: @緯度,経度,ズーム の形式
+    const pattern1 = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match1 = url.match(pattern1);
+    if (match1) {
+        return {
+            lat: parseFloat(match1[1]),
+            lng: parseFloat(match1[2])
+        };
+    }
+    
+    // パターン2: place/場所名/@緯度,経度 の形式
+    const pattern2 = /place\/[^\/]+\/@(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match2 = url.match(pattern2);
+    if (match2) {
+        return {
+            lat: parseFloat(match2[1]),
+            lng: parseFloat(match2[2])
+        };
+    }
+    
+    // パターン3: ll=緯度,経度 の形式（古い形式）
+    const pattern3 = /ll=(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match3 = url.match(pattern3);
+    if (match3) {
+        return {
+            lat: parseFloat(match3[1]),
+            lng: parseFloat(match3[2])
+        };
+    }
+    
+    // パターン4: q=緯度,経度 の形式（検索クエリ）
+    const pattern4 = /q=(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match4 = url.match(pattern4);
+    if (match4) {
+        return {
+            lat: parseFloat(match4[1]),
+            lng: parseFloat(match4[2])
+        };
+    }
+    
+    return null;
+}
+
+// 抽出した座標を保存する関数
+async function saveExtractedCoordinates() {
+    try {
+        if (isSupabaseConnected) {
+            // Supabaseに一括更新
+            for (const stone of currentStones) {
+                if (stone.lat && stone.lng) {
+                    const { error } = await supabase
+                        .from('stones')
+                        .update({ lat: stone.lat, lng: stone.lng })
+                        .eq('id', stone.id);
+                    
+                    if (error) {
+                        console.error(`${stone.name}の座標保存エラー:`, error);
+                    }
+                }
+            }
+            showMessage('座標データを保存しました', 'success');
+        } else {
+            // ローカルストレージに保存
+            localStorage.setItem('masterStones', JSON.stringify(currentStones));
+            showMessage('座標データをローカルに保存しました', 'success');
+        }
+        
+        // 表示を更新
+        displayStones(currentStones);
+    } catch (error) {
+        console.error('座標保存エラー:', error);
+        showMessage('座標の保存に失敗しました', 'error');
+    }
+}
 
 // グローバルに関数を公開
 window.toggleSidebar = toggleSidebar;

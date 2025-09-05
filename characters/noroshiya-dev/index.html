@@ -1961,26 +1961,23 @@
                             <input type="text" id="stone-address" placeholder="住所またはGoogleマップのURLを入力">
                         </div>
                         
+                        <!-- 地図表示エリア（常に表示） -->
+                        <div id="map-container" style="margin-bottom: 1rem;">
+                            <div id="location-map" style="height: 400px; border: 1px solid #ddd; border-radius: 8px; background-color: #f0f0f0;"></div>
+                            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">地図上をクリック/タップして位置を指定してください</p>
+                        </div>
+                        
                         <!-- 位置情報入力方法 -->
                         <div class="location-input-methods" style="margin-bottom: 1rem; padding: 1rem; background: #f0f7ff; border-radius: 8px;">
-                            <p style="margin-bottom: 0.8rem; font-size: 0.9rem;">位置情報の取得方法:</p>
+                            <p style="margin-bottom: 0.8rem; font-size: 0.9rem;">その他の位置情報取得方法:</p>
                             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                 <button type="button" onclick="getCurrentLocationGPS()" style="background: #3498db; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
                                     📍 現在地を使用
-                                </button>
-                                <button type="button" onclick="openMapSelection()" style="background: #27ae60; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
-                                    🗺️ 地図から選択
                                 </button>
                                 <button type="button" onclick="extractFromGoogleMapUrl()" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
                                     🔗 URLから抽出
                                 </button>
                             </div>
-                        </div>
-                        
-                        <!-- 地図表示エリア（必要時に表示） -->
-                        <div id="map-container" style="display: none; margin-bottom: 1rem;">
-                            <div id="location-map" style="height: 300px; border: 1px solid #ddd; border-radius: 4px;"></div>
-                            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">地図上をクリック/タップして位置を指定してください</p>
                         </div>
                         
                         <!-- 緯度と経度を横並び -->
@@ -2021,6 +2018,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- 位置情報入力機能 -->
+    <script src="location-input.js"></script>
     <!-- メインJS -->
     <script src="noroshiya-dev-v2.js"></script>
     

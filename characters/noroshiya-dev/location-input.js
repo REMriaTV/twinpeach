@@ -67,60 +67,57 @@ function getCurrentLocationGPS() {
     );
 }
 
-// 地図から選択
-function openMapSelection() {
-    const mapContainer = document.getElementById('map-container');
-    mapContainer.style.display = 'block';
+// 地図の初期化（自動実行用）
+function initializeLocationMap() {
+    // 現在の緯度経度を取得（あれば）
+    const currentLat = document.getElementById('stone-lat').value || 35.681236;
+    const currentLng = document.getElementById('stone-lng').value || 139.767125;
     
-    // 地図がまだ初期化されていない場合
-    if (!locationMap) {
-        // 現在の緯度経度を取得（あれば）
-        const currentLat = document.getElementById('stone-lat').value || 35.681236;
-        const currentLng = document.getElementById('stone-lng').value || 139.767125;
+    // 地図を初期化
+    locationMap = L.map('location-map').setView([currentLat, currentLng], 15);
+    
+    // OpenStreetMapタイル
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(locationMap);
+    
+    // クリックイベント
+    locationMap.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
         
-        // 地図を初期化
-        locationMap = L.map('location-map').setView([currentLat, currentLng], 15);
-        
-        // OpenStreetMapタイル
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(locationMap);
-        
-        // クリックイベント
-        locationMap.on('click', function(e) {
-            const lat = e.latlng.lat;
-            const lng = e.latlng.lng;
+        if (locationMarker) {
+            locationMarker.setLatLng(e.latlng);
+        } else {
+            locationMarker = L.marker(e.latlng, {draggable: true}).addTo(locationMap);
             
-            if (locationMarker) {
-                locationMarker.setLatLng(e.latlng);
-            } else {
-                locationMarker = L.marker(e.latlng, {draggable: true}).addTo(locationMap);
-                
-                // マーカーのドラッグイベント
-                locationMarker.on('dragend', function(event) {
-                    const position = locationMarker.getLatLng();
-                    updateLocationFields(position.lat, position.lng);
-                });
-            }
-            
-            updateLocationFields(lat, lng);
-        });
-        
-        // 既存のマーカーがあれば表示
-        if (currentLat && currentLng && currentLat !== 35.681236) {
-            locationMarker = L.marker([currentLat, currentLng], {draggable: true}).addTo(locationMap);
-            
+            // マーカーのドラッグイベント
             locationMarker.on('dragend', function(event) {
                 const position = locationMarker.getLatLng();
                 updateLocationFields(position.lat, position.lng);
             });
         }
-    }
+        
+        updateLocationFields(lat, lng);
+    });
     
-    // 地図のサイズを再計算（表示後）
-    setTimeout(() => {
+    // 既存のマーカーがあれば表示
+    if (currentLat && currentLng && currentLat !== 35.681236) {
+        locationMarker = L.marker([currentLat, currentLng], {draggable: true}).addTo(locationMap);
+        
+        locationMarker.on('dragend', function(event) {
+            const position = locationMarker.getLatLng();
+            updateLocationFields(position.lat, position.lng);
+        });
+    }
+}
+
+// 地図から選択（廃止予定だが互換性のため残す）
+function openMapSelection() {
+    // すでに地図は表示されているので、何もしない
+    if (locationMap) {
         locationMap.invalidateSize();
-    }, 100);
+    }
 }
 
 // 緯度経度フィールドを更新
@@ -188,3 +185,16 @@ window.extractLatLngFromUrl = extractFromGoogleMapUrl;
 window.getCurrentLocationGPS = getCurrentLocationGPS;
 window.openMapSelection = openMapSelection;
 window.extractFromGoogleMapUrl = extractFromGoogleMapUrl;
+window.initializeLocationMap = initializeLocationMap;
+
+// 石タブが開かれた時に地図を初期化
+document.addEventListener('DOMContentLoaded', () => {
+    // 少し遅延を置いて、石タブがアクティブかチェック
+    setTimeout(() => {
+        const stonesTab = document.getElementById('stones-tab');
+        if (stonesTab && stonesTab.classList.contains('active')) {
+            // 石タブが最初から開いている場合は地図を初期化
+            initializeLocationMap();
+        }
+    }, 500);
+});

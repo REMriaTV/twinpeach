@@ -1264,6 +1264,99 @@
                 display: none !important;
             }
         }
+        
+        /* 音声録音リスト */
+        .recording-item {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .recording-icon {
+            width: 40px;
+            height: 40px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .recording-info {
+            flex: 1;
+        }
+        
+        .recording-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .recording-details {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .recording-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .recording-play-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .recording-play-btn:hover {
+            background: #219a52;
+        }
+        
+        .recording-remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .recording-remove-btn:hover {
+            background: #c0392b;
+        }
+        
+        .audio-player {
+            width: 100%;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .recording-item {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .recording-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1531,6 +1624,52 @@
                         <div class="form-group">
                             <label>鳴き声</label>
                             <input type="text" id="bird-call" placeholder="チュンチュン">
+                        </div>
+                    </div>
+                    
+                    <!-- 音声録音セクション -->
+                    <div class="form-section">
+                        <h2>音声録音</h2>
+                        
+                        <!-- 録音ファイル一覧 -->
+                        <div id="bird-recordings-list" style="margin-bottom: 1rem;">
+                            <!-- 録音ファイルがここに表示される -->
+                        </div>
+                        
+                        <!-- 録音ファイルアップロード -->
+                        <div class="form-group">
+                            <label>ボイスメモをアップロード</label>
+                            <button type="button" class="upload-recording-btn" onclick="document.getElementById('bird-recording-input').click()" style="background: #3498db; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                                </svg>
+                                <span>音声ファイルを選択</span>
+                            </button>
+                            <input type="file" id="bird-recording-input" accept="audio/*,.m4a,.mp3,.wav,.aac" onchange="handleBirdRecordingSelect(event)" style="display: none;" multiple>
+                            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+                                対応形式: m4a, mp3, wav, aac など<br>
+                                複数ファイル選択可能
+                            </p>
+                        </div>
+                        
+                        <!-- 種類不明チェックボックス -->
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="bird-unknown-species" style="width: 18px; height: 18px;">
+                                <span>何の鳥かわからない（種類不明）</span>
+                            </label>
+                            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+                                チェックすると「不明な鳥」として登録され、後から種類を特定できます
+                            </p>
+                        </div>
+                        
+                        <!-- 録音メモ -->
+                        <div class="form-group">
+                            <label>録音時のメモ</label>
+                            <textarea id="bird-recording-notes" placeholder="例: 早朝5時頃、林の中から聞こえた。高い声で「ピーヨピーヨ」と鳴いていた"></textarea>
                         </div>
                     </div>
                     

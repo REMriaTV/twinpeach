@@ -17,6 +17,7 @@ let currentBirdId = null;
 let currentStoneId = null;
 let currentStoneImage = null; // 現在選択中の石の画像
 let savedLocations = []; // 保存された採取ポイント
+let currentBirdRecordings = []; // 鳥の音声録音リスト
 
 // 都道府県別の市区町村データ
 const cityDataList = {
@@ -650,6 +651,10 @@ function selectBird(id) {
         }, 100);
     }
     
+    // 録音データを復元
+    currentBirdRecordings = bird.recordings || [];
+    displayBirdRecordings();
+    
     displayBirdsList();
     
     // メインコンテンツを最上部にスクロール
@@ -696,6 +701,10 @@ function addNewBird() {
     document.getElementById('bird-image-preview').innerHTML = '<div class="placeholder">画像なし</div>';
     currentBirdImage = null;
     
+    // 録音データをクリア
+    currentBirdRecordings = [];
+    displayBirdRecordings();
+    
     birdsList.push(newBird);
     displayBirdsList();
     selectBird(newId);
@@ -727,7 +736,8 @@ async function saveBird() {
         sighting_notes: document.getElementById('bird-sighting-notes').value || null,
         address: document.getElementById('bird-address').value || null,
         lat: document.getElementById('bird-lat').value ? parseFloat(document.getElementById('bird-lat').value) : null,
-        lng: document.getElementById('bird-lng').value ? parseFloat(document.getElementById('bird-lng').value) : null
+        lng: document.getElementById('bird-lng').value ? parseFloat(document.getElementById('bird-lng').value) : null,
+        recordings: currentBirdRecordings // 録音データを追加
     };
     
     try {
@@ -1903,6 +1913,7 @@ window.switchTab = function(tabName) {
 
 // 鳥画像選択処理
 let currentBirdImage = null;
+let currentBirdRecordings = []; // 録音ファイルリスト
 
 async function handleBirdImageSelect(event) {
     const file = event.target.files[0];
@@ -1922,6 +1933,138 @@ async function handleBirdImageSelect(event) {
         currentBirdImage = e.target.result; // Base64データとして保存
     };
     reader.readAsDataURL(file);
+}
+
+// 鳥の録音ファイル選択処理
+async function handleBirdRecordingSelect(event) {
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
+    
+    for (const file of files) {
+        // ファイルサイズチェック（20MB以下）
+        if (file.size > 20 * 1024 * 1024) {
+            alert(`${file.name} は20MBを超えています。スキップします。`);
+            continue;
+        }
+        
+        // FileをBase64に変換
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const recording = {
+                id: Date.now() + Math.random(),
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                data: e.target.result, // Base64データ
+                uploaded_at: new Date().toISOString()
+            };
+            
+            currentBirdRecordings.push(recording);
+            displayBirdRecordings();
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    // ファイル選択をリセット
+    event.target.value = '';
+}
+
+// 録音ファイルリストの表示
+function displayBirdRecordings() {
+    const listEl = document.getElementById('bird-recordings-list');
+    
+    if (currentBirdRecordings.length === 0) {
+        listEl.innerHTML = '<p style="color: #666; font-size: 0.9rem;">録音ファイルがありません</p>';
+        return;
+    }
+    
+    listEl.innerHTML = currentBirdRecordings.map((recording, index) => `
+        <div class="recording-item" data-index="${index}">
+            <div class="recording-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18V5l12-2v13"></path>
+                    <circle cx="6" cy="18" r="3"></circle>
+                    <circle cx="18" cy="16" r="3"></circle>
+                </svg>
+            </div>
+            <div class="recording-info">
+                <div class="recording-name">${recording.name}</div>
+                <div class="recording-details">
+                    ${formatFileSize(recording.size)} • ${formatDate(recording.uploaded_at)}
+                </div>
+                <audio controls class="audio-player" id="audio-${index}">
+                    <source src="${recording.data}" type="${recording.type}">
+                    お使いのブラウザは音声再生に対応していません。
+                </audio>
+            </div>
+            <div class="recording-actions">
+                <button type="button" class="recording-play-btn" onclick="toggleAudioPlayer(${index})">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    <span>再生</span>
+                </button>
+                <button type="button" class="recording-remove-btn" onclick="removeBirdRecording(${index})">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 音声プレーヤーの表示切り替え
+function toggleAudioPlayer(index) {
+    const audioEl = document.getElementById(`audio-${index}`);
+    const playBtn = document.querySelector(`[data-index="${index}"] .recording-play-btn span`);
+    
+    if (audioEl.style.display === 'block') {
+        audioEl.style.display = 'none';
+        audioEl.pause();
+        playBtn.textContent = '再生';
+    } else {
+        // 他の音声を停止
+        document.querySelectorAll('.audio-player').forEach(audio => {
+            audio.style.display = 'none';
+            audio.pause();
+        });
+        document.querySelectorAll('.recording-play-btn span').forEach(span => {
+            span.textContent = '再生';
+        });
+        
+        audioEl.style.display = 'block';
+        audioEl.play();
+        playBtn.textContent = '停止';
+    }
+}
+
+// 録音ファイルの削除
+function removeBirdRecording(index) {
+    if (confirm('この録音ファイルを削除しますか？')) {
+        currentBirdRecordings.splice(index, 1);
+        displayBirdRecordings();
+    }
+}
+
+// ファイルサイズのフォーマット
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    else if (bytes < 1048576) return Math.round(bytes / 1024) + ' KB';
+    else return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+// 日付のフォーマット
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }
 
 // 鳥の現在地取得
@@ -2085,8 +2228,114 @@ function updateBirdCityOptions(prefecture) {
     });
 }
 
+// 鳥の音声録音選択処理
+async function handleBirdRecordingSelect(event) {
+    const files = Array.from(event.target.files);
+    
+    for (const file of files) {
+        // ファイルサイズチェック（20MB以下）
+        if (file.size > 20 * 1024 * 1024) {
+            alert(`${file.name} は20MBを超えています。スキップします。`);
+            continue;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const recording = {
+                id: Date.now() + Math.random(),
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                data: e.target.result, // Base64データ
+                uploaded_at: new Date().toISOString()
+            };
+            currentBirdRecordings.push(recording);
+            displayBirdRecordings();
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    // ファイル選択をリセット
+    event.target.value = '';
+}
+
+// 録音リストを表示
+function displayBirdRecordings() {
+    const recordingsList = document.getElementById('bird-recordings-list');
+    if (!recordingsList) return;
+    
+    if (currentBirdRecordings.length === 0) {
+        recordingsList.innerHTML = '<div style="color: #999; font-size: 0.9rem;">録音ファイルがありません</div>';
+        return;
+    }
+    
+    let html = '';
+    currentBirdRecordings.forEach((recording, index) => {
+        const sizeInMB = (recording.size / (1024 * 1024)).toFixed(1);
+        html += `
+            <div class="recording-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500; margin-bottom: 4px;">🎵 ${recording.name}</div>
+                        <div style="font-size: 0.85rem; color: #666;">${sizeInMB}MB</div>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button type="button" class="small-btn" onclick="toggleAudioPlayer(${index})" style="background: #3498db; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                            再生
+                        </button>
+                        <button type="button" class="small-btn" onclick="removeBirdRecording(${index})" style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                            削除
+                        </button>
+                    </div>
+                </div>
+                <div id="audio-player-${index}" style="display: none; margin-top: 10px;">
+                    <audio controls style="width: 100%;">
+                        <source src="${recording.data}" type="${recording.type}">
+                        お使いのブラウザは音声再生に対応していません。
+                    </audio>
+                </div>
+            </div>
+        `;
+    });
+    
+    recordingsList.innerHTML = html;
+}
+
+// 音声プレーヤーの表示切り替え
+function toggleAudioPlayer(index) {
+    const playerDiv = document.getElementById(`audio-player-${index}`);
+    if (playerDiv) {
+        if (playerDiv.style.display === 'none') {
+            // 他の音声プレーヤーを全て非表示にする
+            document.querySelectorAll('[id^="audio-player-"]').forEach(player => {
+                player.style.display = 'none';
+                const audio = player.querySelector('audio');
+                if (audio) audio.pause();
+            });
+            
+            // 選択したプレーヤーを表示
+            playerDiv.style.display = 'block';
+        } else {
+            playerDiv.style.display = 'none';
+            const audio = playerDiv.querySelector('audio');
+            if (audio) audio.pause();
+        }
+    }
+}
+
+// 録音を削除
+function removeBirdRecording(index) {
+    if (confirm('この録音ファイルを削除しますか？')) {
+        currentBirdRecordings.splice(index, 1);
+        displayBirdRecordings();
+    }
+}
+
 // グローバル関数として公開
 window.handleBirdImageSelect = handleBirdImageSelect;
 window.getBirdCurrentLocation = getBirdCurrentLocation;
 window.extractBirdLocationFromUrl = extractBirdLocationFromUrl;
 window.updateBirdCityOptions = updateBirdCityOptions;
+window.handleBirdRecordingSelect = handleBirdRecordingSelect;
+window.toggleAudioPlayer = toggleAudioPlayer;
+window.removeBirdRecording = removeBirdRecording;

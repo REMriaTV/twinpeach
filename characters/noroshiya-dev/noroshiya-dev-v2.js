@@ -93,8 +93,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 // 石タブが選択されたら地図を初期化
                 setTimeout(() => {
-                    if (typeof initializeLocationMap === 'function') {
-                        initializeLocationMap();
+                    if (typeof initializeStoneLocationMap === 'function') {
+                        initializeStoneLocationMap();
                     }
                 }, 100);
             } else if (tab === 'noroshiya' && noroshiyaList.length === 0) {
@@ -154,8 +154,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 石タブが最初から開いているので地図を初期化
     setTimeout(() => {
-        if (typeof initializeLocationMap === 'function') {
-            initializeLocationMap();
+        if (typeof initializeStoneLocationMap === 'function') {
+            initializeStoneLocationMap();
         }
     }, 100);
     
@@ -1904,8 +1904,8 @@ window.switchTab = function(tabName) {
     // 石タブが選択された場合、地図を初期化
     if (tabName === 'stones') {
         setTimeout(() => {
-            if (typeof initializeLocationMap === 'function') {
-                initializeLocationMap();
+            if (typeof initializeStoneLocationMap === 'function') {
+                initializeStoneLocationMap();
             }
         }, 200);
     }
@@ -1937,7 +1937,6 @@ async function handleBirdImageSelect(event) {
 // 削除（重複しているため）
 
 // 削除（重複しているため）
-}
 
 // 削除（重複しているため）
 

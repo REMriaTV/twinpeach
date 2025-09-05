@@ -1,7 +1,7 @@
 // 位置情報入力機能 for デジタルスケッチブック
 
-let locationMap = null;
-let locationMarker = null;
+let stoneLocationMap = null;
+let stoneLocationMarker = null;
 
 // 現在地取得（GPS）
 function getCurrentLocationGPS() {
@@ -40,23 +40,23 @@ function getCurrentLocationGPS() {
             
             // 地図が表示されていたら更新
             console.log('Updating map with current location:', lat, lng);
-            console.log('locationMap exists:', !!locationMap);
+            console.log('stoneLocationMap exists:', !!stoneLocationMap);
             
-            if (locationMap) {
-                locationMap.setView([lat, lng], 15);
+            if (stoneLocationMap) {
+                stoneLocationMap.setView([lat, lng], 15);
                 
-                if (locationMarker) {
+                if (stoneLocationMarker) {
                     // 既存のマーカーを移動
-                    locationMarker.setLatLng([lat, lng]);
+                    stoneLocationMarker.setLatLng([lat, lng]);
                     console.log('Marker moved to current location');
                 } else {
                     // マーカーがなければ新規作成
-                    locationMarker = L.marker([lat, lng], {draggable: true}).addTo(locationMap);
+                    stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(stoneLocationMap);
                     console.log('New marker created at current location');
                     
                     // マーカーのドラッグイベント
-                    locationMarker.on('dragend', function(event) {
-                        const position = locationMarker.getLatLng();
+                    stoneLocationMarker.on('dragend', function(event) {
+                        const position = stoneLocationMarker.getLatLng();
                         updateLocationFields(position.lat, position.lng);
                     });
                 }
@@ -96,34 +96,34 @@ function getCurrentLocationGPS() {
 }
 
 // 地図の初期化（自動実行用）
-function initializeLocationMap() {
+function initializeStoneLocationMap() {
     // 現在の緯度経度を取得（あれば）
     const currentLat = document.getElementById('stone-lat').value || 35.681236;
     const currentLng = document.getElementById('stone-lng').value || 139.767125;
     
     // 地図を初期化
-    locationMap = L.map('location-map').setView([currentLat, currentLng], 15);
+    stoneLocationMap = L.map('location-map').setView([currentLat, currentLng], 15);
     
     // CartoDBの明るいタイルレイヤー（石マップと同じスタイル）
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 20
-    }).addTo(locationMap);
+    }).addTo(stoneLocationMap);
     
     // クリックイベント
-    locationMap.on('click', function(e) {
+    stoneLocationMap.on('click', function(e) {
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
         
-        if (locationMarker) {
-            locationMarker.setLatLng(e.latlng);
+        if (stoneLocationMarker) {
+            stoneLocationMarker.setLatLng(e.latlng);
         } else {
-            locationMarker = L.marker(e.latlng, {draggable: true}).addTo(locationMap);
+            stoneLocationMarker = L.marker(e.latlng, {draggable: true}).addTo(stoneLocationMap);
             
             // マーカーのドラッグイベント
-            locationMarker.on('dragend', function(event) {
-                const position = locationMarker.getLatLng();
+            stoneLocationMarker.on('dragend', function(event) {
+                const position = stoneLocationMarker.getLatLng();
                 updateLocationFields(position.lat, position.lng);
             });
         }
@@ -133,10 +133,10 @@ function initializeLocationMap() {
     
     // 既存のマーカーがあれば表示
     if (currentLat && currentLng && currentLat !== 35.681236) {
-        locationMarker = L.marker([currentLat, currentLng], {draggable: true}).addTo(locationMap);
+        stoneLocationMarker = L.marker([currentLat, currentLng], {draggable: true}).addTo(stoneLocationMap);
         
-        locationMarker.on('dragend', function(event) {
-            const position = locationMarker.getLatLng();
+        stoneLocationMarker.on('dragend', function(event) {
+            const position = stoneLocationMarker.getLatLng();
             updateLocationFields(position.lat, position.lng);
         });
     }
@@ -145,8 +145,8 @@ function initializeLocationMap() {
 // 地図から選択（廃止予定だが互換性のため残す）
 function openMapSelection() {
     // すでに地図は表示されているので、何もしない
-    if (locationMap) {
-        locationMap.invalidateSize();
+    if (stoneLocationMap) {
+        stoneLocationMap.invalidateSize();
     }
 }
 
@@ -194,19 +194,19 @@ function extractFromGoogleMapUrl() {
         alert('URLから位置情報を取得しました！');
         
         // 地図が表示されていたら更新
-        if (locationMap) {
-            locationMap.setView([lat, lng], 15);
+        if (stoneLocationMap) {
+            stoneLocationMap.setView([lat, lng], 15);
             
-            if (locationMarker) {
+            if (stoneLocationMarker) {
                 // 既存のマーカーを移動
-                locationMarker.setLatLng([lat, lng]);
+                stoneLocationMarker.setLatLng([lat, lng]);
             } else {
                 // マーカーがなければ新規作成
-                locationMarker = L.marker([lat, lng], {draggable: true}).addTo(locationMap);
+                stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(stoneLocationMap);
                 
                 // マーカーのドラッグイベント
-                locationMarker.on('dragend', function(event) {
-                    const position = locationMarker.getLatLng();
+                stoneLocationMarker.on('dragend', function(event) {
+                    const position = stoneLocationMarker.getLatLng();
                     updateLocationFields(position.lat, position.lng);
                 });
             }
@@ -251,16 +251,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const lat = parseFloat(this.value);
             const lng = parseFloat(lngField.value);
             
-            if (!isNaN(lat) && !isNaN(lng) && locationMap) {
-                locationMap.setView([lat, lng], 15);
+            if (!isNaN(lat) && !isNaN(lng) && stoneLocationMap) {
+                stoneLocationMap.setView([lat, lng], 15);
                 
-                if (locationMarker) {
-                    locationMarker.setLatLng([lat, lng]);
+                if (stoneLocationMarker) {
+                    stoneLocationMarker.setLatLng([lat, lng]);
                 } else {
-                    locationMarker = L.marker([lat, lng], {draggable: true}).addTo(locationMap);
+                    stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(stoneLocationMap);
                     
-                    locationMarker.on('dragend', function(event) {
-                        const position = locationMarker.getLatLng();
+                    stoneLocationMarker.on('dragend', function(event) {
+                        const position = stoneLocationMarker.getLatLng();
                         updateLocationFields(position.lat, position.lng);
                     });
                 }
@@ -272,16 +272,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const lat = parseFloat(latField.value);
             const lng = parseFloat(this.value);
             
-            if (!isNaN(lat) && !isNaN(lng) && locationMap) {
-                locationMap.setView([lat, lng], 15);
+            if (!isNaN(lat) && !isNaN(lng) && stoneLocationMap) {
+                stoneLocationMap.setView([lat, lng], 15);
                 
-                if (locationMarker) {
-                    locationMarker.setLatLng([lat, lng]);
+                if (stoneLocationMarker) {
+                    stoneLocationMarker.setLatLng([lat, lng]);
                 } else {
-                    locationMarker = L.marker([lat, lng], {draggable: true}).addTo(locationMap);
+                    stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(stoneLocationMap);
                     
-                    locationMarker.on('dragend', function(event) {
-                        const position = locationMarker.getLatLng();
+                    stoneLocationMarker.on('dragend', function(event) {
+                        const position = stoneLocationMarker.getLatLng();
                         updateLocationFields(position.lat, position.lng);
                     });
                 }
@@ -289,3 +289,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// グローバル関数として公開
+window.getCurrentLocationGPS = getCurrentLocationGPS;
+window.extractFromGoogleMapUrl = extractFromGoogleMapUrl;
+window.initializeStoneLocationMap = initializeStoneLocationMap;

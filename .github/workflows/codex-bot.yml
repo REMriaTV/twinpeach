@@ -2,24 +2,18 @@ name: Codex Bot
 
 on:
   issue_comment:
-    types: [created, edited]     # コメントで起動
+    types: [created, edited]
 
 permissions:
   contents: write
   pull-requests: write
   issues: write
 
-# 同時実行を防ぐ（同一 Issue では直列実行）
-concurrency:
-  group: codex-bot-${{ github.event.issue.number || github.run_id }}
-  cancel-in-progress: false
-
 jobs:
   run:
-    # コメントで、先頭が「/」のときだけ動かす
+    # 「/」で始まるコメントだけを処理
     if: ${{ github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
@@ -30,28 +24,21 @@ jobs:
         with:
           python-version: '3.11'
 
-      # 依存のインストール（requirements.txt があれば優先）
       - name: Install dependencies
         run: |
-          set -e
-          if [ -f requirements.txt ]; then
-            python -m pip install --upgrade pip
-            pip install -r requirements.txt
-          else
-            python -m pip install --upgrade pip
-            pip install pyyaml openai rich
-          fi
+          pip install pyyaml openai requests
 
       - name: Run bot
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          PYTHONUNBUFFERED: "1"
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
-          set -euo pipefail
+          # デバッグ: 受け取ったコメントのサイズを表示（0なら空）
+          echo "comment bytes:"
+          printf "%s" "$COMMENT_BODY" | wc -c
+
           python .github/workflows/codex_bot.py \
             --repo "${{ github.repository }}" \
             --issue "${{ github.event.issue.number }}" \
-            --comment <<'EOF'
-${{ github.event.comment.body }}
-EOF
+            --comment "$COMMENT_BODY"

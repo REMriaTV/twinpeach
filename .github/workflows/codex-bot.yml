@@ -1,9 +1,9 @@
 name: Codex Bot
-
 on:
   issue_comment:
-    types: [created]
-
+    types: [created, edited]     # ← コメントで起動
+  issues:
+    types: [opened, edited]      # ← (任意) 本文でも起動したいなら入れる
 permissions:
   contents: write
   pull-requests: write

@@ -2,7 +2,9 @@ name: Codex Bot
 
 on:
   issue_comment:
-    types: [created, edited]
+    types: [created, edited]     # コメントで起動
+  issues:
+    types: [opened, edited]      # (任意) 本文編集でも起動
 
 permissions:
   contents: write
@@ -11,34 +13,34 @@ permissions:
 
 jobs:
   run:
-    # 「/」で始まるコメントだけを処理
-    if: ${{ github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/') }}
+    # Bot自身のコメントでは動かさない
+    if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install dependencies
         run: |
-          pip install pyyaml openai requests
+          python -m pip install --upgrade pip
+          pip install openai
 
       - name: Run bot
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
-          # デバッグ: 受け取ったコメントのサイズを表示（0なら空）
-          echo "comment bytes:"
-          printf "%s" "$COMMENT_BODY" | wc -c
-
           python .github/workflows/codex_bot.py \
             --repo "${{ github.repository }}" \
             --issue "${{ github.event.issue.number }}" \
-            --comment "$COMMENT_BODY"
+            --comment <<'EOF'
+          ${{ github.event.comment.body || github.event.issue.body }}
+          EOF

@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>データ編集モード | 狼煙屋制作ノート</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #fafaf9;
+            color: #1f1f1f;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #f7f6f3;
+            border-right: 1px solid #e5e4e2;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #e5e4e2;
+        }
+
+        .app-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin-bottom: 4px;
+        }
+
+        .app-subtitle {
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        .nav-section {
+            padding: 20px;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 14px;
+            font-weight: 400;
+            color: #374151;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: #f3f2ef;
+            color: #1f1f1f;
+        }
+
+        .nav-item.active {
+            background: #6366f1;
+            color: white;
+        }
+
+        .nav-item .icon {
+            margin-right: 12px;
+            font-size: 16px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #e5e4e2;
+        }
+
+        .view-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+
+        .view-link:hover {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        .content-header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .mobile-menu-btn {
+            display: block;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 6px;
+            color: #374151;
+            margin-right: 8px;
+        }
+        
+        .mobile-menu-btn:hover {
+            background: #f3f2ef;
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-menu-btn {
+                display: none !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block !important;
+                visibility: visible !important;
+            }
+            
+            .content-header {
+                padding: 16px 20px;
+            }
+        }
+
+        .content-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .admin-notice {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 12px 16px;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .content-body {
+            flex: 1;
+            padding: 24px 32px;
+            background: #fafaf9;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .search-container {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            color: #374151;
+            transition: all 0.15s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.15s ease;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5b5af0;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        /* シンプルテーブル */
+        .simple-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            background: white;
+            font-size: 16px;
+        }
+        
+        .simple-table th {
+            text-align: left;
+            padding: 16px;
+            font-weight: 400;
+            color: #6b7280;
+            font-size: 14px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .simple-table td {
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #111827;
+        }
+        
+        .simple-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* 古いUI要素を完全に非表示 */
+        .item-actions,
+        .item-card,
+        .card-header,
+        .card-body,
+        .item-controls,
+        .action-button,
+        .delete-button {
+            display: none !important;
+        }
+        
+        /* 特定のボタンのみ非表示（保存ボタンは除外） */
+        .data-table .btn-edit,
+        .data-table .btn-delete {
+            display: none !important;
+        }
+        
+        /* 保存ボタンは確実に表示 */
+        .form-actions .btn-success {
+            display: inline-block !important;
+            pointer-events: auto !important;
+        }
+        
+        .clickable-row {
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        
+        .clickable-row:hover {
+            background-color: #f9fafb;
+        }
+        
+        /* オールドスタイルを非表示 */
+        .data-card,
+        .card-header,
+        .card-title,
+        .card-meta,
+        .delete-btn,
+        .card-tags,
+        .card-content,
+        .card-stats,
+        .stat-item,
+        .stat-label,
+        .stat-value,
+        .card-action,
+        .edit-hint,
+        .item-actions,
+        .btn-icon,
+        .btn-edit,
+        .btn-delete {
+            display: none !important;
+        }
+        
+        
+        /* カードグリッド（未使用） */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        
+        /* スマホ用の新規追加ボタン */
+        .mobile-add-btn {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #10b981;
+            color: white;
+            border: none;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-add-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-add-btn {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            /* スマホではアクションバーの新規追加ボタンを非表示 */
+            .action-bar .btn-success {
+                display: none;
+            }
+            
+        }
+
+        .data-table th {
+            background: #f9fafb;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .data-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* モーダル */
+        .form-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            z-index: 1000;
+            overflow: auto;
+        }
+
+        .form-content {
+            background: white;
+            margin: 40px auto;
+            width: 90%;
+            max-width: 900px;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease;
+            max-height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e5e7eb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .form-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .close-modal {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: #f9fafb;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .close-modal:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .form-body {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            color: #1f2937;
+            font-size: 14px;
+            transition: all 0.15s ease;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            max-height: 200px;
+            resize: vertical;
+        }
+
+        .form-select {
+            cursor: pointer;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 24px 32px;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .tag-input-container {
+            position: relative;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .tag-remove {
+            margin-left: 8px;
+            cursor: pointer;
+            color: #9ca3af;
+            transition: color 0.15s ease;
+            font-size: 14px;
+        }
+
+        .tag-remove:hover {
+            color: #ef4444;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 80px 20px;
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .error {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 16px;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .success {
+            background: #f0fdf4;
+            color: #166534;
+            padding: 16px;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        
+        /* 録音・動画アップロード */
+        .recordings-section {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        
+        .file-upload-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .file-upload-hint {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .recordings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .recording-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            gap: 12px;
+        }
+        
+        .recording-item .file-icon {
+            font-size: 24px;
+        }
+        
+        .recording-item .file-info {
+            flex: 1;
+        }
+        
+        .recording-item .file-name {
+            font-weight: 500;
+            color: #1f2937;
+            font-size: 14px;
+        }
+        
+        .recording-item .file-details {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+        
+        .recording-item .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .recording-item audio,
+        .recording-item video {
+            max-width: 300px;
+            height: 40px;
+        }
+        
+        /* 写真アップロード */
+        .photos-section {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        
+        .photos-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .photo-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            border: 1px solid #e5e7eb;
+            aspect-ratio: 1;
+        }
+        
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .photo-item:hover img {
+            transform: scale(1.05);
+        }
+        
+        .photo-item .photo-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .photo-item:hover .photo-remove {
+            opacity: 1;
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+            }
+            
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .content-header {
+                padding: 16px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            
+            .header-left {
+                flex: 1;
+                min-width: 200px;
+            }
+            
+            .admin-notice {
+                width: 100%;
+                order: 3;
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+            
+            .content-body {
+                padding: 16px;
+            }
+            
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+            
+            .search-container {
+                max-width: none;
+            }
+            
+            /* スマホ用テーブル調整 */
+            .simple-table {
+                font-size: 14px;
+            }
+            
+            .simple-table th,
+            .simple-table td {
+                padding: 12px;
+            }
+            
+            .simple-table th {
+                font-size: 12px;
+            }
+            
+            /* ボタンの調整 */
+            .btn {
+                padding: 10px 16px;
+                font-size: 14px;
+                min-height: 44px; /* iOSの推奨タップターゲットサイズ */
+            }
+            
+            .btn-sm {
+                padding: 8px 12px;
+                font-size: 12px;
+                min-height: 36px;
+            }
+            
+            .action-buttons {
+                display: flex;
+                flex-wrap: nowrap;
+                gap: 8px;
+                justify-content: center;
+            }
+            
+            /* モーダルの調整 */
+            .form-content {
+                margin: 10px;
+                width: calc(100% - 20px);
+                max-height: calc(100vh - 20px);
+            }
+            
+            .form-header {
+                padding: 16px;
+                position: sticky;
+                top: 0;
+                background: white;
+                z-index: 10;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            
+            .form-body {
+                padding: 16px;
+                max-height: calc(100vh - 120px);
+                overflow-y: auto;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .form-actions {
+                padding: 16px;
+                position: sticky;
+                bottom: 0;
+                background: white;
+                border-top: 1px solid #e5e7eb;
+                display: flex;
+                gap: 12px;
+                justify-content: flex-end;
+            }
+            
+            .form-actions .btn {
+                flex: 1;
+                max-width: 150px;
+            }
+            
+            /* タグのスタイル調整 */
+            .tag {
+                font-size: 12px;
+                padding: 3px 8px;
+            }
+            
+            .tag-list {
+                gap: 6px;
+            }
+            
+            /* 録音・写真セクション */
+            .recording-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .recording-item audio,
+            .recording-item video {
+                width: 100%;
+                max-width: none;
+            }
+            
+            .photos-list {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 8px;
+            }
+            
+            /* 接続状態表示 */
+            .connection-status {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- サイドバー -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="app-title">編集モード</div>
+                <div class="app-subtitle">狼煙屋制作ノート</div>
+            </div>
+            
+            <div class="nav-section">
+                <button class="nav-item active" onclick="showTab('birds')">
+                    <span class="icon">🐦</span>
+                    鳥類データ編集
+                </button>
+                <button class="nav-item" onclick="showTab('stones')">
+                    <span class="icon">🪨</span>
+                    鉱物データ編集
+                </button>
+            </div>
+            
+            <div class="sidebar-footer">
+                <a href="index.html" class="view-link">
+                    <span class="icon">👁️</span>
+                    閲覧モードに戻る
+                </a>
+            </div>
+        </div>
+
+        <!-- メインコンテンツ -->
+        <div class="main-content">
+            <div class="content-header">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()" id="mobile-menu-btn">☰</button>
+                    <h1 class="content-title" id="content-title">鳥類データ編集</h1>
+                </div>
+                <div class="admin-notice">
+                    <span>⚠️</span>
+                    管理者専用 - データの編集は慎重に行ってください
+                </div>
+            </div>
+            
+            <div class="content-body">
+                <!-- 鳥データベース編集 -->
+                <div id="birds-tab" class="tab-content">
+                    <div class="action-bar">
+                        <div class="search-container">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" class="search-input" id="bird-search" placeholder="鳥の名前で検索...">
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-primary" onclick="searchBirds()">検索</button>
+                            <button class="btn btn-success" onclick="showBirdForm()">＋ 新規追加</button>
+                        </div>
+                    </div>
+                    <div id="birds-list" class="data-list">
+                        <div class="loading">データを読み込み中...</div>
+                    </div>
+                </div>
+                
+                <!-- 石データベース編集 -->
+                <div id="stones-tab" class="tab-content" style="display: none;">
+                    <div class="action-bar">
+                        <div class="search-container">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" class="search-input" id="stone-search" placeholder="石の名前や特徴で検索...">
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-primary" onclick="searchStones()">検索</button>
+                            <button class="btn btn-success" onclick="showStoneForm()">＋ 新規追加</button>
+                        </div>
+                    </div>
+                    <div id="stones-list" class="data-list">
+                        <div class="loading">データを読み込み中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 鳥編集フォーム -->
+    <div id="bird-form-modal" class="form-modal">
+        <div class="form-content">
+            <div class="form-header">
+                <h2 id="bird-form-title">新しい鳥を追加</h2>
+                <button class="close-modal" onclick="closeBirdForm()">×</button>
+            </div>
+            <div class="form-body">
+                <form id="bird-form" onsubmit="saveBird(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">ID *</label>
+                            <input type="text" class="form-input" name="id" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">名前 *</label>
+                            <input type="text" class="form-input" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">学名</label>
+                            <input type="text" class="form-input" name="scientific_name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">科</label>
+                            <input type="text" class="form-input" name="family">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">サイズ</label>
+                            <select class="form-select" name="size">
+                                <option value="">選択してください</option>
+                                <option value="小型">小型</option>
+                                <option value="中型">中型</option>
+                                <option value="大型">大型</option>
+                                <option value="中型〜大型">中型〜大型</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">生息地</label>
+                            <input type="text" class="form-input" name="habitat">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">外見</label>
+                            <textarea class="form-textarea" name="appearance"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">鳴き声</label>
+                            <input type="text" class="form-input" name="voice">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">行動</label>
+                            <input type="text" class="form-input" name="behavior">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">活動時間</label>
+                            <select class="form-select" name="activity">
+                                <option value="">選択してください</option>
+                                <option value="昼行性">昼行性</option>
+                                <option value="夜行性">夜行性</option>
+                                <option value="薄明薄暮性">薄明薄暮性</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">食性</label>
+                            <input type="text" class="form-input" name="diet">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">社会性</label>
+                            <input type="text" class="form-input" name="social_behavior">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">営巣習慣</label>
+                            <input type="text" class="form-input" name="nesting_habits">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">性格（一般）</label>
+                            <textarea class="form-textarea" name="personality_general"></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">人との関わり</label>
+                            <textarea class="form-textarea" name="human_interaction"></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">知能</label>
+                            <textarea class="form-textarea" name="intelligence"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">春の行動</label>
+                            <input type="text" class="form-input" name="seasonal_spring">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">夏の行動</label>
+                            <input type="text" class="form-input" name="seasonal_summer">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">秋の行動</label>
+                            <input type="text" class="form-input" name="seasonal_autumn">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">冬の行動</label>
+                            <input type="text" class="form-input" name="seasonal_winter">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">文化的象徴</label>
+                            <input type="text" class="form-input" name="symbolism_cultural">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">精神的象徴</label>
+                            <input type="text" class="form-input" name="symbolism_spiritual">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">適合する狼煙屋タイプ（Enterで追加）</label>
+                            <input type="text" class="form-input" id="bird-suitable-types" onkeypress="addBirdTag(event)">
+                            <div class="tag-list" id="bird-suitable-types-tags"></div>
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">煙のスタイル</label>
+                            <input type="text" class="form-input" name="noroshiya_smoking_style">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">コミュニケーションスタイル</label>
+                            <input type="text" class="form-input" name="noroshiya_communication_style">
+                        </div>
+                        
+                        <!-- 録音・動画セクション -->
+                        <div class="form-group full-width">
+                            <label class="form-label">録音・動画ファイル</label>
+                            <div class="recordings-section">
+                                <div class="file-upload-area">
+                                    <input type="file" id="bird-recording-upload" accept="audio/*,video/*" multiple style="display: none;">
+                                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('bird-recording-upload').click()">
+                                        📼 ファイルを選択
+                                    </button>
+                                    <span class="file-upload-hint">音声（MP3, WAV等）または動画（MP4, MOV等）</span>
+                                </div>
+                                <div id="bird-recordings-list" class="recordings-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-danger" onclick="if(editingBird && confirm('本当に削除しますか？')) { deleteBird(editingBird.id); closeBirdForm(); }" style="margin-right: auto;">削除</button>
+                <button type="button" class="btn btn-secondary" onclick="closeBirdForm()">キャンセル</button>
+                <button type="submit" class="btn btn-success" form="bird-form">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 石編集フォーム -->
+    <div id="stone-form-modal" class="form-modal">
+        <div class="form-content">
+            <div class="form-header">
+                <h2 id="stone-form-title">新しい石を追加</h2>
+                <button class="close-modal" onclick="closeStoneForm()">×</button>
+            </div>
+            <div class="form-body">
+                <form id="stone-form" onsubmit="saveStone(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">ID *</label>
+                            <input type="text" class="form-input" name="id" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">名前 *</label>
+                            <input type="text" class="form-input" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">タイプ</label>
+                            <input type="text" class="form-input" name="type" value="火打石">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">サイズ</label>
+                            <select class="form-select" name="size">
+                                <option value="">選択してください</option>
+                                <option value="小さめ">小さめ</option>
+                                <option value="中くらい">中くらい</option>
+                                <option value="大きめ">大きめ</option>
+                                <option value="様々">様々</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">形状</label>
+                            <input type="text" class="form-input" name="shape">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">質感</label>
+                            <input type="text" class="form-input" name="texture">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">産地</label>
+                            <input type="text" class="form-input" name="origin">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">レアリティ</label>
+                            <select class="form-select" name="rarity">
+                                <option value="">選択してください</option>
+                                <option value="common">Common</option>
+                                <option value="uncommon">Uncommon</option>
+                                <option value="rare">Rare</option>
+                                <option value="very_rare">Very Rare</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">色（Enterで追加）</label>
+                            <input type="text" class="form-input" id="stone-colors" onkeypress="addStoneColor(event)">
+                            <div class="tag-list" id="stone-colors-tags"></div>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">外観</label>
+                            <textarea class="form-textarea" name="appearance"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">重さ</label>
+                            <input type="text" class="form-input" name="weight">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">硬さ</label>
+                            <input type="text" class="form-input" name="hardness">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">特徴</label>
+                            <textarea class="form-textarea" name="special_features"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">元素</label>
+                            <input type="text" class="form-input" name="elemental_element">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">エネルギー</label>
+                            <input type="text" class="form-input" name="elemental_energy">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">共鳴</label>
+                            <input type="text" class="form-input" name="elemental_resonance">
+                        </div>
+                        
+                        <!-- 位置情報セクション -->
+                        <div class="form-group full-width">
+                            <label class="form-label">場所名</label>
+                            <input type="text" class="form-input" name="location_name" placeholder="例: 日野川（下流）">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">都道府県</label>
+                            <select class="form-select" name="prefecture">
+                                <option value="">選択してください</option>
+                                <option value="北海道">北海道</option>
+                                <option value="青森県">青森県</option>
+                                <option value="岩手県">岩手県</option>
+                                <option value="宮城県">宮城県</option>
+                                <option value="秋田県">秋田県</option>
+                                <option value="山形県">山形県</option>
+                                <option value="福島県">福島県</option>
+                                <option value="茨城県">茨城県</option>
+                                <option value="栃木県">栃木県</option>
+                                <option value="群馬県">群馬県</option>
+                                <option value="埼玉県">埼玉県</option>
+                                <option value="千葉県">千葉県</option>
+                                <option value="東京都">東京都</option>
+                                <option value="神奈川県">神奈川県</option>
+                                <option value="新潟県">新潟県</option>
+                                <option value="富山県">富山県</option>
+                                <option value="石川県">石川県</option>
+                                <option value="福井県">福井県</option>
+                                <option value="山梨県">山梨県</option>
+                                <option value="長野県">長野県</option>
+                                <option value="岐阜県">岐阜県</option>
+                                <option value="静岡県">静岡県</option>
+                                <option value="愛知県">愛知県</option>
+                                <option value="三重県">三重県</option>
+                                <option value="滋賀県">滋賀県</option>
+                                <option value="京都府">京都府</option>
+                                <option value="大阪府">大阪府</option>
+                                <option value="兵庫県">兵庫県</option>
+                                <option value="奈良県">奈良県</option>
+                                <option value="和歌山県">和歌山県</option>
+                                <option value="鳥取県">鳥取県</option>
+                                <option value="島根県">島根県</option>
+                                <option value="岡山県">岡山県</option>
+                                <option value="広島県">広島県</option>
+                                <option value="山口県">山口県</option>
+                                <option value="徳島県">徳島県</option>
+                                <option value="香川県">香川県</option>
+                                <option value="愛媛県">愛媛県</option>
+                                <option value="高知県">高知県</option>
+                                <option value="福岡県">福岡県</option>
+                                <option value="佐賀県">佐賀県</option>
+                                <option value="長崎県">長崎県</option>
+                                <option value="熊本県">熊本県</option>
+                                <option value="大分県">大分県</option>
+                                <option value="宮崎県">宮崎県</option>
+                                <option value="鹿児島県">鹿児島県</option>
+                                <option value="沖縄県">沖縄県</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">市区町村</label>
+                            <input type="text" class="form-input" name="city" placeholder="例: 春日市">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">タグ</label>
+                            <select class="form-select" name="location_tag">
+                                <option value="">選択してください</option>
+                                <option value="川・河原">川・河原</option>
+                                <option value="海岸">海岸</option>
+                                <option value="山・その他">山・その他</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">詳細な場所</label>
+                            <input type="text" class="form-input" name="location_detail" placeholder="例: 河川公園の橋の下、上流側の浅瀬">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">場所メモ</label>
+                            <textarea class="form-textarea" name="location_notes" placeholder="例: 2024年春の台風後、水量多め"></textarea>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">住所またはGoogleマップURL</label>
+                            <input type="text" class="form-input" name="address" placeholder="住所またはGoogleマップのURLを入力">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">緯度</label>
+                            <input type="number" class="form-input" name="lat" step="0.0000001" placeholder="例: 35.3439000">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">経度</label>
+                            <input type="number" class="form-input" name="lng" step="0.0000001" placeholder="例: 133.4039000">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">マッチングキーワード（Enterで追加）</label>
+                            <input type="text" class="form-input" id="stone-keywords" onkeypress="addStoneKeyword(event)">
+                            <div class="tag-list" id="stone-keywords-tags"></div>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">相性の良い狼煙屋</label>
+                            <input type="text" class="form-input" name="noroshiya_primary_match">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">相性の理由</label>
+                            <textarea class="form-textarea" name="noroshiya_match_reason"></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">特別な反応</label>
+                            <input type="text" class="form-input" name="noroshiya_special_reaction">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">言い伝え</label>
+                            <textarea class="form-textarea" name="folklore_legend"></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">使用法</label>
+                            <textarea class="form-textarea" name="folklore_usage"></textarea>
+                        </div>
+                        
+                        <!-- 写真セクション -->
+                        <div class="form-group full-width">
+                            <label class="form-label">石の写真</label>
+                            <div class="photos-section">
+                                <div class="file-upload-area">
+                                    <input type="file" id="stone-photo-upload" accept="image/*" multiple style="display: none;">
+                                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('stone-photo-upload').click()">
+                                        📸 写真を選択
+                                    </button>
+                                    <span class="file-upload-hint">画像ファイル（JPG, PNG等）</span>
+                                </div>
+                                <div id="stone-photos-list" class="photos-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-danger" onclick="if(editingStone && confirm('本当に削除しますか？')) { deleteStone(editingStone.id); closeStoneForm(); }" style="margin-right: auto;">削除</button>
+                <button type="button" class="btn btn-secondary" onclick="closeStoneForm()">キャンセル</button>
+                <button type="submit" class="btn btn-success" form="stone-form">保存</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // キャッシュバスティング用のタイムスタンプ
+        const version = new Date().getTime();
+        document.write('<script src="birds-database.js?v=' + version + '"><\/script>');
+        document.write('<script src="stones-database.js?v=' + version + '"><\/script>');
+        document.write('<script src="admin-manager.js?v=' + version + '"><\/script>');
+    </script>
+    <!-- スマホ用新規追加ボタン -->
+    <button class="mobile-add-btn" onclick="currentTab === 'birds' ? showBirdForm() : showStoneForm()" title="新規追加">＋</button>
+
+</body>
+</html>

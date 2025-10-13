@@ -1,0 +1,2496 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【モバイルレイアウト最適化】V10デジタルスケッチブック</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        input, textarea, select {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-content {
+            flex: 1;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+        
+        .header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 0.25rem;
+        }
+        
+        .header-link {
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            transition: background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .header-link:hover {
+            background: #2980b9;
+        }
+        
+        /* ヘッダーリンクの縦配置 */
+        .header-links {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .header-link span {
+            margin-left: 6px;
+        }
+        
+        /* タブナビゲーション */
+        .tab-nav {
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            padding: 0 2rem;
+        }
+        
+        .tab-nav button {
+            background: none;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab-nav button:hover {
+            background: #f8f9fa;
+        }
+        
+        .tab-nav button.active {
+            color: #2c3e50;
+            border-bottom-color: #3498db;
+            font-weight: 600;
+        }
+        
+        /* タブコンテンツ */
+        .tab-content {
+            display: none;
+            padding: 2rem;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* コンテナレイアウト */
+        .container {
+            display: flex;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* サイドバー（リスト） */
+        .sidebar {
+            width: 320px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .add-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .add-btn:hover {
+            background: #2980b9;
+        }
+        
+        .item-list {
+            padding: 0.5rem;
+        }
+        
+        .item-card {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            position: relative;
+            min-height: 70px;
+            overflow: visible;
+        }
+        
+        .item-card:hover {
+            background: #e9ecef;
+        }
+        
+        .item-card.active {
+            background: #e3f2fd;
+            border-color: #3498db;
+        }
+        
+        .item-card .color-dot {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .item-card .name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .item-card .details {
+            font-size: 0.85rem;
+            color: #666;
+            word-break: break-all;
+            line-height: 1.3;
+        }
+        
+        .item-card .item-image {
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            border-radius: 4px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+        }
+        
+        /* 火打石カード - 赤丸インジケーター */
+        .item-card.hiuchiishi::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            background-color: #ff4444;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        .item-card.hiuchiishi {
+            position: relative;
+            padding-left: 30px; /* 赤丸のスペースを確保 */
+        }
+        
+        /* メインコンテンツ（フォーム） */
+        .main-content {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 2rem;
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        
+        .form-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .form-section h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.7rem;
+            color: #2c3e50;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 0.3rem;
+        }
+        
+        .form-group {
+            margin-bottom: 0.8rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .form-group textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+        
+        .color-input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .color-picker {
+            width: 60px;
+            height: 40px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 0.8rem;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+        }
+        
+        /* 保存ボタンエリア */
+        .save-section {
+            background: white;
+            padding: 1rem 0;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 0.8rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+        
+        .save-btn,
+        .cancel-btn,
+        .delete-btn {
+            padding: 0.5rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .save-btn {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .save-btn:hover {
+            background: #229954;
+        }
+        
+        .cancel-btn {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .cancel-btn:hover {
+            background: #d5d5d5;
+        }
+        
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+        
+        /* 採取ポイント保存ボタン */
+        .save-location-btn {
+            background: #9b59b6;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 0.5rem;
+        }
+        
+        .save-location-btn:hover {
+            background: #8e44ad;
+        }
+        
+        /* 空状態 */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* 物理的描写の横並びレイアウト */
+        .form-group-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            width: 100%;
+        }
+        
+        .physical-description {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .form-group-pair .form-group {
+            margin-bottom: 0;
+        }
+        
+        /* セクション間の余白調整 */
+        .form-section.sensory-properties {
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-section.sensory-properties + .form-section {
+            margin-top: 0;
+        }
+        
+        /* テキストエリアのスタイル */
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        /* 感覚的性質セクションの特別なスタイル */
+        .form-section.sensory-properties textarea {
+            min-height: 200px;
+        }
+        
+        .form-section.sensory-properties .form-group.sensory-second {
+            margin-top: 1.5rem;
+        }
+        
+        /* セクションに薄い背景色 */
+        .form-section {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        
+        .form-section.sensory-properties {
+            background-color: #f0f7ff;
+        }
+        
+        /* 色の設定セクションのスタイル統一 */
+        .form-section:has(.color-picker-section) {
+            background-color: #f0f7ff;
+        }
+        
+        /* 画像プレビュー */
+        .image-preview {
+            width: 200px;
+            height: 200px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            margin: 0 auto 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .image-preview .placeholder {
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        .image-upload-btn {
+            display: block;
+            width: 200px;
+            margin: 0 auto;
+            padding: 0.5rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .image-upload-btn:hover {
+            background: #2980b9;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        
+        /* カラーピッカースタイル */
+        .color-picker-section {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .color-picker-section h3 {
+            margin-bottom: 0.7rem;
+            color: #2c3e50;
+            font-size: 1rem;
+        }
+        
+        .color-selections {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .color-selection-item {
+            background: white;
+            padding: 0.7rem;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .color-selection-item label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        
+        .color-input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .color-picker {
+            width: 50px;
+            height: 35px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .color-hex {
+            width: 100px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .ratio-label {
+            font-weight: 500;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        
+        .color-ratio {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #e0e0e0;
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        .color-ratio::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .ratio-value {
+            min-width: 45px;
+            text-align: right;
+            font-weight: 600;
+            color: #3498db;
+        }
+        
+        .blended-color-section {
+            background: white;
+            padding: 0.8rem;
+            border-radius: 6px;
+            text-align: center;
+            margin-top: -1.2rem;
+        }
+        
+        .blended-color-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .color-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 6px;
+            border: 2px solid #ddd;
+            background: #808080;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .blended-color-info {
+            font-size: 1.1rem;
+        }
+        
+        #blended-color-hex {
+            font-family: monospace;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.2rem;
+        }
+        
+        /* カラーピッカーと画像プレビュー */
+        .color-picker-with-preview {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        
+        .color-picker-image {
+            width: 120px;
+            height: 120px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #f5f5f5;
+            position: relative;
+        }
+        
+        .color-picker-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .no-image-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        .color-selections {
+            flex: 1;
+        }
+        
+        /* 色抽出ボタン */
+        .extract-colors-btn {
+            display: block;
+            width: 100%;
+            max-width: 200px;
+            margin: 0.5rem auto;
+            padding: 0.5rem 1rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+        
+        .extract-colors-btn:hover {
+            background: #2980b9;
+        }
+        
+        .extract-colors-btn:active {
+            transform: scale(0.98);
+        }
+        
+        /* スマホ対応 */
+        @media (max-width: 768px) {
+            .color-picker-with-preview {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .color-picker-image {
+                width: 100px;
+                height: 100px;
+                align-self: center;
+            }
+        }
+        
+        
+        /* モバイル用スタイル */
+        @media (max-width: 768px) {
+            .header {
+                padding: 0.5rem 0.8rem;
+                gap: 0.5rem;
+            }
+            
+            .header h1 {
+                font-size: 1.1rem;
+                margin: 0;
+            }
+            
+            .header .subtitle {
+                font-size: 0.7rem;
+                opacity: 0.7;
+                margin-top: 0;
+            }
+            
+            .header-links {
+                gap: 4px;
+            }
+            
+            .header-link {
+                padding: 0.3rem 0.8rem;
+                font-size: 0.75rem;
+            }
+            
+            .header-link svg {
+                width: 14px;
+                height: 14px;
+            }
+            
+            .tab-nav {
+                padding: 0 1rem;
+            }
+            
+            .tab-nav button {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .tab-content {
+                padding: 0;
+                position: relative;
+            }
+            
+            .container {
+                display: flex;
+                flex-direction: row;
+                gap: 0;
+                position: relative;
+                height: calc(100vh - 100px);
+                overflow: hidden;
+                width: 100%;
+            }
+            
+            /* サイドバーをスライド可能に */
+            .sidebar {
+                width: 75%;
+                min-width: 280px;
+                max-width: 320px;
+                position: fixed;
+                left: 0;
+                top: calc(60px + 48px); /* ヘッダー + タブの後から開始 */
+                bottom: 0;
+                height: calc(100vh - 60px - 48px); /* 画面高さからヘッダーとタブを引く */
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 10;
+                background: white;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+                transform: translateX(-100%); /* 初期状態で非表示 */
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .sidebar.hidden {
+                transform: translateX(-100%) !important;
+            }
+            
+            .sidebar-header {
+                padding: 1rem;
+                position: sticky;
+                top: 0; /* サイドバー内の最上部に固定 */
+                background: white;
+                z-index: 10;
+                border-bottom: 1px solid #e0e0e0;
+                flex-shrink: 0; /* 縮まないように */
+            }
+            
+            .sidebar-header h3 {
+                font-size: 1.1rem;
+            }
+            
+            .add-btn {
+                font-size: 0.85rem;
+                padding: 0.4rem 0.8rem;
+            }
+            
+            /* アイテムリスト */
+            .item-list {
+                flex: 1;
+                overflow-y: auto;
+                padding: 0.5rem;
+                padding-bottom: 100px; /* 最後のアイテムのための余白 */
+            }
+            
+            .item-card {
+                padding: 0.8rem;
+                padding-bottom: 1.2rem;
+                margin-bottom: 0.4rem;
+                min-height: 70px;
+            }
+            
+            .item-card .item-image {
+                width: 35px;
+                height: 35px;
+                bottom: 0.8rem;
+                right: 0.8rem;
+            }
+            
+            .item-card .details {
+                font-size: 0.8rem;
+            }
+            
+            /* メインコンテンツの調整 */
+            .main-content {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                padding: 0;
+                overflow-y: auto;
+                overflow-x: hidden;
+                z-index: 5;
+                width: 100%;
+            }
+            
+            .main-content form {
+                padding: 1rem;
+                width: 100%;
+                box-sizing: border-box;
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+            
+            /* スワイプエリア */
+            .swipe-handle {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 20px;
+                height: 100%;
+                z-index: 15;
+                touch-action: pan-y;
+            }
+            
+            .form-section {
+                padding: 1rem;
+                margin-bottom: 2rem;
+                width: 100%;
+                overflow-x: hidden;
+                box-sizing: border-box;
+                margin-left: 0;
+                margin-right: 0;
+            }
+            
+            .form-section h2 {
+                font-size: 1.2rem;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .form-group label {
+                font-size: 0.9rem;
+            }
+            
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                font-size: 16px; /* iOSのズーム防止 */
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+            }
+            
+            .save-section {
+                padding: 1rem;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .save-section button {
+                flex: 1;
+                min-width: 80px;
+                padding: 0.5rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            
+            /* 選択中の石の表示エリアを削除 */
+            .mobile-selected-info {
+                display: none;
+            }
+            
+            /* 画像プレビューエリア */
+            .image-preview {
+                width: 120px;
+                height: 120px;
+                margin: 0 auto 0.5rem;
+            }
+            
+            .image-upload-btn {
+                display: block;
+                margin: 0 auto 1.5rem;
+                font-size: 0.85rem;
+                padding: 0.4rem 0.8rem;
+            }
+            
+            /* 基本情報セクションのコンパクト化 */
+            .form-section.basic-info {
+                padding: 0.5rem 1rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .form-section.basic-info h2 {
+                margin-bottom: 0.5rem;
+                font-size: 1.1rem;
+            }
+            
+            .form-section.basic-info .form-grid {
+                gap: 0.5rem;
+            }
+            
+            .form-section.basic-info .form-group {
+                margin-bottom: 0.5rem;
+            }
+            
+            .form-section.basic-info .form-group label {
+                margin-bottom: 0.2rem;
+                font-size: 0.85rem;
+            }
+            
+            .form-section.basic-info input,
+            .form-section.basic-info select {
+                padding: 0.4rem 0.6rem;
+                font-size: 16px;
+            }
+            
+            /* 物理的描写モバイル調整 */
+            .form-group-pair {
+                gap: 0.5rem;
+            }
+            
+            .physical-description {
+                gap: 0.6rem;
+            }
+            
+            .form-group-pair .form-group label {
+                font-size: 0.85rem;
+            }
+            
+            .form-group-pair input,
+            .form-group-pair select {
+                font-size: 16px;
+                padding: 0.4rem 0.6rem;
+            }
+            
+            /* モバイルでのセクション間余白 */
+            .form-section.sensory-properties {
+                margin-top: 1.5rem;
+            }
+            
+            .form-section.sensory-properties + .form-section {
+                margin-top: 1.5rem;
+            }
+            
+            /* モバイルでのテキストエリア */
+            textarea {
+                min-height: 100px;
+            }
+            
+            /* モバイルでの感覚的性質セクション */
+            .form-section.sensory-properties {
+                padding-bottom: 2rem;
+            }
+            
+            .form-section.sensory-properties textarea {
+                min-height: 180px;
+            }
+            
+            .form-section.sensory-properties .form-group.sensory-second {
+                margin-top: 1.2rem;
+            }
+            
+            /* モバイルでのセクション間余白調整 */
+            .form-section.sensory-properties {
+                margin-bottom: 1.2rem;
+            }
+            
+            .form-section.sensory-properties + .form-section {
+                margin-top: 0;
+            }
+            
+            /* カラーピッカーセクションをよりコンパクトに */
+            .color-picker-section {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                max-width: 100%;
+                padding: 0.5rem;
+                box-sizing: border-box;
+            }
+            
+            .color-picker-section h3 {
+                margin-bottom: 0.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .color-input-group {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            /* スライダーの幅を拡張 */
+            input[type="range"] {
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .color-picker-with-preview {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            .color-selections {
+                width: 100%;
+            }
+            
+            .color-selection-item {
+                padding: 0.4rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .color-selection-item label {
+                font-size: 0.85rem;
+                margin-bottom: 0.2rem;
+            }
+            
+            /* モバイルでサブカラーの色コードを非表示 */
+            @media (max-width: 768px) {
+                /* モバイルで全ての色コードを非表示 */
+                .color-hex {
+                    display: none !important;
+                }
+                
+                .color-input-group {
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 8px;
+                }
+                
+                .color-ratio {
+                    flex: 1;
+                    margin: 0 5px;
+                }
+                
+                .ratio-label {
+                    min-width: 30px;
+                    text-align: right;
+                    font-size: 0.8rem;
+                }
+                
+                .ratio-value {
+                    min-width: 35px;
+                    font-size: 0.8rem;
+                }
+                
+                /* 色セクションをさらにコンパクトに */
+                .color-picker-section {
+                    padding: 0.2rem;
+                }
+                
+                .form-section h2 {
+                    font-size: 1rem;
+                    margin-bottom: 0.5rem;
+                }
+                
+                .color-selections {
+                    gap: 0.4rem;
+                }
+                
+                .color-selection-item {
+                    padding: 0.3rem;
+                    margin-bottom: 0.3rem;
+                }
+                
+                .color-selection-item label {
+                    font-size: 0.8rem;
+                    margin-bottom: 0.15rem;
+                }
+                
+                .color-picker {
+                    width: 40px;
+                    height: 30px;
+                }
+                
+                /* 調合結果セクションをさらにコンパクトに */
+                .blended-color-section {
+                    padding: 0.5rem;
+                    margin-top: 0.3rem;
+                    background: #f8f9fa;
+                }
+                
+                .blended-color-display {
+                    gap: 0.8rem;
+                    flex-direction: row;
+                    align-items: center;
+                }
+                
+                #blended-color-preview {
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 6px;
+                    border: 1px solid #ddd;
+                }
+                
+                .blended-color-info {
+                    font-size: 0.9rem;
+                }
+                
+                /* テーマカラーの色コードは常に表示 */
+                #blended-color-hex {
+                    display: inline !important;
+                    font-family: monospace;
+                    font-size: 1rem;
+                    font-weight: bold;
+                }
+                
+                /* 画像プレビューをさらに小さく */
+                .image-preview {
+                    width: 120px;
+                    height: 120px;
+                    margin-bottom: 0.5rem;
+                }
+            }
+            
+            .color-blend-preview {
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+            
+            .blend-result {
+                margin-top: 1rem;
+                width: 100%;
+                text-align: center;
+            }
+            
+            /* サイドバーが隠れた時の追加スタイル */
+            
+            .container.sidebar-hidden .main-content {
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            /* 左端のスライドインジケーター */
+            .slide-indicator {
+                display: none;
+                position: fixed;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 30px;
+                height: 120px;
+                background: rgba(0, 0, 0, 0.15);
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
+                cursor: pointer;
+                z-index: 9999;
+                transition: all 0.3s ease;
+            }
+            
+            .slide-indicator:hover {
+                background: rgba(0, 0, 0, 0.2);
+                width: 25px;
+            }
+            
+            @media (max-width: 768px) {
+                .slide-indicator {
+                    display: block !important;
+                }
+                
+                .slide-indicator.hidden {
+                    display: none !important;
+                }
+            }
+            
+            /* オーバーレイ（削除） */
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+        
+        /* デスクトップでは選択中の情報を非表示 */
+        .mobile-selected-info {
+            display: none;
+        }
+        
+        /* 初期読み込み時のレイアウトを修正 */
+        @media (max-width: 768px) {
+            .tab-content {
+                opacity: 1;
+            }
+            
+            .tab-content:not(.active) {
+                display: none !important;
+            }
+            
+            /* コンテンツ表示を確保 */
+            .main-content {
+                background: white;
+            }
+        }
+        
+        /* デスクトップではサイドバーを表示 */
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0) !important;
+            }
+            
+            .sidebar.hidden {
+                transform: translateX(0) !important;
+            }
+            
+            .slide-indicator {
+                display: none !important;
+            }
+        }
+        
+        /* 音声録音リスト */
+        .recording-item {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .recording-icon {
+            width: 40px;
+            height: 40px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .recording-info {
+            flex: 1;
+        }
+        
+        .recording-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .recording-details {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .recording-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .recording-play-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .recording-play-btn:hover {
+            background: #219a52;
+        }
+        
+        .recording-remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .recording-remove-btn:hover {
+            background: #c0392b;
+        }
+        
+        .audio-player {
+            width: 100%;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .recording-item {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .recording-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 左端のスライドインジケーター -->
+    <div class="slide-indicator" id="slide-indicator" onclick="showSidebar()"></div>
+    
+    <!-- サイドバーオーバーレイ（無効化） -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <div class="header">
+        <div class="header-content">
+            <h1>V10デジタルスケッチブック</h1>
+            <div class="subtitle">狼煙屋のマッチングシステム用データベース</div>
+        </div>
+        <div class="header-links">
+            <a href="../../river-login-hiuchiishi.html" class="header-link" target="_blank">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-6 3-6s3 6 3 6s3-6 3-6s3 6 3 6s3-6 3-6s3 6 3 6s3-6 3-6"></path>
+                    <path d="M2 18s3-6 3-6s3 6 3 6s3-6 3-6s3 6 3 6s3-6 3-6s3 6 3 6s3-6 3-6"></path>
+                </svg>
+                <span>河原へ</span>
+            </a>
+            <a href="../../stone-map-v6.html" class="header-link" target="_blank">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                </svg>
+                <span>石マップ</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- タブナビゲーション -->
+    <div class="tab-nav">
+        <button class="tab-btn active" data-tab="stones">石</button>
+        <button class="tab-btn" data-tab="birds">鳥</button>
+        <button class="tab-btn" data-tab="noroshiya">狼煙屋</button>
+    </div>
+    
+    <!-- フローティングタブ（削除） -->
+    
+    <!-- 狼煙屋タブ -->
+    <div class="tab-content" id="noroshiya-tab">
+        <div class="container">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h3>狼煙屋一覧</h3>
+                    <button class="add-btn" onclick="addNewNoroshiya()">+ 新規追加</button>
+                </div>
+                <div class="item-list" id="noroshiya-list">
+                    <!-- 動的に生成 -->
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <form id="noroshiya-form">
+                    <div class="form-section">
+                        <h2>基本情報</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>ID</label>
+                                <input type="text" id="noroshiya-id" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>色の名前</label>
+                                <input type="text" id="color-name" placeholder="例: 灰汁色、樺茶色">
+                            </div>
+                            <div class="form-group">
+                                <label>色コード</label>
+                                <div class="color-input-group">
+                                    <input type="color" id="color-picker" class="color-picker">
+                                    <input type="text" id="color-code" placeholder="#9e9478">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>模様</label>
+                                <select id="pattern-type">
+                                    <option value="無地">無地</option>
+                                    <option value="縞々">縞々</option>
+                                    <option value="ドット">ドット</option>
+                                    <option value="格子">格子</option>
+                                    <option value="その他">その他</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>石の好み</h2>
+                        <div class="form-group">
+                            <label>好む石の色（複数選択可）</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="stone-red" value="赤い">
+                                    <label for="stone-red">赤い</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="stone-transparent" value="透明">
+                                    <label for="stone-transparent">透明</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="stone-white" value="白い">
+                                    <label for="stone-white">白い</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="stone-black" value="黒い">
+                                    <label for="stone-black">黒い</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="stone-blue" value="青い">
+                                    <label for="stone-blue">青い</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="stone-brown" value="茶色い">
+                                    <label for="stone-brown">茶色い</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="stone-orange" value="オレンジ">
+                                    <label for="stone-orange">オレンジ</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="stone-green" value="緑">
+                                    <label for="stone-green">緑</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="stone-purple" value="紫">
+                                    <label for="stone-purple">紫</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="stone-yellow" value="黄色い">
+                                    <label for="stone-yellow">黄色い</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>石の好みの理由</label>
+                            <textarea id="affinity-notes" placeholder="なぜこの色の石を好むのか"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>性格・特徴</h2>
+                        <div class="form-group">
+                            <label>性格</label>
+                            <textarea id="personality" placeholder="おしゃべりの特徴、どんな性格か"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>話し方</label>
+                            <textarea id="speech-style" placeholder="ゆったり、早口、元気など"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>好きな話題（カンマ区切り）</label>
+                            <input type="text" id="favorite-topics" placeholder="日常の小さな幸せ, 季節の移ろい">
+                        </div>
+                        <div class="form-group">
+                            <label>感情の幅</label>
+                            <input type="text" id="emotional-range" placeholder="優しい、包容力、共感">
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>セリフ設定</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>初回出会い時のセリフ</label>
+                                <input type="text" id="dialogue-first-meet" placeholder="アラ、キレイナ石。アナタノ話、聞カセテクレル？">
+                            </div>
+                            <div class="form-group">
+                                <label>再会時のセリフ</label>
+                                <input type="text" id="dialogue-reunion" placeholder="マタ会エタネ。今日ハドンナ気持チ？">
+                            </div>
+                            <div class="form-group">
+                                <label>メッセージ送信時のセリフ</label>
+                                <input type="text" id="dialogue-send" placeholder="大丈夫、キット届クヨ。ユックリ待トウ">
+                            </div>
+                            <div class="form-group">
+                                <label>返信受信時のセリフ</label>
+                                <input type="text" id="dialogue-receive" placeholder="ホラ、返事ガ来タ。ヨカッタネ">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>その他</h2>
+                        <div class="form-group">
+                            <label>マッチングキーワード（カンマ区切り）</label>
+                            <input type="text" id="matching-keywords" placeholder="優しい, 柔らかい, 朝露, 静か">
+                        </div>
+                        <div class="form-group">
+                            <label>裏設定・バックストーリー</label>
+                            <textarea id="backstory" placeholder="この狼煙屋の背景や由来など"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="save-section">
+                        <button type="button" class="delete-btn" onclick="deleteNoroshiya()">削除</button>
+                        <button type="button" class="cancel-btn" onclick="cancelEdit()">キャンセル</button>
+                        <button type="submit" class="save-btn">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 鳥タブ -->
+    <div class="tab-content" id="birds-tab">
+        <div class="container">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h3 id="birds-list-title">鳥の数：0種</h3>
+                    <button class="add-btn" onclick="addNewBird()">+ 新規追加</button>
+                </div>
+                <div class="item-list" id="birds-list">
+                    <!-- 動的に生成 -->
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <form id="bird-form">
+                    <!-- 画像プレビューエリア -->
+                    <div class="image-preview" id="bird-image-preview">
+                        <div class="placeholder">画像なし</div>
+                    </div>
+                    <button type="button" class="image-upload-btn" onclick="document.getElementById('bird-image-input').click()">
+                        画像を選択
+                    </button>
+                    <input type="file" id="bird-image-input" accept="image/*" onchange="handleBirdImageSelect(event)">
+                    
+                    <div class="form-section">
+                        <h2>基本情報</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>ID</label>
+                                <input type="text" id="bird-id" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>鳥の名前</label>
+                                <input type="text" id="bird-name" placeholder="例: スズメ、メジロ">
+                            </div>
+                            <div class="form-group">
+                                <label>学名</label>
+                                <input type="text" id="bird-scientific-name" placeholder="Passer montanus">
+                            </div>
+                            <div class="form-group">
+                                <label>大きさ</label>
+                                <input type="text" id="bird-size" placeholder="約14cm">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>生態情報</h2>
+                        <div class="form-group">
+                            <label>生息地</label>
+                            <input type="text" id="bird-habitat" placeholder="人里、公園、農地">
+                        </div>
+                        <div class="form-group">
+                            <label>特徴</label>
+                            <textarea id="bird-characteristics" placeholder="茶色の羽毛に白い頬、小柄で丸い体型"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>行動</label>
+                            <textarea id="bird-behavior" placeholder="群れで行動、地面で跳ねながら餌を探す"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>鳴き声</label>
+                            <input type="text" id="bird-call" placeholder="チュンチュン">
+                        </div>
+                    </div>
+                    
+                    <!-- 音声録音セクション -->
+                    <div class="form-section">
+                        <h2>音声録音</h2>
+                        
+                        <!-- 録音ファイル一覧 -->
+                        <div id="bird-recordings-list" style="margin-bottom: 1rem;">
+                            <!-- 録音ファイルがここに表示される -->
+                        </div>
+                        
+                        <!-- 録音ファイルアップロード -->
+                        <div class="form-group">
+                            <label>ボイスメモをアップロード</label>
+                            <button type="button" class="upload-recording-btn" onclick="document.getElementById('bird-recording-input').click()" style="background: #3498db; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                                </svg>
+                                <span>音声ファイルを選択</span>
+                            </button>
+                            <input type="file" id="bird-recording-input" accept="audio/*,.m4a,.mp3,.wav,.aac" onchange="handleBirdRecordingSelect(event)" style="display: none;" multiple>
+                            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+                                対応形式: m4a, mp3, wav, aac など<br>
+                                複数ファイル選択可能
+                            </p>
+                        </div>
+                        
+                        <!-- 種類不明チェックボックス -->
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="bird-unknown-species" style="width: 18px; height: 18px;">
+                                <span>何の鳥かわからない（種類不明）</span>
+                            </label>
+                            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+                                チェックすると「不明な鳥」として登録され、後から種類を特定できます
+                            </p>
+                        </div>
+                        
+                        <!-- 録音メモ -->
+                        <div class="form-group">
+                            <label>録音時のメモ</label>
+                            <textarea id="bird-recording-notes" placeholder="例: 早朝5時頃、林の中から聞こえた。高い声で「ピーヨピーヨ」と鳴いていた"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>その他</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>象徴・意味</label>
+                                <input type="text" id="bird-symbolism" placeholder="親しみやすさ、日常">
+                            </div>
+                            <div class="form-group">
+                                <label>季節</label>
+                                <input type="text" id="bird-season" placeholder="通年">
+                            </div>
+                            <div class="form-group">
+                                <label>レア度</label>
+                                <select id="bird-rarity">
+                                    <option value="common">よく見る</option>
+                                    <option value="uncommon">たまに見る</option>
+                                    <option value="rare">めったに見ない</option>
+                                    <option value="very_rare">非常に珍しい</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 目撃情報セクション -->
+                    <div class="form-section">
+                        <h2>目撃情報</h2>
+                        
+                        <!-- 地図表示エリア -->
+                        <div id="bird-map-container" style="margin: 1.5rem 0;">
+                            <div id="bird-location-map" style="height: 250px; border: 1px solid #ddd; border-radius: 8px; background-color: #f0f0f0;"></div>
+                            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">地図上をクリック/タップして目撃位置を記録してください</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>目撃場所名</label>
+                            <input type="text" id="bird-location-name" placeholder="例: 日野川河川敷">
+                        </div>
+                        
+                        <!-- 都道府県と市区町村を横並び -->
+                        <div class="form-group-pair">
+                            <div class="form-group">
+                                <label>都道府県</label>
+                                <select id="bird-prefecture">
+                                    <option value="">選択してください</option>
+                                    <option value="北海道">北海道</option>
+                                    <option value="青森県">青森県</option>
+                                    <option value="岩手県">岩手県</option>
+                                    <option value="宮城県">宮城県</option>
+                                    <option value="秋田県">秋田県</option>
+                                    <option value="山形県">山形県</option>
+                                    <option value="福島県">福島県</option>
+                                    <option value="茨城県">茨城県</option>
+                                    <option value="栃木県">栃木県</option>
+                                    <option value="群馬県">群馬県</option>
+                                    <option value="埼玉県">埼玉県</option>
+                                    <option value="千葉県">千葉県</option>
+                                    <option value="東京都">東京都</option>
+                                    <option value="神奈川県">神奈川県</option>
+                                    <option value="新潟県">新潟県</option>
+                                    <option value="富山県">富山県</option>
+                                    <option value="石川県">石川県</option>
+                                    <option value="福井県">福井県</option>
+                                    <option value="山梨県">山梨県</option>
+                                    <option value="長野県">長野県</option>
+                                    <option value="岐阜県">岐阜県</option>
+                                    <option value="静岡県">静岡県</option>
+                                    <option value="愛知県">愛知県</option>
+                                    <option value="三重県">三重県</option>
+                                    <option value="滋賀県">滋賀県</option>
+                                    <option value="京都府">京都府</option>
+                                    <option value="大阪府">大阪府</option>
+                                    <option value="兵庫県">兵庫県</option>
+                                    <option value="奈良県">奈良県</option>
+                                    <option value="和歌山県">和歌山県</option>
+                                    <option value="鳥取県">鳥取県</option>
+                                    <option value="島根県">島根県</option>
+                                    <option value="岡山県">岡山県</option>
+                                    <option value="広島県">広島県</option>
+                                    <option value="山口県">山口県</option>
+                                    <option value="徳島県">徳島県</option>
+                                    <option value="香川県">香川県</option>
+                                    <option value="愛媛県">愛媛県</option>
+                                    <option value="高知県">高知県</option>
+                                    <option value="福岡県">福岡県</option>
+                                    <option value="佐賀県">佐賀県</option>
+                                    <option value="長崎県">長崎県</option>
+                                    <option value="熊本県">熊本県</option>
+                                    <option value="大分県">大分県</option>
+                                    <option value="宮崎県">宮崎県</option>
+                                    <option value="鹿児島県">鹿児島県</option>
+                                    <option value="沖縄県">沖縄県</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>市区町村</label>
+                                <select id="bird-city">
+                                    <option value="">都道府県を先に選択してください</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- 目撃日時 -->
+                        <div class="form-group-pair">
+                            <div class="form-group">
+                                <label>目撃日</label>
+                                <input type="date" id="bird-sighting-date">
+                            </div>
+                            <div class="form-group">
+                                <label>時間帯</label>
+                                <select id="bird-sighting-time">
+                                    <option value="">選択してください</option>
+                                    <option value="早朝">早朝（5:00-7:00）</option>
+                                    <option value="朝">朝（7:00-9:00）</option>
+                                    <option value="午前">午前（9:00-12:00）</option>
+                                    <option value="昼">昼（12:00-14:00）</option>
+                                    <option value="午後">午後（14:00-17:00）</option>
+                                    <option value="夕方">夕方（17:00-19:00）</option>
+                                    <option value="夜">夜（19:00以降）</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>目撃時のメモ</label>
+                            <textarea id="bird-sighting-notes" placeholder="例: 川岸の石の上で休んでいた、群れで飛んでいた"></textarea>
+                        </div>
+                        
+                        <!-- 位置情報入力方法 -->
+                        <div class="location-input-methods" style="margin-bottom: 1rem; padding: 1rem; background: #f0f7ff; border-radius: 8px;">
+                            <p style="margin-bottom: 0.8rem; font-size: 0.9rem;">位置情報取得方法:</p>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button type="button" onclick="getBirdCurrentLocation()" style="background: #3498db; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                                    📍 現在地を使用
+                                </button>
+                                <button type="button" onclick="extractBirdLocationFromUrl()" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                                    🔗 URLから抽出
+                                </button>
+                            </div>
+                        </div>
+
+                         <!-- 音声録音セクション -->
+  <div class="form-section">
+      <h2>音声録音</h2>
+      <div id="bird-recordings-list" style="margin-bottom: 1rem;">
+          <div style="color: #999; font-size: 0.9rem;">録音ファイルがありません</div>
+      </div>
+      <div class="form-group">
+          <label>ボイスメモをアップロード</label>
+          <button type="button" class="upload-recording-btn" 
+  onclick="document.getElementById('bird-recording-input').click()" style="background: #3498db; 
+  color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+              音声ファイルを選択
+          </button>
+          <input type="file" id="bird-recording-input" accept="audio/*,.m4a,.mp3,.wav,.aac" 
+  onchange="handleBirdRecordingSelect(event)" multiple style="display: none;">
+          <div style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">対応形式：m4a, mp3,
+  wav, aac（最大20MB）</div>
+      </div>
+      <div class="form-group">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" id="bird-unknown-species">
+              <span>何の鳥かわからない（種類不明）</span>
+          </label>
+      </div>
+      <div class="form-group">
+          <label for="bird-recording-notes">録音メモ</label>
+          <textarea id="bird-recording-notes" rows="2" 
+  placeholder="録音の状況や気づいたことなど"></textarea>
+      </div>
+  </div>
+                        
+                        <div class="form-group">
+                            <label>住所またはGoogleマップURL</label>
+                            <input type="text" id="bird-address" placeholder="住所またはGoogleマップのURLを入力">
+                        </div>
+                        
+                        <!-- 緯度と経度を横並び -->
+                        <div class="form-group-pair">
+                            <div class="form-group">
+                                <label>緯度</label>
+                                <input type="number" id="bird-lat" step="0.0000001" placeholder="例: 35.3439000">
+                            </div>
+                            <div class="form-group">
+                                <label>経度</label>
+                                <input type="number" id="bird-lng" step="0.0000001" placeholder="例: 133.4039000">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="save-section">
+                        <button type="button" class="delete-btn" onclick="deleteBird()">削除</button>
+                        <button type="button" class="cancel-btn" onclick="cancelBirdEdit()">キャンセル</button>
+                        <button type="submit" class="save-btn">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 石タブ -->
+    <div class="tab-content active" id="stones-tab">
+        <div class="container">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h3 id="stones-list-title">ひろった石：0こ</h3>
+                    <button class="add-btn" onclick="addNewStone()">+ 新規追加</button>
+                </div>
+                <div class="item-list" id="stones-list">
+                    <!-- 動的に生成 -->
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <form id="stone-form">
+                    <!-- 画像プレビューエリア -->
+                    <div class="image-preview" id="stone-image-preview">
+                        <div class="placeholder">画像なし</div>
+                    </div>
+                    <button type="button" class="image-upload-btn" onclick="document.getElementById('stone-image-input').click()">
+                        画像を選択
+                    </button>
+                    <input type="file" id="stone-image-input" accept="image/*" onchange="handleStoneImageSelectWithProcessing(event)">
+                    
+                    <!-- 画像処理オプション -->
+                    <div id="image-processing-options" style="display: none; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                        <h3 style="font-size: 1rem; margin-bottom: 0.8rem;">画像処理オプション</h3>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                            <!-- モザイク処理 -->
+                            <div style="background: white; padding: 0.8rem; border-radius: 6px;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" id="apply-mosaic" checked>
+                                    <span>モザイク処理を適用</span>
+                                </label>
+                                <div id="mosaic-controls" style="margin-top: 0.5rem;">
+                                    <label style="display: block; margin-bottom: 0.3rem;">モザイクサイズ:</label>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="range" id="mosaic-size" min="5" max="50" value="20" style="flex: 1;">
+                                        <span id="mosaic-size-value" style="min-width: 40px;">20px</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 背景除去 -->
+                            <div style="background: white; padding: 0.8rem; border-radius: 6px;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" id="remove-background">
+                                    <span>背景を透過</span>
+                                </label>
+                                <div id="bg-removal-controls" style="margin-top: 0.5rem; display: none;">
+                                    <label style="display: block; margin-bottom: 0.3rem;">背景除去方法:</label>
+                                    <select id="bg-removal-method" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                                        <option value="white">白背景を透過</option>
+                                        <option value="auto">自動検出（四隅の色）</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- 処理実行ボタン -->
+                            <button type="button" onclick="processStoneImage()" style="background: #3498db; color: white; border: none; padding: 0.6rem 1rem; border-radius: 4px; cursor: pointer;">
+                                画像を処理
+                            </button>
+                        </div>
+                        
+                        <!-- 処理済み画像プレビュー -->
+                        <div id="processed-image-container" style="display: none; margin-top: 1rem;">
+                            <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;">処理済み画像:</h4>
+                            <canvas id="processed-canvas" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section basic-info">
+                        <h2>基本情報</h2>
+                        <div class="form-grid">
+                            <!-- IDと拾った日を横並び -->
+                            <div class="form-group-pair">
+                                <div class="form-group">
+                                    <label>ID</label>
+                                    <input type="text" id="stone-id" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label>拾った日</label>
+                                    <input type="date" id="stone-found-date" value="">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>石の名前</label>
+                                <input type="text" id="stone-name" placeholder="例: 赤チャート、透明石英">
+                            </div>
+                            <div class="form-group">
+                                <label>石の種類</label>
+                                <input type="text" id="stone-type" placeholder="チャート、石英、ジャスパーなど">
+                            </div>
+                            <div class="form-group">
+                                <label>火打石として使える</label>
+                                <select id="stone-hiuchiishi">
+                                    <option value="true">はい</option>
+                                    <option value="false">いいえ</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>色の設定</h2>
+                        
+                        <!-- カラーピッカーセクション -->
+                        <div class="color-picker-section">
+                            <div class="color-picker-with-preview">
+                                <!-- 画像プレビュー -->
+                                <div class="color-picker-image">
+                                    <img id="stone-color-preview-image" src="" alt="石の画像" style="display: none;">
+                                    <div class="no-image-placeholder">画像なし</div>
+                                </div>
+                                
+                                <button type="button" id="extract-colors-btn" class="extract-colors-btn" onclick="extractColorsFromImage()" style="display: none;">
+                                    画像から色を抽出
+                                </button>
+                                
+                                <div class="color-selections">
+                                <!-- メインカラー -->
+                                <div class="color-selection-item">
+                                    <label>メインカラー</label>
+                                    <div class="color-input-group">
+                                        <input type="color" id="stone-color-main" class="color-picker" value="#808080">
+                                        <input type="text" id="stone-color-main-hex" class="color-hex" value="#808080" placeholder="#000000">
+                                        <span class="ratio-label">割合</span>
+                                        <input type="range" id="stone-color-main-ratio" class="color-ratio" min="0" max="100" value="60">
+                                        <span class="ratio-value">60%</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- サブカラー1 -->
+                                <div class="color-selection-item">
+                                    <label>サブカラー1</label>
+                                    <div class="color-input-group">
+                                        <input type="color" id="stone-color-sub1" class="color-picker" value="#FFFFFF">
+                                        <input type="text" id="stone-color-sub1-hex" class="color-hex" value="#FFFFFF" placeholder="#000000">
+                                        <span class="ratio-label">割合</span>
+                                        <input type="range" id="stone-color-sub1-ratio" class="color-ratio" min="0" max="100" value="30">
+                                        <span class="ratio-value">30%</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- サブカラー2 -->
+                                <div class="color-selection-item">
+                                    <label>サブカラー2</label>
+                                    <div class="color-input-group">
+                                        <input type="color" id="stone-color-sub2" class="color-picker" value="#000000">
+                                        <input type="text" id="stone-color-sub2-hex" class="color-hex" value="#000000" placeholder="#000000">
+                                        <span class="ratio-label">割合</span>
+                                        <input type="range" id="stone-color-sub2-ratio" class="color-ratio" min="0" max="100" value="10">
+                                        <span class="ratio-value">10%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+                            
+                            <!-- 調合結果 -->
+                            <div class="blended-color-section">
+                                <div class="blended-color-display">
+                                    <div id="blended-color-preview" class="color-preview"></div>
+                                    <div class="blended-color-info">
+                                        <span>調合色: </span>
+                                        <span id="blended-color-hex">#808080</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 従来の選択肢（非表示） -->
+                        <div class="form-grid" style="display: none;">
+                            <div class="form-group">
+                                <label>主な色</label>
+                                <select id="stone-color-primary">
+                                    <option value="">選択してください</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>副次的な色</label>
+                                <select id="stone-color-secondary">
+                                    <option value="">なし</option>
+                                    <option value="赤い">赤い</option>
+                                    <option value="透明">透明</option>
+                                    <option value="白い">白い</option>
+                                    <option value="黒い">黒い</option>
+                                    <option value="青い">青い</option>
+                                    <option value="茶色い">茶色い</option>
+                                    <option value="オレンジ">オレンジ</option>
+                                    <option value="緑">緑</option>
+                                    <option value="紫">紫</option>
+                                    <option value="黄色い">黄色い</option>
+                                    <option value="灰色">灰色</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>模様</label>
+                                <input type="text" id="stone-pattern" placeholder="縞模様、まだら、無地など">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h2>数量的性質</h2>
+                        <div class="form-grid physical-description">
+                            <!-- 硬さ -->
+                            <div class="form-group-pair">
+                                <div class="form-group">
+                                    <label>モース硬度</label>
+                                    <select id="stone-hardness">
+                                        <option value="">選択</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>感触</label>
+                                    <select id="stone-hardness-feel">
+                                        <option value="かたい">かたい</option>
+                                        <option value="ふつう" selected>ふつう</option>
+                                        <option value="やわらかい">やわらかい</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- 重さ -->
+                            <div class="form-group-pair">
+                                <div class="form-group">
+                                    <label>重さ (g)</label>
+                                    <input type="number" id="stone-weight" placeholder="100" min="0" step="0.1">
+                                </div>
+                                <div class="form-group">
+                                    <label>感覚</label>
+                                    <select id="stone-weight-feel">
+                                        <option value="おもい">おもい</option>
+                                        <option value="ふつう" selected>ふつう</option>
+                                        <option value="かるい">かるい</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- 大きさ -->
+                            <div class="form-group-pair">
+                                <div class="form-group">
+                                    <label>大きさ (cm)</label>
+                                    <input type="number" id="stone-size" placeholder="5" min="0" step="0.1">
+                                </div>
+                                <div class="form-group">
+                                    <label>感覚</label>
+                                    <select id="stone-size-feel">
+                                        <option value="大きい">大きい</option>
+                                        <option value="ふつう" selected>ふつう</option>
+                                        <option value="小さい">小さい</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- 質感と透明度 -->
+                            <div class="form-group-pair">
+                                <div class="form-group">
+                                    <label>質感</label>
+                                    <input type="text" id="stone-texture" placeholder="ツルツル、ザラザラなど">
+                                </div>
+                                <div class="form-group">
+                                    <label>透明度</label>
+                                    <select id="stone-transparency">
+                                        <option value="不透明">不透明</option>
+                                        <option value="半透明">半透明</option>
+                                        <option value="透明">透明</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section sensory-properties">
+                        <h2>感覚的性質</h2>
+                        <div class="form-group">
+                            <label>特徴</label>
+                            <textarea id="stone-features" placeholder="鉄分により赤く染まっている、割ると鋭い刃物になるなど" rows="4"></textarea>
+                        </div>
+                        <div class="form-group sensory-second">
+                            <label>狼煙屋的見立て</label>
+                            <textarea id="stone-noroshiya-interpretation" placeholder="この石から感じる物語性や、狼煙屋との相性など" rows="4"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- 位置情報セクション -->
+                    <div class="form-section">
+                        <h2>位置情報</h2>
+                        
+                        <!-- 採取ポイント選択 -->
+                        <div class="form-group">
+                            <label>登録済み採取ポイント</label>
+                            <select id="saved-locations" onchange="loadSavedLocation()">
+                                <option value="">-- 新規登録または選択 --</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 地図表示エリア（採取ポイントの下に移動） -->
+                        <div id="map-container" style="margin: 1.5rem 0;">
+                            <div id="location-map" style="height: 250px; border: 1px solid #ddd; border-radius: 8px; background-color: #f0f0f0;"></div>
+                            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">地図上をクリック/タップして位置を指定してください</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>場所名</label>
+                            <input type="text" id="stone-location-name" placeholder="例: 日野川（下流）">
+                        </div>
+                        
+                        <!-- 都道府県と市区町村を横並び -->
+                        <div class="form-group-pair">
+                            <div class="form-group">
+                                <label>都道府県</label>
+                                <select id="stone-prefecture">
+                                <option value="">選択してください</option>
+                                <option value="北海道">北海道</option>
+                                <option value="青森県">青森県</option>
+                                <option value="岩手県">岩手県</option>
+                                <option value="宮城県">宮城県</option>
+                                <option value="秋田県">秋田県</option>
+                                <option value="山形県">山形県</option>
+                                <option value="福島県">福島県</option>
+                                <option value="茨城県">茨城県</option>
+                                <option value="栃木県">栃木県</option>
+                                <option value="群馬県">群馬県</option>
+                                <option value="埼玉県">埼玉県</option>
+                                <option value="千葉県">千葉県</option>
+                                <option value="東京都">東京都</option>
+                                <option value="神奈川県">神奈川県</option>
+                                <option value="新潟県">新潟県</option>
+                                <option value="富山県">富山県</option>
+                                <option value="石川県">石川県</option>
+                                <option value="福井県">福井県</option>
+                                <option value="山梨県">山梨県</option>
+                                <option value="長野県">長野県</option>
+                                <option value="岐阜県">岐阜県</option>
+                                <option value="静岡県">静岡県</option>
+                                <option value="愛知県">愛知県</option>
+                                <option value="三重県">三重県</option>
+                                <option value="滋賀県">滋賀県</option>
+                                <option value="京都府">京都府</option>
+                                <option value="大阪府">大阪府</option>
+                                <option value="兵庫県">兵庫県</option>
+                                <option value="奈良県">奈良県</option>
+                                <option value="和歌山県">和歌山県</option>
+                                <option value="鳥取県">鳥取県</option>
+                                <option value="島根県">島根県</option>
+                                <option value="岡山県">岡山県</option>
+                                <option value="広島県">広島県</option>
+                                <option value="山口県">山口県</option>
+                                <option value="徳島県">徳島県</option>
+                                <option value="香川県">香川県</option>
+                                <option value="愛媛県">愛媛県</option>
+                                <option value="高知県">高知県</option>
+                                <option value="福岡県">福岡県</option>
+                                <option value="佐賀県">佐賀県</option>
+                                <option value="長崎県">長崎県</option>
+                                <option value="熊本県">熊本県</option>
+                                <option value="大分県">大分県</option>
+                                <option value="宮崎県">宮崎県</option>
+                                <option value="鹿児島県">鹿児島県</option>
+                                <option value="沖縄県">沖縄県</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>市区町村</label>
+                                <select id="stone-city">
+                                    <option value="">都道府県を先に選択してください</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- タグと詳細な場所を横並び -->
+                        <div class="form-group-pair">
+                            <div class="form-group">
+                                <label>タグ</label>
+                                <select id="stone-location-tag">
+                                    <option value="">選択してください</option>
+                                    <option value="川・河原">川・河原</option>
+                                    <option value="海岸">海岸</option>
+                                    <option value="山・その他">山・その他</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>詳細な場所</label>
+                                <select id="stone-location-detail">
+                                    <option value="">タグを先に選択してください</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>場所メモ</label>
+                            <textarea id="stone-location-notes" placeholder="例: 2024年春の台風後、水量多め"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>住所またはGoogleマップURL</label>
+                            <input type="text" id="stone-address" placeholder="住所またはGoogleマップのURLを入力">
+                        </div>
+                        
+                        <!-- 位置情報入力方法 -->
+                        <div class="location-input-methods" style="margin-bottom: 1rem; padding: 1rem; background: #f0f7ff; border-radius: 8px;">
+                            <p style="margin-bottom: 0.8rem; font-size: 0.9rem;">その他の位置情報取得方法:</p>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button type="button" onclick="getCurrentLocationGPS()" style="background: #3498db; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                                    📍 現在地を使用
+                                </button>
+                                <button type="button" onclick="extractFromGoogleMapUrl()" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                                    🔗 URLから抽出
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 緯度と経度を横並び -->
+                        <div class="form-group-pair">
+                            <div class="form-group">
+                                <label>緯度</label>
+                                <input type="number" id="stone-lat" step="0.0000001" placeholder="例: 35.3439000">
+                            </div>
+                            <div class="form-group">
+                                <label>経度</label>
+                                <input type="number" id="stone-lng" step="0.0000001" placeholder="例: 133.4039000">
+                            </div>
+                        </div>
+                        
+                        <!-- 採取ポイント保存ボタン -->
+                        <div class="form-group">
+                            <button type="button" class="save-location-btn" onclick="saveCurrentLocation()">
+                                この場所を採取ポイントとして保存
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="save-section">
+                        <button type="button" class="delete-btn" onclick="deleteStone()">削除</button>
+                        <button type="button" class="cancel-btn" onclick="cancelStoneEdit()">キャンセル</button>
+                        <button type="submit" class="save-btn">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Color Thief -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- 位置情報入力機能 -->
+    <script src="location-input.js"></script>
+    <!-- 鳥の位置情報入力機能 -->
+    <script src="bird-location-input.js"></script>
+    <!-- メインJS -->
+    <script src="noroshiya-dev-v2.js"></script>
+    
+    <script>
+    // 都道府県と市区町村のマッピング（主要都市のみ）
+    const cityData = {
+        '東京都': ['千代田区', '中央区', '港区', '新宿区', '文京区', '台東区', '墨田区', '江東区', '品川区', '目黒区', '大田区', '世田谷区', '渋谷区', '中野区', '杉並区', '豊島区', '北区', '荒川区', '板橋区', '練馬区', '足立区', '葛飾区', '江戸川区'],
+        '神奈川県': ['横浜市', '川崎市', '相模原市', '横須賀市', '平塚市', '鎌倉市', '藤沢市', '小田原市', '茅ヶ崎市', '逗子市', '三浦市', '秦野市', '厚木市', '大和市', '伊勢原市', '海老名市', '座間市', '南足柄市', '綾瀬市'],
+        '千葉県': ['千葉市', '銃香市', '市川市', '船橋市', '館山市', '木更津市', '松戸市', '野田市', '茂原市', '成田市', '佐倉市', '東金市', '旭市', '習志野市', '柏市', '勝浦市', '市原市', '流山市', '八千代市', '我孫子市'],
+        '埼玉県': ['さいたま市', '川越市', '熊谷市', '川口市', '行田市', '秩父市', '所沢市', '飯能市', '加須市', '本庄市', '春日部市', '狭山市', '羽生市', '鴻巣市', '深谷市', '上尾市', '草加市', '越谷市', '蛕ヶ島市', '戸田市'],
+        '大阪府': ['大阪市', '堺市', '岸和田市', '豊中市', '池田市', '吹田市', '泉大津市', '高槻市', '貝塚市', '守口市', '枚方市', '茨木市', '八尾市', '泉佐野市', '富田林市', '寝屋川市', '河内長野市', '松原市', '大東市', '和泉市'],
+        '京都府': ['京都市', '福知山市', '舞鶴市', '綾部市', '宇治市', '宮津市', '亀岡市', '城陽市', '向日市', '長岡京市', '八幡市', '京田辺市', '京丹後市', '南丹市', '木津川市'],
+        '兵庫県': ['神戸市', '姫路市', '西宮市', '尼崎市', '明石市', '加古川市', '宝塚市', '伊丹市', '川西市', '三田市', '高砂市', '芦屋市', '豊岡市', '三木市', 'たつの市', '相生市', '加東市', '赤穂市', '西脇市', '加西市'],
+        '愛知県': ['名古屋市', '豊橋市', '岡崎市', '一宮市', '豊田市', '春日井市', '安城市', '豊川市', '津島市', '碧南市', '刈谷市', '豊明市', '日進市', '田原市', '愛西市', '清須市', '北名古屋市', '弥富市', 'みよし市', 'あま市'],
+        '福岡県': ['福岡市', '北九州市', '久留米市', '飯塚市', '大牟田市', '春日市', '筑紫野市', '大野城市', '宗像市', '太宰府市', '行橋市', '中間市', '小郡市', '田川市', '筑後市', '大川市', '直方市', '柳川市', '八女市', '条市']
+    };
+    
+    // タグと詳細な場所のマッピング
+    const locationDetailData = {
+        '川・河原': ['上流域', '中流域', '下流域', '河口付近'],
+        '海岸': ['砂浜', '石浜', '岩場', '磯'],
+        '山・その他': ['頂上', '山中', '麓', '登山道', '渓流沿い']
+    };
+    
+    // 都道府県選択時の処理
+    document.getElementById('stone-prefecture').addEventListener('change', function(e) {
+        const selectedPrefecture = e.target.value;
+        const citySelect = document.getElementById('stone-city');
+        
+        // 既存のオプションをクリア
+        citySelect.innerHTML = '';
+        
+        if (selectedPrefecture && cityData[selectedPrefecture]) {
+            // デフォルトオプション
+            citySelect.innerHTML = '<option value="">選択してください</option>';
+            
+            // 市区町村を追加
+            cityData[selectedPrefecture].forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                citySelect.appendChild(option);
+            });
+            
+            // その他オプション
+            const otherOption = document.createElement('option');
+            otherOption.value = 'その他';
+            otherOption.textContent = 'その他（手動入力）';
+            citySelect.appendChild(otherOption);
+        } else {
+            citySelect.innerHTML = '<option value="">都道府県を先に選択してください</option>';
+        }
+    });
+    
+    // タグ選択時の処理
+    document.getElementById('stone-location-tag').addEventListener('change', function(e) {
+        const selectedTag = e.target.value;
+        const detailSelect = document.getElementById('stone-location-detail');
+        
+        // 既存のオプションをクリア
+        detailSelect.innerHTML = '';
+        
+        if (selectedTag && locationDetailData[selectedTag]) {
+            // デフォルトオプション
+            detailSelect.innerHTML = '<option value="">選択してください</option>';
+            
+            // 詳細を追加
+            locationDetailData[selectedTag].forEach(detail => {
+                const option = document.createElement('option');
+                option.value = detail;
+                option.textContent = detail;
+                detailSelect.appendChild(option);
+            });
+            
+            // その他オプション
+            const otherOption = document.createElement('option');
+            otherOption.value = 'その他';
+            otherOption.textContent = 'その他（手動入力）';
+            detailSelect.appendChild(otherOption);
+        } else {
+            detailSelect.innerHTML = '<option value="">タグを先に選択してください</option>';
+        }
+    });
+    
+    // 市区町村で「その他」が選択された時の処理
+    document.getElementById('stone-city').addEventListener('change', function(e) {
+        if (e.target.value === 'その他') {
+            // inputに変更
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'stone-city-custom';
+            input.className = 'form-control';
+            input.placeholder = '市区町村を入力';
+            input.style.width = '100%';
+            input.style.padding = '8px 12px';
+            input.style.border = '1px solid #ddd';
+            input.style.borderRadius = '4px';
+            
+            // selectを隠してinputを表示
+            e.target.style.display = 'none';
+            e.target.parentNode.appendChild(input);
+            input.focus();
+            
+            // フォーカスが外れたらselectに戻す
+            input.addEventListener('blur', function() {
+                if (input.value) {
+                    // カスタム値をオプションとして追加
+                    const customOption = document.createElement('option');
+                    customOption.value = input.value;
+                    customOption.textContent = input.value;
+                    customOption.selected = true;
+                    e.target.appendChild(customOption);
+                }
+                e.target.style.display = 'block';
+                input.remove();
+            });
+        }
+    });
+    
+    // 詳細な場所で「その他」が選択された時の処理
+    document.getElementById('stone-location-detail').addEventListener('change', function(e) {
+        if (e.target.value === 'その他') {
+            // inputに変更
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'stone-location-detail-custom';
+            input.className = 'form-control';
+            input.placeholder = '詳細な場所を入力';
+            input.style.width = '100%';
+            input.style.padding = '8px 12px';
+            input.style.border = '1px solid #ddd';
+            input.style.borderRadius = '4px';
+            
+            // selectを隠してinputを表示
+            e.target.style.display = 'none';
+            e.target.parentNode.appendChild(input);
+            input.focus();
+            
+            // フォーカスが外れたらselectに戻す
+            input.addEventListener('blur', function() {
+                if (input.value) {
+                    // カスタム値をオプションとして追加
+                    const customOption = document.createElement('option');
+                    customOption.value = input.value;
+                    customOption.textContent = input.value;
+                    customOption.selected = true;
+                    e.target.appendChild(customOption);
+                }
+                e.target.style.display = 'block';
+                input.remove();
+            });
+        }
+    });
+    </script>
+    <script src="image-processing.js"></script>
+    <script src="location-input.js"></script>
+</body>
+</html>

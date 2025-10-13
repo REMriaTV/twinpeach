@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>石マップ - Twin Peach</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #f5f5f5;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+        
+        /* モード切替ボタン */
+        .mode-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .mode-toggle h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .mode-btn {
+            background: #4ECDC4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .mode-btn:hover {
+            background: #45B7D1;
+        }
+        
+        .mode-btn.locked {
+            background: #ddd;
+            color: #999;
+        }
+        
+        .current-mode {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* パスワード入力モーダル */
+        .password-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .password-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .password-content h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .password-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .password-buttons button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .submit-btn {
+            background: #4ECDC4;
+            color: white;
+        }
+        
+        .cancel-btn {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        /* カスタムポップアップ - 半透明化 */
+        .leaflet-popup .leaflet-popup-content-wrapper {
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.15) !important;
+        }
+        
+        .leaflet-popup .leaflet-popup-tip {
+            background: rgba(255, 255, 255, 0.85) !important;
+        }
+        
+        /* 閉じるボタンの背景も調整 */
+        .leaflet-popup .leaflet-popup-close-button {
+            background: rgba(255, 255, 255, 0.5) !important;
+            border-radius: 50%;
+            width: 24px !important;
+            height: 24px !important;
+            top: 8px !important;
+            right: 8px !important;
+        }
+        
+        .leaflet-popup .leaflet-popup-close-button:hover {
+            background: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        .stone-popup {
+            min-width: 280px;
+        }
+        
+        .stone-popup h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: #333;
+            border-bottom: 2px solid #4ECDC4;
+            padding-bottom: 5px;
+        }
+        
+        /* タグのバッジデザイン */
+        .location-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        
+        .tag-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+        }
+        
+        .tag-river {
+            background: #4ECDC4;
+        }
+        
+        .tag-ocean {
+            background: #45B7D1;
+        }
+        
+        .tag-mountain {
+            background: #96CEB4;
+        }
+        
+        .location-info {
+            font-size: 14px;
+            color: #666;
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        
+        .location-info strong {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .stone-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stone-item {
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .stone-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .stone-thumbnail {
+            width: 60px;
+            height: 60px;
+            background: rgba(221, 221, 221, 0.8);
+            border-radius: 50%;
+            margin: 0 auto 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .stone-name {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        /* 地図コントロール */
+        .map-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .control-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .prefecture-filter {
+            width: 200px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        /* 凡例 */
+        .map-legend {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <!-- モード切替 -->
+    <div class="mode-toggle">
+        <h4>表示モード</h4>
+        <button class="mode-btn" id="toggleModeBtn" onclick="toggleMode()">
+            はっきりモードに切り替え 🔒
+        </button>
+        <div class="current-mode" id="currentMode">
+            現在: ぼんやり略画モード
+        </div>
+    </div>
+    
+    <!-- パスワード入力モーダル -->
+    <div class="password-modal" id="passwordModal">
+        <div class="password-content">
+            <h3>はっきり密画モードのロック解除</h3>
+            <p style="margin-bottom: 20px; color: #666; font-size: 14px;">
+                TWIN PEACH 公式マガジン「MOKUMOKU」に掲載されているパスワードを入力してください。
+            </p>
+            <input type="password" class="password-input" id="passwordInput" placeholder="パスワードを入力">
+            <div class="password-buttons">
+                <button class="cancel-btn" onclick="closePasswordModal()">キャンセル</button>
+                <button class="submit-btn" onclick="checkPassword()">確認</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 地図コントロール -->
+    <div class="map-controls">
+        <div class="control-title">都道府県で絞り込み</div>
+        <select class="prefecture-filter" id="prefectureFilter">
+            <option value="">すべて表示</option>
+            <option value="鳥取県">鳥取県</option>
+            <option value="香川県">香川県</option>
+            <option value="三重県">三重県</option>
+            <option value="和歌山県">和歌山県</option>
+        </select>
+    </div>
+    
+    <!-- 凡例 -->
+    <div class="map-legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background: #4ECDC4;"></div>
+            <span>川・河原</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #45B7D1;"></div>
+            <span>海岸</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #96CEB4;"></div>
+            <span>山・その他</span>
+        </div>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script src="stone-map-v3.js"></script>
+    
+    <!-- 強制的に半透明スタイルを適用 -->
+    <script>
+        // DOMが完全に読み込まれた後に実行
+        document.addEventListener('DOMContentLoaded', function() {
+            // MutationObserverでポップアップの生成を監視
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.classList && node.classList.contains('leaflet-popup')) {
+                            // ポップアップが追加されたら半透明スタイルを適用
+                            const wrapper = node.querySelector('.leaflet-popup-content-wrapper');
+                            const tip = node.querySelector('.leaflet-popup-tip');
+                            if (wrapper) {
+                                wrapper.style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
+                                wrapper.style.backdropFilter = 'blur(10px)';
+                                wrapper.style.webkitBackdropFilter = 'blur(10px)';
+                            }
+                            if (tip) {
+                                tip.style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
+                            }
+                        }
+                    });
+                });
+            });
+            
+            // body要素を監視
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鳥・石マスターデータ編集画面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .admin-notice {
+            background: rgba(255, 193, 7, 0.9);
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .tab-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            background: #5a67d8;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: none;
+            background: none;
+            font-size: 1rem;
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .tab.active {
+            background: white;
+            color: #5a67d8;
+        }
+
+        .content {
+            padding: 20px;
+            min-height: 600px;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: #5a67d8;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4c51bf;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th {
+            background: #f7fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+
+        .form-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow: auto;
+        }
+
+        .form-content {
+            background: white;
+            margin: 20px auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 15px;
+            animation: slideIn 0.3s;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .form-header h2 {
+            color: #2d3748;
+        }
+
+        .close-modal {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #a0aec0;
+        }
+
+        .close-modal:hover {
+            color: #4a5568;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #5a67d8;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .tag-input-container {
+            position: relative;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            background: #e2e8f0;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        .tag-remove {
+            margin-left: 5px;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .tag-remove:hover {
+            color: #2d3748;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #718096;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #c6f6d5;
+            color: #276749;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: auto;
+            }
+            
+            .data-table {
+                font-size: 0.85rem;
+            }
+            
+            .form-content {
+                padding: 20px;
+            }
+        }
+
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            z-index: 999;
+        }
+
+        .status-connected {
+            background: #48bb78;
+            color: white;
+        }
+
+        .status-disconnected {
+            background: #f56565;
+            color: white;
+        }
+
+        .status-local {
+            background: #ed8936;
+            color: white;
+        }
+
+        .view-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #48bb78;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .view-link:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐦 鳥・💎 石マスターデータ編集画面</h1>
+        
+        <div class="admin-notice">
+            ⚠️ 管理者専用画面 - データの編集は慎重に行ってください
+        </div>
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="index.html" class="view-link">👀 閲覧画面へ戻る</a>
+        </div>
+        
+        <div class="tab-container">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('birds')">🐦 鳥データベース</button>
+                <button class="tab" onclick="showTab('stones')">💎 火打石データベース</button>
+            </div>
+            
+            <div class="content">
+                <!-- 鳥データベースタブ -->
+                <div id="birds-tab" class="tab-content">
+                    <div class="action-bar">
+                        <div class="search-box">
+                            <input type="text" class="search-input" id="bird-search" placeholder="鳥の名前で検索...">
+                            <button class="btn btn-primary" onclick="searchBirds()">検索</button>
+                        </div>
+                        <button class="btn btn-success" onclick="showBirdForm()">➕ 新しい鳥を追加</button>
+                    </div>
+                    <div id="birds-list">
+                        <div class="loading">データを読み込み中...</div>
+                    </div>
+                </div>
+                
+                <!-- 火打石データベースタブ -->
+                <div id="stones-tab" class="tab-content" style="display: none;">
+                    <div class="action-bar">
+                        <div class="search-box">
+                            <input type="text" class="search-input" id="stone-search" placeholder="石の名前や特徴で検索...">
+                            <button class="btn btn-primary" onclick="searchStones()">検索</button>
+                        </div>
+                        <button class="btn btn-success" onclick="showStoneForm()">➕ 新しい石を追加</button>
+                    </div>
+                    <div id="stones-list">
+                        <div class="loading">データを読み込み中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 鳥編集フォーム -->
+    <div id="bird-form-modal" class="form-modal">
+        <div class="form-content">
+            <div class="form-header">
+                <h2 id="bird-form-title">新しい鳥を追加</h2>
+                <span class="close-modal" onclick="closeBirdForm()">&times;</span>
+            </div>
+            <form id="bird-form" onsubmit="saveBird(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">ID *</label>
+                        <input type="text" class="form-input" name="id" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">名前 *</label>
+                        <input type="text" class="form-input" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">学名</label>
+                        <input type="text" class="form-input" name="scientific_name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">科</label>
+                        <input type="text" class="form-input" name="family">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">サイズ</label>
+                        <select class="form-select" name="size">
+                            <option value="">選択してください</option>
+                            <option value="小型">小型</option>
+                            <option value="中型">中型</option>
+                            <option value="大型">大型</option>
+                            <option value="中型〜大型">中型〜大型</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">生息地</label>
+                        <input type="text" class="form-input" name="habitat">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">外見</label>
+                        <textarea class="form-textarea" name="appearance"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">鳴き声</label>
+                        <input type="text" class="form-input" name="voice">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">行動</label>
+                        <input type="text" class="form-input" name="behavior">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">活動時間</label>
+                        <select class="form-select" name="activity">
+                            <option value="">選択してください</option>
+                            <option value="昼行性">昼行性</option>
+                            <option value="夜行性">夜行性</option>
+                            <option value="薄明薄暮性">薄明薄暮性</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">食性</label>
+                        <input type="text" class="form-input" name="diet">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">社会性</label>
+                        <input type="text" class="form-input" name="social_behavior">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">営巣習慣</label>
+                        <input type="text" class="form-input" name="nesting_habits">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">性格（一般）</label>
+                        <textarea class="form-textarea" name="personality_general"></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">人との関わり</label>
+                        <textarea class="form-textarea" name="human_interaction"></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">知能</label>
+                        <textarea class="form-textarea" name="intelligence"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">春の行動</label>
+                        <input type="text" class="form-input" name="seasonal_spring">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">夏の行動</label>
+                        <input type="text" class="form-input" name="seasonal_summer">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">秋の行動</label>
+                        <input type="text" class="form-input" name="seasonal_autumn">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">冬の行動</label>
+                        <input type="text" class="form-input" name="seasonal_winter">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">文化的象徴</label>
+                        <input type="text" class="form-input" name="symbolism_cultural">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">精神的象徴</label>
+                        <input type="text" class="form-input" name="symbolism_spiritual">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">適合する狼煙屋タイプ（Enterで追加）</label>
+                        <input type="text" class="form-input" id="bird-suitable-types" onkeypress="addBirdTag(event)">
+                        <div class="tag-list" id="bird-suitable-types-tags"></div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">煙のスタイル</label>
+                        <input type="text" class="form-input" name="noroshiya_smoking_style">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">コミュニケーションスタイル</label>
+                        <input type="text" class="form-input" name="noroshiya_communication_style">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-danger" onclick="closeBirdForm()">キャンセル</button>
+                    <button type="submit" class="btn btn-success">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 石編集フォーム -->
+    <div id="stone-form-modal" class="form-modal">
+        <div class="form-content">
+            <div class="form-header">
+                <h2 id="stone-form-title">新しい石を追加</h2>
+                <span class="close-modal" onclick="closeStoneForm()">&times;</span>
+            </div>
+            <form id="stone-form" onsubmit="saveStone(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">ID *</label>
+                        <input type="text" class="form-input" name="id" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">名前 *</label>
+                        <input type="text" class="form-input" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">タイプ</label>
+                        <input type="text" class="form-input" name="type" value="火打石">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">サイズ</label>
+                        <select class="form-select" name="size">
+                            <option value="">選択してください</option>
+                            <option value="小さめ">小さめ</option>
+                            <option value="中くらい">中くらい</option>
+                            <option value="大きめ">大きめ</option>
+                            <option value="様々">様々</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">形状</label>
+                        <input type="text" class="form-input" name="shape">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">質感</label>
+                        <input type="text" class="form-input" name="texture">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">産地</label>
+                        <input type="text" class="form-input" name="origin">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">レアリティ</label>
+                        <select class="form-select" name="rarity">
+                            <option value="">選択してください</option>
+                            <option value="common">Common</option>
+                            <option value="uncommon">Uncommon</option>
+                            <option value="rare">Rare</option>
+                            <option value="very_rare">Very Rare</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">色（Enterで追加）</label>
+                        <input type="text" class="form-input" id="stone-colors" onkeypress="addStoneColor(event)">
+                        <div class="tag-list" id="stone-colors-tags"></div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">外観</label>
+                        <textarea class="form-textarea" name="appearance"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">重さ</label>
+                        <input type="text" class="form-input" name="weight">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">硬さ</label>
+                        <input type="text" class="form-input" name="hardness">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">特殊な特徴</label>
+                        <textarea class="form-textarea" name="special_features"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">元素</label>
+                        <input type="text" class="form-input" name="elemental_element">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">エネルギー</label>
+                        <input type="text" class="form-input" name="elemental_energy">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">共鳴</label>
+                        <input type="text" class="form-input" name="elemental_resonance">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">発見場所（Enterで追加）</label>
+                        <input type="text" class="form-input" id="stone-locations" onkeypress="addStoneLocation(event)">
+                        <div class="tag-list" id="stone-locations-tags"></div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">マッチングキーワード（Enterで追加）</label>
+                        <input type="text" class="form-input" id="stone-keywords" onkeypress="addStoneKeyword(event)">
+                        <div class="tag-list" id="stone-keywords-tags"></div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">相性の良い狼煙屋</label>
+                        <input type="text" class="form-input" name="noroshiya_primary_match">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">相性の理由</label>
+                        <textarea class="form-textarea" name="noroshiya_match_reason"></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">特別な反応</label>
+                        <input type="text" class="form-input" name="noroshiya_special_reaction">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">言い伝え</label>
+                        <textarea class="form-textarea" name="folklore_legend"></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">使用法</label>
+                        <textarea class="form-textarea" name="folklore_usage"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-danger" onclick="closeStoneForm()">キャンセル</button>
+                    <button type="submit" class="btn btn-success">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 接続状態表示 -->
+    <div id="connection-status" class="connection-status status-local" title="データはブラウザに保存されます">
+        📱 ローカルストレージモード
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="birds-database.js"></script>
+    <script src="stones-database.js"></script>
+    <script src="admin-manager.js"></script>
+</body>
+</html>

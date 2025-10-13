@@ -1,0 +1,292 @@
+// 位置情報入力機能 for デジタルスケッチブック
+
+// グローバル変数（他ファイルでアクセスするためwindowに保存）
+window.stoneLocationMap = window.stoneLocationMap || null;
+window.stoneLocationMarker = window.stoneLocationMarker || null;
+
+// ローカル参照用
+const stoneLocationMap = window.stoneLocationMap;
+const stoneLocationMarker = window.stoneLocationMarker;
+
+// 現在地取得（GPS）
+function getCurrentLocationGPS() {
+    if (!navigator.geolocation) {
+        alert('お使いのブラウザは位置情報取得に対応していません');
+        return;
+    }
+    
+    // ボタン要素を取得（eventがない場合のため）
+    const button = event && event.target ? event.target : document.querySelector('button[onclick*="getCurrentLocationGPS"]');
+    const originalText = button ? button.textContent : '📍 現在地を使用';
+    
+    if (button) {
+        button.textContent = '⏳ 取得中...';
+        button.disabled = true;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+            
+            // 緯度経度フィールドに設定
+            document.getElementById('stone-lat').value = lat.toFixed(7);
+            document.getElementById('stone-lng').value = lng.toFixed(7);
+            
+            // 成功メッセージ
+            alert(`現在地を取得しました！\n精度: 約${Math.round(accuracy)}m`);
+            
+            // ボタンを元に戻す
+            if (button) {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+            
+            // 地図が表示されていたら更新
+            console.log('Updating map with current location:', lat, lng);
+            console.log('stoneLocationMap exists:', !!window.stoneLocationMap);
+            
+            if (window.stoneLocationMap) {
+                window.stoneLocationMap.setView([lat, lng], 15);
+                
+                if (window.stoneLocationMarker) {
+                    // 既存のマーカーを移動
+                    window.stoneLocationMarker.setLatLng([lat, lng]);
+                    console.log('Marker moved to current location');
+                } else {
+                    // マーカーがなければ新規作成
+                    window.stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(window.stoneLocationMap);
+                    
+                    window.stoneLocationMarker.on('dragend', function(event) {
+                        const position = window.stoneLocationMarker.getLatLng();
+                        updateLocationFields(position.lat, position.lng);
+                    });
+                    console.log('New marker created at current location');
+                }
+            } else {
+                console.log('Map not initialized yet');
+            }
+        },
+        (error) => {
+            let errorMessage = '位置情報の取得に失敗しました: ';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage += '位置情報の使用が許可されていません';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage += '位置情報が利用できません';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage += 'タイムアウトしました';
+                    break;
+                default:
+                    errorMessage += '不明なエラー';
+            }
+            alert(errorMessage);
+            
+            // ボタンを元に戻す
+            if (button) {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+}
+
+// 地図の初期化（自動実行用）
+function initializeStoneLocationMap() {
+    // 現在の緯度経度を取得（あれば）
+    const currentLat = document.getElementById('stone-lat').value || 35.681236;
+    const currentLng = document.getElementById('stone-lng').value || 139.767125;
+    
+    // 地図を初期化
+    window.stoneLocationMap = L.map('location-map').setView([currentLat, currentLng], 15);
+    
+    // CartoDBの明るいタイルレイヤー（石マップと同じスタイル）
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+    }).addTo(window.stoneLocationMap);
+    
+    // クリックイベント
+    window.stoneLocationMap.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        
+        if (window.stoneLocationMarker) {
+            window.stoneLocationMarker.setLatLng(e.latlng);
+        } else {
+            window.stoneLocationMarker = L.marker(e.latlng, {draggable: true}).addTo(window.stoneLocationMap);
+            
+            // マーカーのドラッグイベント
+            window.stoneLocationMarker.on('dragend', function(event) {
+                const position = window.stoneLocationMarker.getLatLng();
+                updateLocationFields(position.lat, position.lng);
+            });
+        }
+        
+        updateLocationFields(lat, lng);
+    });
+    
+    // 既存のマーカーがあれば表示
+    if (currentLat && currentLng && currentLat !== 35.681236) {
+        window.stoneLocationMarker = L.marker([currentLat, currentLng], {draggable: true}).addTo(window.stoneLocationMap);
+        
+        window.stoneLocationMarker.on('dragend', function(event) {
+            const position = window.stoneLocationMarker.getLatLng();
+            updateLocationFields(position.lat, position.lng);
+        });
+    }
+}
+
+// 地図から選択（廃止予定だが互換性のため残す）
+function openMapSelection() {
+    // すでに地図は表示されているので、何もしない
+    if (window.stoneLocationMap) {
+        window.stoneLocationMap.invalidateSize();
+    }
+}
+
+// 緯度経度フィールドを更新
+function updateLocationFields(lat, lng) {
+    document.getElementById('stone-lat').value = lat.toFixed(7);
+    document.getElementById('stone-lng').value = lng.toFixed(7);
+}
+
+// GoogleマップURLから抽出
+function extractFromGoogleMapUrl() {
+    const url = document.getElementById('stone-address').value.trim();
+    
+    if (!url) {
+        alert('住所またはGoogleマップURLフィールドにURLを入力してください');
+        return;
+    }
+    
+    let lat, lng;
+    
+    // @緯度,経度 形式
+    const atMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (atMatch) {
+        lat = parseFloat(atMatch[1]);
+        lng = parseFloat(atMatch[2]);
+    }
+    
+    // place/緯度,経度 形式
+    const placeMatch = url.match(/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (placeMatch) {
+        lat = parseFloat(placeMatch[1]);
+        lng = parseFloat(placeMatch[2]);
+    }
+    
+    // ll=緯度,経度 形式
+    const llMatch = url.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (llMatch) {
+        lat = parseFloat(llMatch[1]);
+        lng = parseFloat(llMatch[2]);
+    }
+    
+    if (lat && lng) {
+        document.getElementById('stone-lat').value = lat.toFixed(7);
+        document.getElementById('stone-lng').value = lng.toFixed(7);
+        alert('URLから位置情報を取得しました！');
+        
+        // 地図が表示されていたら更新
+        if (window.stoneLocationMap) {
+            window.stoneLocationMap.setView([lat, lng], 15);
+            
+            if (window.stoneLocationMarker) {
+                window.stoneLocationMarker.setLatLng([lat, lng]);
+            } else {
+                window.stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(window.stoneLocationMap);
+                
+                window.stoneLocationMarker.on('dragend', function(event) {
+                    const position = window.stoneLocationMarker.getLatLng();
+                    updateLocationFields(position.lat, position.lng);
+                });
+            }
+        }
+    } else {
+        // 短縮URLの場合の注意
+        if (url.includes('maps.app.goo.gl') || url.includes('goo.gl/maps')) {
+            alert('短縮URLからは直接位置情報を取得できません。\n\n次の手順でお試しください：\n1. URLをブラウザで開く\n2. 展開された完全なURLをコピー\n3. 再度このフィールドに貼り付けて実行');
+        } else {
+            alert('URLから位置情報を取得できませんでした。\n正しいGoogleマップのURLか確認してください。');
+        }
+    }
+}
+
+// 既存の extractLatLngFromUrl 関数を置き換え
+window.extractLatLngFromUrl = extractFromGoogleMapUrl;
+
+// グローバルに関数を公開
+window.getCurrentLocationGPS = getCurrentLocationGPS;
+window.openMapSelection = openMapSelection;
+window.extractFromGoogleMapUrl = extractFromGoogleMapUrl;
+window.initializeStoneLocationMap = initializeStoneLocationMap;
+
+// 石タブが開かれた時に地図を初期化
+document.addEventListener('DOMContentLoaded', () => {
+    // 少し遅延を置いて、石タブがアクティブかチェック
+    setTimeout(() => {
+        const stonesTab = document.getElementById('stones-tab');
+        if (stonesTab && stonesTab.classList.contains('active')) {
+            // 石タブが最初から開いている場合は地図を初期化
+            initializeStoneLocationMap();
+        }
+    }, 500);
+    
+    // 緯度経度フィールドの変更を監視
+    const latField = document.getElementById('stone-lat');
+    const lngField = document.getElementById('stone-lng');
+    
+    if (latField && lngField) {
+        // 緯度フィールドの変更時
+        latField.addEventListener('change', function() {
+            const lat = parseFloat(this.value);
+            const lng = parseFloat(lngField.value);
+            
+            if (!isNaN(lat) && !isNaN(lng) && window.stoneLocationMap) {
+                window.stoneLocationMap.setView([lat, lng], 15);
+                
+                if (window.stoneLocationMarker) {
+                    window.stoneLocationMarker.setLatLng([lat, lng]);
+                } else {
+                    window.stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(window.stoneLocationMap);
+                    
+                    window.stoneLocationMarker.on('dragend', function(event) {
+                        const position = window.stoneLocationMarker.getLatLng();
+                        updateLocationFields(position.lat, position.lng);
+                    });
+                }
+            }
+        });
+        
+        // 経度フィールドの変更時
+        lngField.addEventListener('change', function() {
+            const lat = parseFloat(latField.value);
+            const lng = parseFloat(this.value);
+            
+            if (!isNaN(lat) && !isNaN(lng) && window.stoneLocationMap) {
+                window.stoneLocationMap.setView([lat, lng], 15);
+                
+                if (window.stoneLocationMarker) {
+                    window.stoneLocationMarker.setLatLng([lat, lng]);
+                } else {
+                    window.stoneLocationMarker = L.marker([lat, lng], {draggable: true}).addTo(window.stoneLocationMap);
+                    
+                    window.stoneLocationMarker.on('dragend', function(event) {
+                        const position = window.stoneLocationMarker.getLatLng();
+                        updateLocationFields(position.lat, position.lng);
+                    });
+                }
+            }
+        });
+    }
+});

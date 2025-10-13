@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>石マップ - Twin Peach</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #f5f5f5;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+        
+        /* モード切替ボタン */
+        .mode-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .mode-toggle h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .mode-btn {
+            background: #4ECDC4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .mode-btn:hover {
+            background: #45B7D1;
+        }
+        
+        .mode-btn.locked {
+            background: #ddd;
+            color: #999;
+        }
+        
+        .current-mode {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* パスワード入力モーダル */
+        .password-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .password-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .password-content h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .password-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .password-buttons button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .submit-btn {
+            background: #4ECDC4;
+            color: white;
+        }
+        
+        .cancel-btn {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        /* ミニマルなホバーポップアップ */
+        .mini-popup {
+            padding: 12px 16px;
+            min-width: 180px;
+            background: white;
+            border-radius: 6px;
+        }
+        
+        .mini-popup h4 {
+            margin: 0 0 6px 0;
+            font-size: 15px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .mini-popup .stone-count {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .mini-popup .click-hint {
+            font-size: 11px;
+            color: #999;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #eee;
+        }
+        
+        .mini-popup:hover {
+            background: #f8f8f8;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* 第2段階：詳細モーダル */
+        .detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .detail-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* 第3段階：石の詳細モーダル */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            animation: modalZoomIn 0.3s ease-out;
+        }
+        
+        @keyframes modalZoomIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+        
+        .modal-title {
+            margin: 0 0 20px 0;
+            font-size: 24px;
+            color: #333;
+        }
+        
+        .modal-body {
+            color: #666;
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+        }
+        
+        .close-button:hover {
+            color: #333;
+        }
+        
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .detail-header h3 {
+            margin: 0;
+            font-size: 24px;
+            color: #333;
+        }
+        
+        .close-detail-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 5px;
+        }
+        
+        .close-detail-btn:hover {
+            color: #666;
+        }
+        
+        /* 詳細コンテンツのスタイル */
+        .location-info {
+            font-size: 14px;
+            color: #666;
+            margin: 15px 0;
+            line-height: 1.8;
+        }
+        
+        .location-info strong {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .location-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        
+        .tag-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+        }
+        
+        .tag-river {
+            background: #4ECDC4;
+        }
+        
+        .tag-ocean {
+            background: #45B7D1;
+        }
+        
+        .tag-mountain {
+            background: #96CEB4;
+        }
+        
+        .stone-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stone-item {
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            padding: 12px;
+            border-radius: 12px;
+            background: #f8f8f8;
+            border: 2px solid transparent;
+        }
+        
+        .stone-item:hover {
+            transform: scale(1.08);
+            background: #fff;
+            border-color: #4ECDC4;
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.2);
+        }
+        
+        .stone-thumbnail {
+            width: 70px;
+            height: 70px;
+            background: #e0e0e0;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            overflow: hidden;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stone-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .stone-name {
+            font-size: 13px;
+            color: #444;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        /* 地図コントロール */
+        .map-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .control-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .prefecture-filter {
+            width: 200px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        /* 凡例 */
+        .map-legend {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* ぼんやりモード用 */
+        .blur-mode-legend {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .blur-legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .blur-legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+        }
+        
+        /* 読み込み中表示 */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* エラー表示 */
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        /* データなし表示 */
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <!-- 読み込み中表示 -->
+    <div class="loading" id="loading">
+        <div>石マップを読み込んでいます...</div>
+    </div>
+    
+    <!-- モード切替 -->
+    <div class="mode-toggle">
+        <h4>表示モード</h4>
+        <button class="mode-btn" id="toggleModeBtn" onclick="toggleMode()">
+            はっきりモードに切り替え 🔒
+        </button>
+        <div class="current-mode" id="currentMode">
+            現在: ぼんやり略画モード
+        </div>
+    </div>
+    
+    <!-- パスワード入力モーダル -->
+    <div class="password-modal" id="passwordModal">
+        <div class="password-content">
+            <h3>はっきり密画モードのロック解除</h3>
+            <p style="margin-bottom: 20px; color: #666; font-size: 14px;">
+                TWIN PEACH 公式マガジン「MOKUMOKU」に掲載されているパスワードを入力してください。
+            </p>
+            <input type="password" class="password-input" id="passwordInput" placeholder="パスワードを入力">
+            <div class="password-buttons">
+                <button class="cancel-btn" onclick="closePasswordModal()">キャンセル</button>
+                <button class="submit-btn" onclick="checkPassword()">確認</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 詳細モーダル -->
+    <div class="detail-modal" id="detailModal">
+        <div class="detail-content">
+            <div class="detail-header">
+                <h3 id="detailTitle">詳細情報</h3>
+                <button class="close-detail-btn" onclick="closeDetailModal()">×</button>
+            </div>
+            <div id="detailBody">
+                <!-- 詳細コンテンツはJavaScriptで動的に挿入 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 地図コントロール -->
+    <div class="map-controls">
+        <div class="control-title">都道府県で絞り込み</div>
+        <select class="prefecture-filter" id="prefectureFilter">
+            <option value="">すべて表示</option>
+            <!-- 動的に都道府県を追加 -->
+        </select>
+    </div>
+    
+    <!-- 凡例 -->
+    <div class="map-legend">
+        <div class="legend-title">凡例</div>
+        <div id="clearModeLegend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4ECDC4;"></div>
+                <span>川・河原</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #45B7D1;"></div>
+                <span>海岸</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #96CEB4;"></div>
+                <span>山・その他</span>
+            </div>
+        </div>
+        <div id="blurModeLegend" class="blur-mode-legend" style="display: none;">
+            <div class="blur-legend-item">
+                <div class="blur-legend-color" style="background: rgba(78, 205, 196, 0.3); border-color: #4ECDC4;"></div>
+                <span>採取エリア（川多）</span>
+            </div>
+            <div class="blur-legend-item">
+                <div class="blur-legend-color" style="background: rgba(69, 183, 209, 0.3); border-color: #45B7D1;"></div>
+                <span>採取エリア（海岸多）</span>
+            </div>
+            <div class="blur-legend-item">
+                <div class="blur-legend-color" style="background: rgba(150, 206, 180, 0.3); border-color: #96CEB4;"></div>
+                <span>採取エリア（山多）</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Supabase -->
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        
+        // グローバル変数として設定（stone-map-v6-test.jsから参照するため）
+        window.supabase = createClient(
+            'https://roaucowddadmvxgzrvnu.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvYXVjb3dkZGFkbXZ4Z3pydm51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNDQxMDMsImV4cCI6MjA2NzgyMDEwM30.Tqs__X1JOfPiKsb5llj93jVLnyszF_ZrZjfp_UaIiNw'
+        );
+    </script>
+    
+    <script src="stone-map-v6-test-fixed2.js"></script>
+</body>
+</html>

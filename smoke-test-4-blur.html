@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>煙テスト4: 粒子＋ぼかし効果</title>
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(180deg, #89f7fe 0%, #66a6ff 50%, #89f7fe 100%);
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            filter: blur(1px) contrast(2);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="smokeCanvas"></canvas>
+    
+    <script>
+        const canvas = document.getElementById('smokeCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // 煙源
+        const smokeSources = [];
+        for (let i = 0; i < 5; i++) {
+            smokeSources.push({
+                x: Math.random() * canvas.width,
+                y: canvas.height * 0.7,
+                intensity: 0.5 + Math.random() * 0.5
+            });
+        }
+        
+        // 煙粒子
+        const particles = [];
+        
+        class SmokeParticle {
+            constructor(x, y, source) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 0.1;
+                this.vy = -Math.random() * 2 - 0.5;
+                this.life = 1.0;
+                this.decay = 0.003;
+                this.size = Math.random() * 3 + 2;
+                this.source = source;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+                this.vx += (Math.random() - 0.5) * 0.02;
+                this.vy *= 0.99;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                
+                // メインの粒子（白）
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // グロー効果
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 2);
+                gradient.addColorStop(0, 'rgba(255,255,255,0.8)');
+                gradient.addColorStop(0.5, 'rgba(255,255,255,0.4)');
+                gradient.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+        
+        function animate() {
+            // 半透明の黒で塗りつぶして残像効果
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 新しい粒子を生成
+            smokeSources.forEach(source => {
+                for (let i = 0; i < 3; i++) {
+                    if (Math.random() < source.intensity) {
+                        particles.push(new SmokeParticle(
+                            source.x + (Math.random() - 0.5) * 5,
+                            source.y,
+                            source
+                        ));
+                    }
+                }
+            });
+            
+            // 粒子を更新・描画
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const particle = particles[i];
+                particle.update();
+                
+                if (particle.life <= 0) {
+                    particles.splice(i, 1);
+                } else {
+                    particle.draw();
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // 初期化
+        animate();
+    </script>
+</body>
+</html>

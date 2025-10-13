@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>石マップ - Twin Peach</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #f5f5f5;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+        
+        /* カスタムポップアップ */
+        .stone-popup {
+            min-width: 250px;
+        }
+        
+        .stone-popup h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: #333;
+            border-bottom: 2px solid #4ECDC4;
+            padding-bottom: 5px;
+        }
+        
+        .stone-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .stone-item {
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .stone-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .stone-thumbnail {
+            width: 60px;
+            height: 60px;
+            background: #ddd;
+            border-radius: 50%;
+            margin: 0 auto 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .stone-name {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        /* 地図コントロール */
+        .map-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .control-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .prefecture-filter {
+            width: 200px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        /* 凡例 */
+        .map-legend {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <!-- 地図コントロール -->
+    <div class="map-controls">
+        <div class="control-title">都道府県で絞り込み</div>
+        <select class="prefecture-filter" id="prefectureFilter">
+            <option value="">すべて表示</option>
+            <option value="鳥取県">鳥取県</option>
+            <option value="香川県">香川県</option>
+            <option value="三重県">三重県</option>
+            <option value="和歌山県">和歌山県</option>
+        </select>
+    </div>
+    
+    <!-- 凡例 -->
+    <div class="map-legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background: #4ECDC4;"></div>
+            <span>川・河原</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #45B7D1;"></div>
+            <span>海岸</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #96CEB4;"></div>
+            <span>山・その他</span>
+        </div>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // サンプルデータ（実際はSupabaseから取得）
+        const stoneLocations = [
+            {
+                id: 'LOC_001',
+                prefecture: '鳥取県',
+                location_name: '日野川',
+                location_type: '川',
+                detail_type: '下流',
+                city: '西伯郡',
+                address: '鳥取県西伯郡伯耆町吉長３７−３',
+                lat: 35.3439,
+                lng: 133.4039,
+                stones: [
+                    { id: 'stone_001', name: '白い丸石', emoji: '⚪' },
+                    { id: 'stone_002', name: '黒い平石', emoji: '⚫' },
+                    { id: 'stone_003', name: '縞模様の石', emoji: '🔵' }
+                ]
+            },
+            {
+                id: 'LOC_002',
+                prefecture: '鳥取県',
+                location_name: '佐陀川（地蔵滝）',
+                location_type: '川',
+                detail_type: '中流',
+                city: '西伯郡',
+                address: '鳥取県西伯郡伯耆町丸山',
+                lat: 35.3856,
+                lng: 133.4453,
+                stones: [
+                    { id: 'stone_004', name: '緑の石', emoji: '🟢' }
+                ]
+            },
+            {
+                id: 'LOC_003',
+                prefecture: '香川県',
+                location_name: '津嶋神社',
+                location_type: '海岸',
+                city: '三豊市',
+                address: '香川県三豊市三野町大見６８１６−２',
+                lat: 34.1753,
+                lng: 133.7267,
+                stones: [
+                    { id: 'stone_005', name: '貝殻混じりの石', emoji: '🐚' },
+                    { id: 'stone_006', name: '青い小石', emoji: '🔵' }
+                ]
+            },
+            {
+                id: 'LOC_004',
+                prefecture: '香川県',
+                location_name: '父母ヶ浜',
+                location_type: '海岸',
+                city: '三豊市',
+                address: '三豊市仁尾町仁尾乙２０３−３',
+                lat: 34.2175,
+                lng: 133.6208,
+                stones: [
+                    { id: 'stone_007', name: '透明な石', emoji: '💎' }
+                ]
+            }
+        ];
+        
+        // 地図の初期化
+        const map = L.map('map').setView([36.5, 138], 6); // 日本全体を表示
+        
+        // タイルレイヤー（CartoDB Positron - シンプルでおしゃれ）
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(map);
+        
+        // マーカーグループ
+        let markers = L.layerGroup().addTo(map);
+        
+        // ピンの色を決定する関数
+        function getMarkerColor(locationType) {
+            switch(locationType) {
+                case '川': return '#4ECDC4';
+                case '海岸': return '#45B7D1';
+                default: return '#96CEB4';
+            }
+        }
+        
+        // カスタムアイコンを作成
+        function createCustomIcon(locationType) {
+            const color = getMarkerColor(locationType);
+            return L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color: ${color}; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+        }
+        
+        // ポップアップコンテンツを作成
+        function createPopupContent(location) {
+            let stonesHtml = '<div class="stone-grid">';
+            location.stones.forEach(stone => {
+                stonesHtml += `
+                    <div class="stone-item" onclick="viewStone('${stone.id}')">
+                        <div class="stone-thumbnail">${stone.emoji}</div>
+                        <div class="stone-name">${stone.name}</div>
+                    </div>
+                `;
+            });
+            stonesHtml += '</div>';
+            
+            return `
+                <div class="stone-popup">
+                    <h3>${location.location_name}</h3>
+                    <p style="color: #666; font-size: 14px; margin: 5px 0;">
+                        ${location.prefecture} ${location.city}<br>
+                        ${location.location_type}${location.detail_type ? ' - ' + location.detail_type : ''}
+                    </p>
+                    <p style="font-size: 12px; color: #999;">
+                        採取石数: ${location.stones.length}個
+                    </p>
+                    ${stonesHtml}
+                </div>
+            `;
+        }
+        
+        // マーカーを追加
+        function addMarkers(filterPrefecture = '') {
+            markers.clearLayers();
+            
+            stoneLocations
+                .filter(loc => !filterPrefecture || loc.prefecture === filterPrefecture)
+                .forEach(location => {
+                    const marker = L.marker([location.lat, location.lng], {
+                        icon: createCustomIcon(location.location_type)
+                    });
+                    
+                    marker.bindPopup(createPopupContent(location), {
+                        maxWidth: 300
+                    });
+                    
+                    markers.addLayer(marker);
+                });
+        }
+        
+        // 石の詳細を表示（実際はデータベースページに遷移）
+        function viewStone(stoneId) {
+            console.log('石の詳細を表示:', stoneId);
+            // window.location.href = `/characters/data-models/stones/${stoneId}`;
+            alert(`石ID: ${stoneId} の詳細ページに遷移します`);
+        }
+        
+        // 都道府県フィルター
+        document.getElementById('prefectureFilter').addEventListener('change', (e) => {
+            addMarkers(e.target.value);
+        });
+        
+        // 初期表示
+        addMarkers();
+    </script>
+</body>
+</html>

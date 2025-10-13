@@ -1,0 +1,179 @@
+// Supabase統合用のJavaScriptファイル
+// 注意: Supabaseのプロジェクトを作成後、以下の値を実際の値に置き換えてください
+
+// Supabase設定
+const SUPABASE_URL = 'https://roaucowddadmvxgzrvnu.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvYXVjb3dkZGFkbXZ4Z3pydm51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNDQxMDMsImV4cCI6MjA2NzgyMDEwM30.Tqs__X1JOfPiKsb5llj93jVLnyszF_ZrZjfp_UaIiNw'; // 取得したanon keyをここに貼り付けてください
+
+// Supabaseクライアントの初期化（CDN版を使用する場合）
+// HTMLに以下を追加: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+let supabase;
+if (typeof window !== 'undefined' && window.supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+// Supabaseからキャラクターを読み込む
+async function loadCharactersFromSupabase() {
+    if (!supabase) {
+        console.log('Supabase未設定のため、ローカルストレージを使用します');
+        return false;
+    }
+    
+    try {
+        const { data, error } = await supabase
+            .from('noroshiya_characters')
+            .select('*')
+            .order('id', { ascending: true });
+        
+        if (error) throw error;
+        
+        // Supabaseのデータ形式をアプリケーションの形式に変換
+        characters = data.map(char => ({
+            id: char.id,
+            name: char.name,
+            type: char.type,
+            birdType: char.bird_type,
+            appearance: char.appearance,
+            personality: char.personality,
+            catchphrase: char.catchphrase,
+            background: char.background,
+            noroshiPlace: char.noroshi_place,
+            specialSkill: char.special_skill,
+            description: char.description,
+            // 開発用データは紹介ページでは使用しないが、保存時のために保持
+            stoneAffinities: char.stone_affinities,
+            matchingKeywords: char.matching_keywords,
+            dialogues: char.dialogues,
+            behavior: char.behavior,
+            devNotes: char.dev_notes,
+            changeHistory: char.change_history
+        }));
+        
+        // ローカルストレージにもキャッシュとして保存
+        saveCharacters();
+        
+        return true;
+    } catch (error) {
+        console.error('Supabaseからのデータ読み込みエラー:', error);
+        return false;
+    }
+}
+
+// Supabaseにキャラクターを保存
+async function saveCharacterToSupabase(character) {
+    if (!supabase) {
+        console.log('Supabase未設定のため、ローカルストレージのみに保存します');
+        return false;
+    }
+    
+    try {
+        const supabaseChar = {
+            name: character.name,
+            type: character.type,
+            bird_type: character.birdType,
+            appearance: character.appearance,
+            personality: character.personality,
+            catchphrase: character.catchphrase,
+            background: character.background,
+            noroshi_place: character.noroshiPlace,
+            special_skill: character.specialSkill,
+            description: character.description
+        };
+        
+        // 開発用データも含めて保存（設定管理ツールとの連携のため）
+        const fullData = {
+            ...supabaseChar,
+            stone_affinities: character.stoneAffinities || [],
+            matching_keywords: character.matchingKeywords || '',
+            dialogues: character.dialogues || { hiuchiishi: {}, chat: {} },
+            behavior: character.behavior || {},
+            dev_notes: character.devNotes || '',
+            change_history: character.changeHistory || []
+        };
+        
+        if (character.id && typeof character.id === 'number' && character.id < 1000000) {
+            // 既存のキャラクターを更新
+            const { data, error } = await supabase
+                .from('noroshiya_characters')
+                .update(fullData)
+                .eq('id', character.id)
+                .select();
+            
+            if (error) throw error;
+            return data[0];
+        } else {
+            // 新規キャラクターを追加
+            const { data, error } = await supabase
+                .from('noroshiya_characters')
+                .insert([fullData])
+                .select();
+            
+            if (error) throw error;
+            return data[0];
+        }
+    } catch (error) {
+        console.error('Supabaseへの保存エラー:', error);
+        return false;
+    }
+}
+
+// 編集履歴を記録
+async function recordEditHistory(characterId, fieldName, oldValue, newValue) {
+    if (!supabase) return;
+    
+    try {
+        const { error } = await supabase
+            .from('character_edit_history')
+            .insert([{
+                character_id: characterId,
+                field_name: fieldName,
+                old_value: oldValue,
+                new_value: newValue
+            }]);
+        
+        if (error) throw error;
+    } catch (error) {
+        console.error('編集履歴の記録エラー:', error);
+    }
+}
+
+// 既存の関数を拡張
+const originalSaveCharacterEdit = saveCharacterEdit;
+saveCharacterEdit = async function(event, id) {
+    event.preventDefault();
+    
+    const char = characters.find(c => c.id === id);
+    if (!char) return;
+    
+    // 変更前の値を保存
+    const oldValues = { ...char };
+    
+    // ローカルでの更新
+    originalSaveCharacterEdit.call(this, event, id);
+    
+    // Supabaseに保存
+    const updatedChar = characters.find(c => c.id === id);
+    const result = await saveCharacterToSupabase(updatedChar);
+    
+    if (result) {
+        // 編集履歴を記録
+        const fields = ['name', 'type', 'birdType', 'catchphrase', 'appearance', 'personality', 'background', 'noroshiPlace', 'specialSkill', 'description'];
+        for (const field of fields) {
+            if (oldValues[field] !== updatedChar[field]) {
+                await recordEditHistory(id, field, oldValues[field], updatedChar[field]);
+            }
+        }
+        
+        console.log('Supabaseに保存しました');
+    }
+};
+
+// 初期化時にSupabaseから読み込みを試みる
+window.addEventListener('load', async () => {
+    const loaded = await loadCharactersFromSupabase();
+    if (!loaded) {
+        // Supabaseから読み込めなかった場合は、ローカルストレージから読み込む
+        loadCharacters();
+    }
+    displayCharacters();
+});

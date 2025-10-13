@@ -271,46 +271,57 @@
             box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
         }
         
-        /* 炎のアニメーション */
-        .fire-container {
+        /* 煙の発生源 */
+        .smoke-source {
             position: absolute;
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            width: 40px;
-            height: 60px;
+            width: 60px;
+            height: 20px;
             pointer-events: none;
             z-index: 10;
             margin-bottom: 10px;
         }
         
-        .flame {
-            position: absolute;
-            bottom: 0;
+        /* 煙源の視覚的表現（炭や灰のような見た目） */
+        .smoke-base {
             width: 100%;
             height: 100%;
-            transform-origin: bottom center;
-            animation: flicker 0.5s ease-in-out infinite alternate;
+            background: radial-gradient(ellipse at center, 
+                rgba(60, 60, 60, 0.8) 0%, 
+                rgba(40, 40, 40, 0.6) 40%, 
+                rgba(30, 30, 30, 0.4) 70%, 
+                transparent 100%);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
         }
         
-        .flame-inner {
-            width: 30px;
-            height: 50px;
-            background: radial-gradient(ellipse at bottom, #ff6b6b 0%, #ff8f00 50%, transparent 70%);
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+        /* くすぶる効果 */
+        .smoke-base::after {
+            content: '';
             position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            filter: drop-shadow(0 0 10px #ff6b6b);
+            top: 30%;
+            left: 20%;
+            width: 60%;
+            height: 40%;
+            background: radial-gradient(ellipse at center, 
+                rgba(255, 100, 0, 0.3) 0%, 
+                rgba(255, 50, 0, 0.1) 50%, 
+                transparent 100%);
+            border-radius: 50%;
+            animation: glow 3s ease-in-out infinite;
         }
         
-        @keyframes flicker {
-            0% {
-                transform: scale(1) rotate(-2deg);
+        @keyframes glow {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(0.9);
             }
-            100% {
-                transform: scale(1.1) rotate(2deg);
+            50% {
+                opacity: 0.6;
+                transform: scale(1.1);
             }
         }
         
@@ -322,6 +333,7 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
+            filter: blur(1.5px) contrast(1.2);
         }
         
         /* ヘッダー部分 */
@@ -437,54 +449,34 @@
         <!-- スクロール可能な場所選択 -->
         <div class="scroll-container" id="scrollContainer">
             <div class="scroll-content">
-                <div class="place-card" data-place="ibuki" data-active="3">
-                    <div class="fire-container">
-                        <div class="flame">
-                            <div class="flame-inner"></div>
-                        </div>
-                    </div>
+                <div class="place-card" data-place="ibuki" data-active="3" style="margin-bottom: 40px;">
                     <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">伊吹山麓の狼煙場</h3>
                     <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">旅立ちの場所。古墳の丘から見える琵琶湖が美しい。</p>
-                    <p style="font-size: 0.85em; color: #4ecdc4;">🔥 3つの狼煙が上がっている</p>
+                    <p style="font-size: 0.85em; color: #4ecdc4;">💨 3つの狼煙が上がっている</p>
                 </div>
                 
-                <div class="place-card" data-place="biwa" data-active="1">
-                    <div class="fire-container">
-                        <div class="flame">
-                            <div class="flame-inner"></div>
-                        </div>
-                    </div>
+                <div class="place-card" data-place="biwa" data-active="1" style="margin-bottom: 10px;">
                     <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">琵琶湖畔の狼煙場</h3>
                     <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">水辺の静かな場所。湖面に映る煙が幻想的。</p>
-                    <p style="font-size: 0.85em; color: #4ecdc4;">🔥 1つの狼煙が上がっている</p>
+                    <p style="font-size: 0.85em; color: #4ecdc4;">💨 1つの狼煙が上がっている</p>
                 </div>
                 
-                <div class="place-card" data-place="kusatsu" data-active="0">
+                <div class="place-card" data-place="kusatsu" data-active="0" style="margin-bottom: 60px;">
                     <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">草津街道の狼煙場</h3>
                     <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">街道沿いの賑やかな場所。商人や旅人が情報交換する。</p>
                     <p style="font-size: 0.85em; color: #666;">💨 今は煙が上がっていない</p>
                 </div>
                 
-                <div class="place-card" data-place="keihoku" data-active="2">
-                    <div class="fire-container">
-                        <div class="flame">
-                            <div class="flame-inner"></div>
-                        </div>
-                    </div>
+                <div class="place-card" data-place="keihoku" data-active="2" style="margin-bottom: 30px;">
                     <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">京北山中の狼煙場</h3>
                     <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">深い森に囲まれた神秘的な場所。</p>
-                    <p style="font-size: 0.85em; color: #4ecdc4;">🔥 2つの狼煙が上がっている</p>
+                    <p style="font-size: 0.85em; color: #4ecdc4;">💨 2つの狼煙が上がっている</p>
                 </div>
                 
-                <div class="place-card" data-place="tango" data-active="4">
-                    <div class="fire-container">
-                        <div class="flame">
-                            <div class="flame-inner"></div>
-                        </div>
-                    </div>
+                <div class="place-card" data-place="tango" data-active="4" style="margin-bottom: 5px;">
                     <h3 style="color: #ff6b6b; margin: 0 0 10px 0;">丹後岬の狼煙場</h3>
                     <p style="font-size: 0.9em; color: #aaa; margin: 10px 0;">水宮への祈りが届く場所。海風に乗って遠くまで煙が届く。</p>
-                    <p style="font-size: 0.85em; color: #4ecdc4;">🔥 4つの狼煙が上がっている</p>
+                    <p style="font-size: 0.85em; color: #4ecdc4;">💨 4つの狼煙が上がっている</p>
                 </div>
             </div>
         </div>
@@ -516,27 +508,30 @@
         
         // 煙粒子クラス
         class SmokeParticle {
-            constructor(x, y, intensity) {
+            constructor(x, y, source) {
                 this.x = x;
                 this.y = y;
-                this.intensity = intensity;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = -Math.random() * 1.5 - 0.5;
+                this.source = source;
+                this.vx = (Math.random() - 0.5) * 0.02; // 横の動きをほぼゼロに
+                this.vy = (-Math.random() * 1.5 - 0.5) * source.speed; // 速度をソースごとに調整
                 this.life = 1.0;
-                this.decay = Math.random() * 0.005 + 0.003;
-                this.size = Math.random() * 15 + 10;
+                this.decay = Math.random() * 0.002 + 0.001; // 寿命をさらに延ばす（0.003+0.002から0.002+0.001に）
+                this.size = (Math.random() * 3 + 3) * source.scale; // サイズを少し大きく（見た目を保つため）
                 this.rotation = Math.random() * Math.PI * 2;
-                this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.01;
                 this.wobble = Math.random() * Math.PI * 2;
             }
             
             update() {
-                // 風の影響を受ける
+                // 風の影響を受ける（かなり弱く）
                 const windEffect = Math.sin(windTime + this.wobble) * windStrength;
-                this.vx += windEffect * 0.1 * windDirection;
+                this.vx += windEffect * 0.02 * windDirection; // 風の影響を大幅に減らす
+                
+                // ゆらゆらとした動きを少し増やす
+                const wobbleX = Math.sin(this.wobble) * 0.2; // 自然な揺れ
                 
                 // 上昇とともに横に流れる
-                this.x += this.vx;
+                this.x += this.vx + wobbleX;
                 this.y += this.vy;
                 
                 // 徐々に上昇速度が遅くなる
@@ -545,8 +540,8 @@
                 // 生命値を減らす
                 this.life -= this.decay;
                 
-                // サイズを大きくする
-                this.size *= 1.01;
+                // サイズは一定に保つ（大きくしない）
+                // this.size *= 1.01; // コメントアウト
                 
                 // 回転
                 this.rotation += this.rotationSpeed;
@@ -556,22 +551,12 @@
             }
             
             draw() {
-                ctx.save();
-                ctx.globalAlpha = this.life * 0.3;
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-                
-                // グラデーションで煙を描画
-                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
-                gradient.addColorStop(0, 'rgba(200, 200, 200, 0.3)');
-                gradient.addColorStop(0.5, 'rgba(150, 150, 150, 0.2)');
-                gradient.addColorStop(1, 'rgba(100, 100, 100, 0)');
-                
-                ctx.fillStyle = gradient;
+                // シンプルな円で描画（shadowBlurとグラデーションを削除）
+                ctx.globalAlpha = Math.min(this.life * 0.95, 0.95);
+                ctx.fillStyle = 'white';
                 ctx.beginPath();
-                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.restore();
             }
         }
         
@@ -581,22 +566,25 @@
         // 煙を生成する場所を追跡
         const smokeSources = [];
         
-        // 場所カードの位置を更新
-        function updateSmokeSources() {
+        // 山のあちこちに煙源を配置
+        function setupRandomSmokeSources() {
             smokeSources.length = 0;
-            const cards = document.querySelectorAll('.place-card');
+            const numSources = 8 + Math.floor(Math.random() * 5); // 8〜12個の煙源
             
-            cards.forEach(card => {
-                const active = parseInt(card.dataset.active);
-                if (active > 0) {
-                    const rect = card.getBoundingClientRect();
-                    smokeSources.push({
-                        x: rect.left + rect.width / 2,
-                        y: rect.top,
-                        intensity: active
-                    });
-                }
-            });
+            for (let i = 0; i < numSources; i++) {
+                smokeSources.push({
+                    x: Math.random() * window.innerWidth, // 画面全体のランダムな位置
+                    y: window.innerHeight * (0.4 + Math.random() * 0.3), // 山の高さあたり
+                    intensity: Math.random() * 0.8 + 0.2, // 煙の濃さもランダム
+                    scale: Math.random() * 0.6 + 0.4, // 煙のスケールもランダム
+                    speed: Math.random() * 0.5 + 0.5 // 速度もランダム
+                });
+            }
+        }
+        
+        // 煙源の位置を更新（スクロール時は再配置しない）
+        function updateSmokeSources() {
+            // スクロール時は何もしない（煙源は固定）
         }
         
         // パララックススクロール
@@ -636,38 +624,59 @@
         updateTimeOfDay();
         setInterval(updateTimeOfDay, 60000);
         
-        // アニメーションループ
-        function animate() {
+        // アニメーションループ（30fpsに制限）
+        let lastTime = 0;
+        const targetFPS = 30;
+        const frameTime = 1000 / targetFPS;
+        
+        function animate(currentTime) {
+            // フレームレート制限
+            if (currentTime - lastTime < frameTime) {
+                requestAnimationFrame(animate);
+                return;
+            }
+            lastTime = currentTime;
+            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             // 風の更新
-            windTime += 0.01;
+            windTime += 0.02; // 30fpsなので値を調整
             windStrength = 0.5 + Math.sin(windTime * 0.5) * 0.3;
             windDirection = Math.sin(windTime * 0.3);
             
-            // 新しい煙粒子を生成
-            smokeSources.forEach(source => {
-                for (let i = 0; i < source.intensity; i++) {
-                    if (Math.random() < 0.1) {
-                        particles.push(new SmokeParticle(
-                            source.x + (Math.random() - 0.5) * 20,
-                            source.y,
-                            source.intensity
-                        ));
+            // 新しい煙粒子を生成（2フレームに1回生成で軽量化）
+            if (Math.random() < 0.5) {
+                smokeSources.forEach(source => {
+                    // 煙源ごとに適度な粒子を生成
+                    const particlesToCreate = Math.floor(source.intensity * 3); // 軽量化のため3に戻す
+                    for (let i = 0; i < particlesToCreate; i++) {
+                        if (Math.random() < 0.6) { // 生成確率も0.6に調整
+                            particles.push(new SmokeParticle(
+                                source.x + (Math.random() - 0.5) * 0.5, // さらに狭い範囲（1から0.5に）
+                                source.y + (Math.random() - 0.5) * 2, // Y位置のランダム性も減らす（3から2に）
+                                source
+                            ));
+                        }
                     }
-                }
-            });
+                });
+            }
             
             // 粒子を更新・描画
             for (let i = particles.length - 1; i >= 0; i--) {
                 const particle = particles[i];
                 particle.update();
                 
-                if (particle.life <= 0 || particle.y < -50) {
+                // 寿命のみで煙を消す（高さ制限なし）
+                if (particle.life <= 0) {
                     particles.splice(i, 1);
                 } else {
                     particle.draw();
                 }
+            }
+            
+            // 粒子数の上限を設定（メモリ対策）
+            if (particles.length > 500) {
+                particles.splice(0, particles.length - 500);
             }
             
             requestAnimationFrame(animate);
@@ -699,12 +708,34 @@
             }
         }
         
+        // 初期の煙を生成
+        function generateInitialSmoke() {
+            smokeSources.forEach(source => {
+                // 各煙源に対して、既に立ち上がっている煙を生成
+                const particleCount = Math.floor(30 * source.intensity); // 軽量化のため30に減らす
+                for (let i = 0; i < particleCount; i++) {
+                    const progress = i / particleCount; // 0から1までの進行度
+                    const particle = new SmokeParticle(
+                        source.x + (Math.random() - 0.5) * 0.5, // 狭い範囲
+                        source.y,
+                        source
+                    );
+                    // 煙を既に上昇した位置に配置
+                    particle.y = source.y - (progress * 200 * source.scale); // スケールに応じた高さ
+                    particle.life = 1.0 - (progress * 0.3); // 寿命の減少を緩やかに（0.5から0.3に）
+                    
+                    particles.push(particle);
+                }
+            });
+        }
+
         // 開始
         window.addEventListener('load', () => {
             setTimeout(typeWriter, 500);
             // 初期化時に煙源を設定
             setTimeout(() => {
-                updateSmokeSources();
+                setupRandomSmokeSources(); // ランダムな煙源を設定
+                generateInitialSmoke(); // 初期煙を生成
                 animate();
             }, 100);
         });

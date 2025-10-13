@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>煙表現テスト一覧</title>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        h1 {
+            text-align: center;
+        }
+        .test-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-item {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.2s;
+        }
+        .test-item:hover {
+            transform: translateY(-5px);
+            background: #3a3a3a;
+        }
+        .test-item h2 {
+            margin: 0 0 10px 0;
+            color: #4ecdc4;
+        }
+        .test-item p {
+            margin: 0;
+            color: #aaa;
+            font-size: 14px;
+        }
+        .pros {
+            color: #4ecdc4;
+            margin-top: 10px;
+        }
+        .cons {
+            color: #ff6b6b;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>煙表現の代替案テスト</h1>
+    
+    <div class="test-list">
+        <a href="smoke-test-1-canvas-path.html" class="test-item">
+            <h2>1. Canvasパス描画</h2>
+            <p>煙の柱全体を曲線パスで描画</p>
+            <p class="pros">✓ なめらかな曲線</p>
+            <p class="pros">✓ 統一感のある見た目</p>
+            <p class="cons">✗ 動きが単調になりがち</p>
+        </a>
+        
+        <a href="smoke-test-2-svg.html" class="test-item">
+            <h2>2. SVGアニメーション</h2>
+            <p>SVGパスとアニメーションで煙を表現</p>
+            <p class="pros">✓ ベクター形式できれい</p>
+            <p class="pros">✓ CSSアニメーション可能</p>
+            <p class="cons">✗ 複雑な動きは難しい</p>
+        </a>
+        
+        <a href="smoke-test-3-css.html" class="test-item">
+            <h2>3. CSSグラデーション</h2>
+            <p>グラデーションとclip-pathで煙の形を作成</p>
+            <p class="pros">✓ 軽量で高速</p>
+            <p class="pros">✓ ぼかし効果が自然</p>
+            <p class="cons">✗ 形状の自由度が低い</p>
+        </a>
+        
+        <a href="smoke-test-4-blur.html" class="test-item">
+            <h2>4. 粒子＋ぼかし効果</h2>
+            <p>既存の粒子システムにぼかしを追加</p>
+            <p class="pros">✓ 自然な動き</p>
+            <p class="pros">✓ 既存コードを活用</p>
+            <p class="cons">✗ パフォーマンスが重い</p>
+        </a>
+    </div>
+    
+    <div style="text-align: center; margin-top: 40px;">
+        <a href="field-scroll-final.html" style="color: #4ecdc4;">← 現在の実装に戻る</a>
+    </div>
+</body>
+</html>

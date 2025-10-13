@@ -1,0 +1,1268 @@
+// 鳥・石データ管理画面用JavaScript（編集機能付き）
+
+// Supabase設定
+const SUPABASE_URL = 'https://roaucowddadmvxgzrvnu.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvYXVjb3dkZGFkbXZ4Z3pydm51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNDQxMDMsImV4cCI6MjA2NzgyMDEwM30.Tqs__X1JOfPiKsb5llj93jVLnyszF_ZrZjfp_UaIiNw';
+
+// Storageバケット名
+const BIRD_RECORDINGS_BUCKET = 'bird-recordings';
+const STONE_PHOTOS_BUCKET = 'stone-photos';
+
+let supabase;
+let isSupabaseConnected = false;
+let currentTab = 'birds';
+let currentBirds = [];
+let currentStones = [];
+let editingBird = null;
+let editingStone = null;
+
+// Supabase Storageへのファイルアップロード
+async function uploadToStorage(file, bucket, path) {
+    if (!isSupabaseConnected) {
+        console.warn('Supabase未接続のため、ファイルアップロードをスキップします');
+        return null;
+    }
+    
+    try {
+        // ファイルをアップロード
+        const { data, error } = await supabase.storage
+            .from(bucket)
+            .upload(path, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
+        
+        if (error) {
+            console.error('アップロードエラー:', error);
+            return null;
+        }
+        
+        // 公開URLを取得
+        const { data: { publicUrl } } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(path);
+        
+        return publicUrl;
+    } catch (error) {
+        console.error('ストレージエラー:', error);
+        return null;
+    }
+}
+
+// dataURLをBlobに変換
+function dataURLtoBlob(dataURL) {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+}
+
+// ID生成関数（001-999形式）
+function generateNextId(currentItems, prefix) {
+    // 既存のIDから番号部分を抽出
+    const existingNumbers = currentItems
+        .map(item => {
+            const match = item.id.match(new RegExp(`^${prefix}_(\\d{3})$`));
+            return match ? parseInt(match[1], 10) : 0;
+        })
+        .filter(num => num > 0);
+    
+    // 最大値を見つけて+1
+    const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
+    const nextNumber = maxNumber + 1;
+    
+    // 999を超える場合は空きを探す
+    if (nextNumber > 999) {
+        for (let i = 1; i <= 999; i++) {
+            if (!existingNumbers.includes(i)) {
+                return `${prefix}_${String(i).padStart(3, '0')}`;
+            }
+        }
+        // 空きがない場合はタイムスタンプを使用
+        return `${prefix}_${new Date().getTime()}`;
+    }
+    
+    return `${prefix}_${String(nextNumber).padStart(3, '0')}`;
+}
+
+// 初期化
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('admin-manager.js が読み込まれました');
+    
+    // モバイルメニューボタンの表示を強制
+    const isMobile = window.innerWidth <= 768;
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    if (isMobile && menuBtn) {
+        menuBtn.style.display = 'block';
+        menuBtn.style.visibility = 'visible';
+        console.log('モバイルメニューボタンを表示しました');
+    }
+    
+    // toggleSidebar関数がグローバルに利用可能か確認
+    if (typeof toggleSidebar === 'function') {
+        console.log('toggleSidebar関数は利用可能です');
+    } else {
+        console.error('toggleSidebar関数が見つかりません');
+    }
+    
+    // Supabase接続を試みる
+    try {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // 接続テスト
+        const { data, error } = await supabase.from('stones').select('id').limit(1);
+        if (!error) {
+            isSupabaseConnected = true;
+            // updateConnectionStatus('connected'); // 表示削除
+            loadDataFromSupabase();
+        } else {
+            throw error;
+        }
+    } catch (error) {
+        console.log('Supabase接続エラー、ローカルストレージを使用します:', error);
+        isSupabaseConnected = false;
+        // updateConnectionStatus('local'); // 表示削除
+        loadDataFromLocal();
+    }
+});
+
+// 接続状態の更新（未使用）
+function updateConnectionStatus(status) {
+    // 表示を削除したため何もしない
+}
+
+// Supabaseからデータを読み込み
+async function loadDataFromSupabase() {
+    try {
+        // 鳥データ
+        const { data: birds, error: birdsError } = await supabase
+            .from('birds')
+            .select('*')
+            .order('id');
+        
+        if (birdsError) throw birdsError;
+        currentBirds = birds || [];
+        
+        // 石データ
+        const { data: stones, error: stonesError } = await supabase
+            .from('stones')
+            .select('*')
+            .order('id');
+        
+        if (stonesError) throw stonesError;
+        currentStones = stones || [];
+        
+        // 表示を更新
+        displayBirds(currentBirds);
+        displayStones(currentStones);
+        
+    } catch (error) {
+        console.error('データ読み込みエラー:', error);
+        showMessage('データの読み込みに失敗しました', 'error');
+        // フォールバックとしてローカルデータを使用
+        loadDataFromLocal();
+    }
+}
+
+// ローカルストレージからデータを読み込み
+function loadDataFromLocal() {
+    // ローカルストレージから読み込み
+    const savedBirds = localStorage.getItem('masterBirds');
+    const savedStones = localStorage.getItem('masterStones');
+    
+    if (savedBirds) {
+        currentBirds = JSON.parse(savedBirds);
+    } else {
+        // 初期データを使用
+        currentBirds = birdsDatabase || [];
+        localStorage.setItem('masterBirds', JSON.stringify(currentBirds));
+    }
+    
+    if (savedStones) {
+        currentStones = JSON.parse(savedStones);
+    } else {
+        // 初期データを使用
+        currentStones = stonesDatabase || [];
+        localStorage.setItem('masterStones', JSON.stringify(currentStones));
+    }
+    
+    // ID順でソート
+    currentBirds.sort((a, b) => a.id.localeCompare(b.id));
+    currentStones.sort((a, b) => a.id.localeCompare(b.id));
+    
+    displayBirds(currentBirds);
+    displayStones(currentStones);
+}
+
+// タブ切り替え
+function showTab(tab) {
+    currentTab = tab;
+    
+    // タブボタンの状態を更新
+    document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // コンテンツの表示切り替え
+    document.getElementById('birds-tab').style.display = tab === 'birds' ? 'block' : 'none';
+    document.getElementById('stones-tab').style.display = tab === 'stones' ? 'block' : 'none';
+    
+    // タイトル更新
+    const titleEl = document.getElementById('content-title');
+    if (titleEl) {
+        titleEl.textContent = tab === 'birds' ? '鳥類データ編集' : '石データ編集';
+    }
+    
+    // 石タブに切り替えた時の処理
+    if (tab === 'stones') {
+        // 既存の石データからGoogleマップURLを抽出して座標を取得
+        extractCoordinatesFromStones();
+    }
+    
+    // モバイルでサイドバーを閉じる
+    if (window.innerWidth <= 768) {
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.classList.remove('open');
+    }
+}
+
+// 鳥データの表示（シンプルテーブル形式）
+function displayBirds(birds) {
+    const listEl = document.getElementById('birds-list');
+    
+    if (birds.length === 0) {
+        listEl.innerHTML = '<div class="empty-state">データがありません</div>';
+        return;
+    }
+    
+    // モバイル用とデスクトップ用で同じテーブル形式を使用
+    listEl.innerHTML = `
+        <table class="simple-table">
+            <thead>
+                <tr>
+                    <th>名前</th>
+                    <th>学名</th>
+                    <th>科</th>
+                    <th>サイズ</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${birds.map(bird => `
+                    <tr class="clickable-row" onclick="editBird('${bird.id}')">
+                        <td>${bird.name}</td>
+                        <td>${bird.scientific_name || ''}</td>
+                        <td>${bird.family || ''}</td>
+                        <td>${bird.size || ''}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+// 石データの表示（シンプルテーブル形式）
+function displayStones(stones) {
+    const listEl = document.getElementById('stones-list');
+    
+    if (stones.length === 0) {
+        listEl.innerHTML = '<div class="empty-state">データがありません</div>';
+        return;
+    }
+    
+    // モバイル用とデスクトップ用で同じテーブル形式を使用
+    listEl.innerHTML = `
+        <table class="simple-table">
+            <thead>
+                <tr>
+                    <th>名前</th>
+                    <th>色</th>
+                    <th>サイズ</th>
+                    <th>レアリティ</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${stones.map(stone => `
+                    <tr class="clickable-row" onclick="editStone('${stone.id}')">
+                        <td>${stone.name}</td>
+                        <td>${Array.isArray(stone.colors) && stone.colors.length > 0 ? stone.colors[0] : ''}</td>
+                        <td>${stone.size || ''}</td>
+                        <td>${stone.rarity || ''}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+// 鳥の編集フォームを表示
+function showBirdForm(bird = null) {
+    editingBird = bird;
+    const form = document.getElementById('bird-form');
+    const title = document.getElementById('bird-form-title');
+    
+    // フォームをリセット
+    form.reset();
+    document.getElementById('bird-suitable-types-tags').innerHTML = '';
+    document.getElementById('bird-recordings-list').innerHTML = '';
+    
+    // ファイルアップロードイベントリスナーを設定
+    const uploadInput = document.getElementById('bird-recording-upload');
+    uploadInput.onchange = handleBirdRecordingUpload;
+    
+    if (bird) {
+        title.textContent = '鳥データを編集';
+        // フォームに値を設定
+        form.id.value = bird.id;
+        form.id.disabled = true; // IDは編集不可
+        form.name.value = bird.name || '';
+        form.scientific_name.value = bird.scientific_name || '';
+        form.family.value = bird.family || '';
+        form.size.value = bird.size || '';
+        form.habitat.value = bird.habitat || '';
+        form.appearance.value = bird.appearance || '';
+        form.voice.value = bird.voice || '';
+        form.behavior.value = bird.behavior || '';
+        form.activity.value = bird.activity || '';
+        form.diet.value = bird.diet || '';
+        form.social_behavior.value = bird.social_behavior || '';
+        form.nesting_habits.value = bird.nesting_habits || '';
+        form.personality_general.value = bird.personality_general || '';
+        form.human_interaction.value = bird.human_interaction || '';
+        form.intelligence.value = bird.intelligence || '';
+        form.seasonal_spring.value = bird.seasonal_spring || '';
+        form.seasonal_summer.value = bird.seasonal_summer || '';
+        form.seasonal_autumn.value = bird.seasonal_autumn || '';
+        form.seasonal_winter.value = bird.seasonal_winter || '';
+        form.symbolism_cultural.value = bird.symbolism_cultural || '';
+        form.symbolism_spiritual.value = bird.symbolism_spiritual || '';
+        form.noroshiya_smoking_style.value = bird.noroshiya_smoking_style || '';
+        form.noroshiya_communication_style.value = bird.noroshiya_communication_style || '';
+        
+        // タグの復元
+        if (bird.noroshiya_suitable_types && Array.isArray(bird.noroshiya_suitable_types)) {
+            bird.noroshiya_suitable_types.forEach(type => {
+                addTagToList('bird-suitable-types-tags', type);
+            });
+        }
+        
+        // 録音ファイルを表示
+        if (bird.recordings && Array.isArray(bird.recordings)) {
+            temporaryRecordings = [...bird.recordings]; // 既存の録音を一時配列にコピー
+            displayBirdRecordings(bird.recordings);
+        }
+    } else {
+        title.textContent = '新しい鳥を追加';
+        // ID自動生成（連番）
+        const nextId = generateNextId(currentBirds, 'bird');
+        form.id.value = nextId;
+        form.id.disabled = false;
+        temporaryRecordings = []; // 新規追加時は一時配列をクリア
+    }
+    
+    document.getElementById('bird-form-modal').style.display = 'block';
+}
+
+// 鳥の編集
+function editBird(birdId) {
+    const bird = currentBirds.find(b => b.id === birdId);
+    if (bird) {
+        showBirdForm(bird);
+    }
+}
+
+// 石の編集フォームを表示
+function showStoneForm(stone = null) {
+    editingStone = stone;
+    const form = document.getElementById('stone-form');
+    const title = document.getElementById('stone-form-title');
+    
+    // フォームをリセット
+    form.reset();
+    document.getElementById('stone-colors-tags').innerHTML = '';
+    document.getElementById('stone-keywords-tags').innerHTML = '';
+    document.getElementById('stone-photos-list').innerHTML = '';
+    
+    // ファイルアップロードイベントリスナーを設定
+    const uploadInput = document.getElementById('stone-photo-upload');
+    uploadInput.onchange = handleStonePhotoUpload;
+    
+    if (stone) {
+        title.textContent = '石データを編集';
+        // フォームに値を設定
+        form.id.value = stone.id;
+        form.id.disabled = true;
+        form.name.value = stone.name || '';
+        form.type.value = stone.type || '火打石';
+        form.size.value = stone.size || '';
+        form.shape.value = stone.shape || '';
+        form.texture.value = stone.texture || '';
+        form.origin.value = stone.origin || '';
+        form.rarity.value = stone.rarity || '';
+        form.appearance.value = stone.appearance || '';
+        form.weight.value = stone.weight || '';
+        form.hardness.value = stone.hardness || '';
+        form.special_features.value = stone.special_features || '';
+        form.elemental_element.value = stone.elemental_element || '';
+        form.elemental_energy.value = stone.elemental_energy || '';
+        form.elemental_resonance.value = stone.elemental_resonance || '';
+        form.noroshiya_primary_match.value = stone.noroshiya_primary_match || '';
+        form.noroshiya_match_reason.value = stone.noroshiya_match_reason || '';
+        form.noroshiya_special_reaction.value = stone.noroshiya_special_reaction || '';
+        form.folklore_legend.value = stone.folklore_legend || '';
+        form.folklore_usage.value = stone.folklore_usage || '';
+        
+        // 位置情報の復元
+        form.location_name.value = stone.location_name || '';
+        form.prefecture.value = stone.prefecture || '';
+        form.city.value = stone.city || '';
+        form.location_tag.value = stone.location_tag || '';
+        form.location_detail.value = stone.location_detail || '';
+        form.location_notes.value = stone.location_notes || '';
+        form.address.value = stone.address || stone.map_url || '';
+        form.lat.value = stone.lat || '';
+        form.lng.value = stone.lng || '';
+        
+        // タグの復元
+        if (Array.isArray(stone.colors)) {
+            stone.colors.forEach(color => {
+                addTagToList('stone-colors-tags', color);
+            });
+        }
+        if (stone.matching_keywords && Array.isArray(stone.matching_keywords)) {
+            stone.matching_keywords.forEach(keyword => {
+                addTagToList('stone-keywords-tags', keyword);
+            });
+        }
+        
+        // 写真を表示
+        if (stone.photos && Array.isArray(stone.photos)) {
+            temporaryStonePhotos = [...stone.photos]; // 既存の写真を一時配列にコピー
+            displayStonePhotos(stone.photos);
+        }
+    } else {
+        title.textContent = '新しい石を追加';
+        // ID自動生成（連番）
+        const nextId = generateNextId(currentStones, 'stone');
+        form.id.value = nextId;
+        form.id.disabled = false;
+        temporaryStonePhotos = []; // 新規追加時は一時配列をクリア
+    }
+    
+    document.getElementById('stone-form-modal').style.display = 'block';
+}
+
+// 石の編集
+function editStone(stoneId) {
+    const stone = currentStones.find(s => s.id === stoneId);
+    if (stone) {
+        showStoneForm(stone);
+    }
+}
+
+// タグを追加する共通関数
+function addTagToList(listId, value) {
+    if (!value) return;
+    
+    const tagList = document.getElementById(listId);
+    const tagEl = document.createElement('span');
+    tagEl.className = 'tag';
+    tagEl.innerHTML = `
+        ${value}
+        <span class="tag-remove" onclick="removeTag(this)">×</span>
+    `;
+    tagList.appendChild(tagEl);
+}
+
+// タグを削除
+function removeTag(element) {
+    element.parentElement.remove();
+}
+
+// 鳥のタグ追加（Enterキー）
+function addBirdTag(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        const input = event.target;
+        const value = input.value.trim();
+        if (value) {
+            addTagToList('bird-suitable-types-tags', value);
+            input.value = '';
+        }
+    }
+}
+
+// 石の色追加
+function addStoneColor(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        const input = event.target;
+        const value = input.value.trim();
+        if (value) {
+            addTagToList('stone-colors-tags', value);
+            input.value = '';
+        }
+    }
+}
+
+
+// 石のキーワード追加
+function addStoneKeyword(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        const input = event.target;
+        const value = input.value.trim();
+        if (value) {
+            addTagToList('stone-keywords-tags', value);
+            input.value = '';
+        }
+    }
+}
+
+// 鳥データの保存
+async function saveBird(event) {
+    event.preventDefault();
+    console.log('saveBird関数が呼ばれました');
+    const form = event.target;
+    
+    // タグからデータを収集
+    const suitableTypes = Array.from(document.querySelectorAll('#bird-suitable-types-tags .tag'))
+        .map(tag => tag.textContent.replace('×', '').trim());
+    
+    // 録音ファイルをStorageにアップロード
+    const recordingUrls = [];
+    if (temporaryRecordings.length > 0 && isSupabaseConnected) {
+        showMessage('録音ファイルをアップロード中...', 'info');
+        
+        for (const recording of temporaryRecordings) {
+            try {
+                // dataURLをBlobに変換
+                const blob = dataURLtoBlob(recording.dataUrl);
+                
+                // ファイル名を生成（bird_id/timestamp_filename）
+                const timestamp = new Date().getTime();
+                const fileName = `${form.id.value}/${timestamp}_${recording.fileName}`;
+                
+                // Storageにアップロード
+                const url = await uploadToStorage(blob, BIRD_RECORDINGS_BUCKET, fileName);
+                
+                if (url) {
+                    recordingUrls.push({
+                        url: url,
+                        fileName: recording.fileName,
+                        uploadedAt: recording.uploadedAt,
+                        type: recording.type,
+                        metadata: recording.metadata
+                    });
+                }
+            } catch (error) {
+                console.error('録音アップロードエラー:', error);
+            }
+        }
+    }
+    
+    const birdData = {
+        id: form.id.value,
+        name: form.name.value,
+        scientific_name: form.scientific_name.value,
+        family: form.family.value,
+        size: form.size.value,
+        habitat: form.habitat.value,
+        // 特徴（フラット構造）
+        appearance: form.appearance.value,
+        voice: form.voice.value,
+        behavior: form.behavior.value,
+        // 生態（フラット構造）
+        activity: form.activity.value,
+        diet: form.diet.value,
+        social_behavior: form.social_behavior.value,
+        nesting_habits: form.nesting_habits.value,
+        // 性格（フラット構造）
+        personality_general: form.personality_general.value,
+        human_interaction: form.human_interaction.value,
+        intelligence: form.intelligence.value,
+        // 季節行動（フラット構造）
+        seasonal_spring: form.seasonal_spring.value,
+        seasonal_summer: form.seasonal_summer.value,
+        seasonal_autumn: form.seasonal_autumn.value,
+        seasonal_winter: form.seasonal_winter.value,
+        // 象徴性（フラット構造）
+        symbolism_cultural: form.symbolism_cultural.value,
+        symbolism_spiritual: form.symbolism_spiritual.value,
+        // 狼煙屋特性（フラット構造）
+        noroshiya_suitable_types: suitableTypes,
+        noroshiya_smoking_style: form.noroshiya_smoking_style.value,
+        noroshiya_communication_style: form.noroshiya_communication_style.value,
+        // 録音URLを追加（Storageに保存済みの場合）
+        recording_urls: recordingUrls.length > 0 ? recordingUrls : null
+    };
+    
+    console.log('保存するデータ:', birdData);
+    
+    try {
+        if (isSupabaseConnected) {
+            console.log('Supabaseに保存します');
+            // Supabaseに保存
+            if (editingBird) {
+                const { error } = await supabase
+                    .from('birds')
+                    .update(birdData)
+                    .eq('id', birdData.id);
+                if (error) {
+                    console.error('Supabase更新エラー:', error);
+                    console.error('保存エラー詳細:', JSON.stringify(error, null, 2));
+                    throw error;
+                }
+            } else {
+                const { error } = await supabase
+                    .from('birds')
+                    .insert([birdData]);
+                if (error) {
+                    console.error('Supabase挿入エラー:', error);
+                    console.error('保存エラー詳細:', JSON.stringify(error, null, 2));
+                    throw error;
+                }
+            }
+        } else {
+            console.log('ローカルストレージに保存します');
+            // ローカルストレージに保存
+            if (editingBird) {
+                const index = currentBirds.findIndex(b => b.id === birdData.id);
+                currentBirds[index] = birdData;
+            } else {
+                currentBirds.push(birdData);
+            }
+            localStorage.setItem('masterBirds', JSON.stringify(currentBirds));
+        }
+        
+        console.log('保存成功');
+        showMessage('保存しました', 'success');
+        closeBirdForm();
+        
+        // データを再読み込み
+        if (isSupabaseConnected) {
+            await loadDataFromSupabase();
+        } else {
+            displayBirds(currentBirds);
+        }
+        
+    } catch (error) {
+        console.error('保存エラー詳細:', error);
+        console.error('エラースタック:', error.stack);
+        showMessage('保存に失敗しました: ' + error.message, 'error');
+    }
+}
+
+// 石データの保存
+async function saveStone(event) {
+    event.preventDefault();
+    const form = event.target;
+    
+    // タグからデータを収集
+    const colors = Array.from(document.querySelectorAll('#stone-colors-tags .tag'))
+        .map(tag => tag.textContent.replace('×', '').trim());
+    const keywords = Array.from(document.querySelectorAll('#stone-keywords-tags .tag'))
+        .map(tag => tag.textContent.replace('×', '').trim());
+    
+    // 写真ファイルをStorageにアップロード
+    const photoUrls = [];
+    if (temporaryStonePhotos.length > 0 && isSupabaseConnected) {
+        showMessage('写真をアップロード中...', 'info');
+        
+        for (const photo of temporaryStonePhotos) {
+            try {
+                // dataURLをBlobに変換
+                const blob = dataURLtoBlob(photo.dataUrl);
+                
+                // ファイル名を生成（stone_id/timestamp_filename）
+                const timestamp = new Date().getTime();
+                const fileName = `${form.id.value}/${timestamp}_${photo.fileName}`;
+                
+                // Storageにアップロード
+                const url = await uploadToStorage(blob, STONE_PHOTOS_BUCKET, fileName);
+                
+                if (url) {
+                    photoUrls.push({
+                        url: url,
+                        fileName: photo.fileName,
+                        uploadedAt: photo.uploadedAt
+                    });
+                }
+            } catch (error) {
+                console.error('写真アップロードエラー:', error);
+            }
+        }
+    }
+    
+    const stoneData = {
+        id: form.id.value,
+        name: form.name.value,
+        type: form.type.value,
+        colors: colors,
+        size: form.size.value,
+        shape: form.shape.value,
+        texture: form.texture.value,
+        origin: form.origin.value,
+        rarity: form.rarity.value,
+        // 特徴（フラット構造）
+        appearance: form.appearance.value,
+        weight: form.weight.value,
+        hardness: form.hardness.value,
+        special_features: form.special_features.value,
+        // 元素的性質（フラット構造）
+        elemental_element: form.elemental_element.value,
+        elemental_energy: form.elemental_energy.value,
+        elemental_resonance: form.elemental_resonance.value,
+        // 位置情報（新規追加）
+        location_name: form.location_name.value,
+        prefecture: form.prefecture.value,
+        city: form.city.value,
+        location_tag: form.location_tag.value,
+        location_detail: form.location_detail.value,
+        location_notes: form.location_notes.value,
+        address: form.address.value,
+        map_url: form.address.value, // addressフィールドと同じ値を使用
+        lat: form.lat.value ? parseFloat(form.lat.value) : null,
+        lng: form.lng.value ? parseFloat(form.lng.value) : null,
+        // マッチングキーワード
+        matching_keywords: keywords,
+        // 狼煙屋との相性（フラット構造）
+        noroshiya_primary_match: form.noroshiya_primary_match.value,
+        noroshiya_match_reason: form.noroshiya_match_reason.value,
+        noroshiya_special_reaction: form.noroshiya_special_reaction.value,
+        // 伝承（フラット構造）
+        folklore_legend: form.folklore_legend.value,
+        folklore_usage: form.folklore_usage.value,
+        // 写真URLを追加（Storageに保存済みの場合）
+        photo_urls: photoUrls.length > 0 ? photoUrls : null
+    };
+    
+    try {
+        if (isSupabaseConnected) {
+            // Supabaseに保存
+            if (editingStone) {
+                const { error } = await supabase
+                    .from('stones')
+                    .update(stoneData)
+                    .eq('id', stoneData.id);
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from('stones')
+                    .insert([stoneData]);
+                if (error) throw error;
+            }
+        } else {
+            // ローカルストレージに保存
+            if (editingStone) {
+                const index = currentStones.findIndex(s => s.id === stoneData.id);
+                currentStones[index] = stoneData;
+            } else {
+                currentStones.push(stoneData);
+            }
+            localStorage.setItem('masterStones', JSON.stringify(currentStones));
+        }
+        
+        showMessage('保存しました', 'success');
+        closeStoneForm();
+        
+        // データを再読み込み
+        if (isSupabaseConnected) {
+            await loadDataFromSupabase();
+        } else {
+            displayStones(currentStones);
+        }
+        
+    } catch (error) {
+        console.error('保存エラー:', error);
+        showMessage('保存に失敗しました', 'error');
+    }
+}
+
+// 鳥の削除
+async function deleteBird(birdId) {
+    if (!confirm(`${birdId} を本当に削除しますか？`)) return;
+    
+    try {
+        if (isSupabaseConnected) {
+            const { error } = await supabase
+                .from('birds')
+                .delete()
+                .eq('id', birdId);
+            if (error) throw error;
+        } else {
+            currentBirds = currentBirds.filter(b => b.id !== birdId);
+            localStorage.setItem('masterBirds', JSON.stringify(currentBirds));
+        }
+        
+        showMessage('削除しました', 'success');
+        
+        // データを再読み込み
+        if (isSupabaseConnected) {
+            await loadDataFromSupabase();
+        } else {
+            displayBirds(currentBirds);
+        }
+        
+    } catch (error) {
+        console.error('削除エラー:', error);
+        showMessage('削除に失敗しました', 'error');
+    }
+}
+
+// 石の削除
+async function deleteStone(stoneId) {
+    if (!confirm(`${stoneId} を本当に削除しますか？`)) return;
+    
+    try {
+        if (isSupabaseConnected) {
+            const { error } = await supabase
+                .from('stones')
+                .delete()
+                .eq('id', stoneId);
+            if (error) throw error;
+        } else {
+            currentStones = currentStones.filter(s => s.id !== stoneId);
+            localStorage.setItem('masterStones', JSON.stringify(currentStones));
+        }
+        
+        showMessage('削除しました', 'success');
+        
+        // データを再読み込み
+        if (isSupabaseConnected) {
+            await loadDataFromSupabase();
+        } else {
+            displayStones(currentStones);
+        }
+        
+    } catch (error) {
+        console.error('削除エラー:', error);
+        showMessage('削除に失敗しました', 'error');
+    }
+}
+
+// フォームを閉じる
+function closeBirdForm() {
+    document.getElementById('bird-form-modal').style.display = 'none';
+    editingBird = null;
+    temporaryRecordings = []; // 一時録音データをクリア
+}
+
+function closeStoneForm() {
+    document.getElementById('stone-form-modal').style.display = 'none';
+    editingStone = null;
+    temporaryStonePhotos = []; // 一時写真データをクリア
+}
+
+// 検索機能
+function searchBirds() {
+    const searchTerm = document.getElementById('bird-search').value.toLowerCase();
+    
+    if (!searchTerm) {
+        displayBirds(currentBirds);
+        return;
+    }
+    
+    const filtered = currentBirds.filter(bird => 
+        bird.name.toLowerCase().includes(searchTerm) ||
+        (bird.scientific_name && bird.scientific_name.toLowerCase().includes(searchTerm)) ||
+        (bird.family && bird.family.toLowerCase().includes(searchTerm))
+    );
+    
+    displayBirds(filtered);
+}
+
+function searchStones() {
+    const searchTerm = document.getElementById('stone-search').value.toLowerCase();
+    
+    if (!searchTerm) {
+        displayStones(currentStones);
+        return;
+    }
+    
+    const filtered = currentStones.filter(stone => 
+        stone.name.toLowerCase().includes(searchTerm) ||
+        (stone.colors && stone.colors.some(color => color.toLowerCase().includes(searchTerm))) ||
+        (stone.matching_keywords && stone.matching_keywords.some(keyword => keyword.includes(searchTerm)))
+    );
+    
+    displayStones(filtered);
+}
+
+// メッセージ表示
+function showMessage(message, type) {
+    const msgEl = document.createElement('div');
+    msgEl.className = type === 'error' ? 'error' : 'success';
+    msgEl.textContent = message;
+    
+    const contentBody = document.querySelector('.content-body');
+    if (contentBody) {
+        contentBody.insertBefore(msgEl, contentBody.firstChild);
+    } else {
+        console.error('メッセージ表示エラー: .content-bodyが見つかりません');
+    }
+    
+    setTimeout(() => {
+        msgEl.remove();
+    }, 3000);
+}
+
+// モーダル外クリックで閉じる
+window.onclick = function(event) {
+    if (event.target.className === 'form-modal') {
+        closeBirdForm();
+        closeStoneForm();
+    }
+}
+
+// Enterキーで検索
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('bird-search').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') searchBirds();
+    });
+    
+    document.getElementById('stone-search').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') searchStones();
+    });
+});
+
+// 録音ファイル管理
+let temporaryRecordings = []; // アップロード中の一時的な録音データ
+
+// 録音ファイルのアップロード処理
+function handleBirdRecordingUpload(event) {
+    const files = event.target.files;
+    
+    for (let file of files) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const recording = {
+                id: `recording_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                fileName: file.name,
+                fileType: file.type,
+                fileSize: file.size,
+                dataUrl: e.target.result,
+                uploadedAt: new Date().toISOString(),
+                type: file.type.startsWith('audio/') ? 'audio' : 'video',
+                metadata: {
+                    recordedDate: '',
+                    location: '',
+                    voiceType: '',
+                    notes: ''
+                }
+            };
+            
+            temporaryRecordings.push(recording);
+            displayBirdRecordings([...temporaryRecordings]);
+        };
+        
+        reader.readAsDataURL(file);
+    }
+    
+    // 入力をリセット
+    event.target.value = '';
+}
+
+// 録音ファイルの表示
+function displayBirdRecordings(recordings) {
+    const listEl = document.getElementById('bird-recordings-list');
+    
+    if (!recordings || recordings.length === 0) {
+        listEl.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 12px;">録音・動画はまだありません</div>';
+        return;
+    }
+    
+    listEl.innerHTML = recordings.map(rec => `
+        <div class="recording-item">
+            <div class="file-icon">${rec.type === 'audio' ? '🎵' : '🎬'}</div>
+            <div class="file-info">
+                <div class="file-name">${rec.fileName}</div>
+                <div class="file-details">
+                    ${formatFileSize(rec.fileSize)} • ${new Date(rec.uploadedAt).toLocaleDateString('ja-JP')}
+                </div>
+            </div>
+            ${rec.type === 'audio' ? 
+                `<audio controls src="${rec.dataUrl}"></audio>` :
+                `<video controls src="${rec.dataUrl}" style="max-height: 100px;"></video>`
+            }
+            <div class="file-actions">
+                <button class="btn btn-sm btn-secondary" onclick="editRecordingMetadata('${rec.id}')">📝</button>
+                <button class="btn btn-sm btn-danger" onclick="removeRecording('${rec.id}')">🗑️</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ファイルサイズのフォーマット
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+    return Math.round(bytes / (1024 * 1024) * 10) / 10 + ' MB';
+}
+
+// 録音の削除
+function removeRecording(recordingId) {
+    temporaryRecordings = temporaryRecordings.filter(rec => rec.id !== recordingId);
+    displayBirdRecordings(temporaryRecordings);
+}
+
+// 録音メタデータの編集（今後実装）
+function editRecordingMetadata(recordingId) {
+    alert('録音の詳細情報編集機能は今後実装予定です');
+}
+
+// 石の写真管理
+let temporaryStonePhotos = []; // アップロード中の一時的な写真データ
+
+// 石の写真アップロード処理
+function handleStonePhotoUpload(event) {
+    const files = event.target.files;
+    
+    for (let file of files) {
+        // 画像ファイルのみ処理
+        if (!file.type.startsWith('image/')) {
+            continue;
+        }
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const photo = {
+                id: `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                fileName: file.name,
+                fileType: file.type,
+                fileSize: file.size,
+                dataUrl: e.target.result,
+                uploadedAt: new Date().toISOString()
+            };
+            
+            temporaryStonePhotos.push(photo);
+            displayStonePhotos([...temporaryStonePhotos]);
+        };
+        
+        reader.readAsDataURL(file);
+    }
+    
+    // 入力をリセット
+    event.target.value = '';
+}
+
+// 石の写真表示
+function displayStonePhotos(photos) {
+    const listEl = document.getElementById('stone-photos-list');
+    
+    if (!photos || photos.length === 0) {
+        listEl.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 24px;">写真はまだありません</div>';
+        return;
+    }
+    
+    listEl.innerHTML = photos.map(photo => `
+        <div class="photo-item">
+            <img src="${photo.dataUrl}" alt="${photo.fileName}" onclick="viewPhoto('${photo.dataUrl}')">
+            <button class="photo-remove" onclick="removeStonePhoto('${photo.id}')">×</button>
+        </div>
+    `).join('');
+}
+
+// 写真の削除
+function removeStonePhoto(photoId) {
+    temporaryStonePhotos = temporaryStonePhotos.filter(photo => photo.id !== photoId);
+    displayStonePhotos(temporaryStonePhotos);
+}
+
+// 写真の拡大表示（簡易版）
+function viewPhoto(dataUrl) {
+    window.open(dataUrl, '_blank');
+}
+
+// モバイルメニューの切り替え
+function toggleSidebar() {
+    console.log('toggleSidebar関数が呼ばれました');
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('open');
+        console.log('サイドバーの状態を変更しました:', sidebar.classList.contains('open'));
+    } else {
+        console.error('サイドバーが見つかりません');
+    }
+}
+
+// サイドバー外をクリックしたら閉じる
+document.addEventListener('click', (e) => {
+    const sidebar = document.querySelector('.sidebar');
+    const menuBtn = document.querySelector('.mobile-menu-btn');
+    
+    if (window.innerWidth <= 768 && 
+        sidebar && menuBtn &&
+        !sidebar.contains(e.target) && 
+        !menuBtn.contains(e.target) && 
+        sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+    }
+});
+
+// GoogleマップURLから座標を抽出する関数
+function extractCoordinatesFromStones() {
+    console.log('石データから座標を抽出中...');
+    
+    let extractedCount = 0;
+    let updatedStones = [];
+    
+    currentStones.forEach(stone => {
+        let updated = false;
+        
+        // addressフィールドまたはmap_urlフィールドにGoogleマップURLがある場合
+        const urlToCheck = stone.address || stone.map_url || '';
+        
+        if (urlToCheck.includes('google.com/maps')) {
+            // GoogleマップURLから座標を抽出
+            const coordinates = extractCoordinatesFromGoogleMapUrl(urlToCheck);
+            
+            if (coordinates) {
+                // 座標が取得できた場合、石データを更新
+                stone.lat = coordinates.lat;
+                stone.lng = coordinates.lng;
+                updated = true;
+                extractedCount++;
+                console.log(`${stone.name}: 座標抽出成功 (${coordinates.lat}, ${coordinates.lng})`);
+            }
+        }
+        
+        updatedStones.push(stone);
+    });
+    
+    if (extractedCount > 0) {
+        console.log(`${extractedCount}個の石データから座標を抽出しました`);
+        // 更新されたデータを保存
+        currentStones = updatedStones;
+        saveExtractedCoordinates();
+    } else {
+        console.log('座標を抽出できるGoogleマップURLが見つかりませんでした');
+    }
+}
+
+// GoogleマップURLから座標を抽出する関数
+function extractCoordinatesFromGoogleMapUrl(url) {
+    // パターン1: @緯度,経度,ズーム の形式
+    const pattern1 = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match1 = url.match(pattern1);
+    if (match1) {
+        return {
+            lat: parseFloat(match1[1]),
+            lng: parseFloat(match1[2])
+        };
+    }
+    
+    // パターン2: place/場所名/@緯度,経度 の形式
+    const pattern2 = /place\/[^\/]+\/@(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match2 = url.match(pattern2);
+    if (match2) {
+        return {
+            lat: parseFloat(match2[1]),
+            lng: parseFloat(match2[2])
+        };
+    }
+    
+    // パターン3: ll=緯度,経度 の形式（古い形式）
+    const pattern3 = /ll=(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match3 = url.match(pattern3);
+    if (match3) {
+        return {
+            lat: parseFloat(match3[1]),
+            lng: parseFloat(match3[2])
+        };
+    }
+    
+    // パターン4: q=緯度,経度 の形式（検索クエリ）
+    const pattern4 = /q=(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match4 = url.match(pattern4);
+    if (match4) {
+        return {
+            lat: parseFloat(match4[1]),
+            lng: parseFloat(match4[2])
+        };
+    }
+    
+    return null;
+}
+
+// 抽出した座標を保存する関数
+async function saveExtractedCoordinates() {
+    try {
+        if (isSupabaseConnected) {
+            // Supabaseに一括更新
+            for (const stone of currentStones) {
+                if (stone.lat && stone.lng) {
+                    const { error } = await supabase
+                        .from('stones')
+                        .update({ lat: stone.lat, lng: stone.lng })
+                        .eq('id', stone.id);
+                    
+                    if (error) {
+                        console.error(`${stone.name}の座標保存エラー:`, error);
+                    }
+                }
+            }
+            showMessage('座標データを保存しました', 'success');
+        } else {
+            // ローカルストレージに保存
+            localStorage.setItem('masterStones', JSON.stringify(currentStones));
+            showMessage('座標データをローカルに保存しました', 'success');
+        }
+        
+        // 表示を更新
+        displayStones(currentStones);
+    } catch (error) {
+        console.error('座標保存エラー:', error);
+        showMessage('座標の保存に失敗しました', 'error');
+    }
+}
+
+// グローバルに関数を公開
+window.toggleSidebar = toggleSidebar;
+window.saveBird = saveBird;
+window.saveStone = saveStone;
+window.editBird = editBird;
+window.editStone = editStone;
+window.deleteBird = deleteBird;
+window.deleteStone = deleteStone;
+window.closeBirdForm = closeBirdForm;
+window.closeStoneForm = closeStoneForm;
+window.removeRecording = removeRecording;
+window.removeStonePhoto = removeStonePhoto;
+window.editRecordingMetadata = editRecordingMetadata;
+window.viewPhoto = viewPhoto;
+
+// 長押しで削除メニューを表示（オプション）
+let longPressTimer;
+let longPressTarget;
+
+function handleLongPress(e, type, id, name) {
+    e.preventDefault();
+    longPressTarget = {type, id, name};
+    
+    longPressTimer = setTimeout(() => {
+        if (confirm(`${name} を削除しますか？`)) {
+            if (type === 'bird') {
+                deleteBird(id);
+            } else {
+                deleteStone(id);
+            }
+        }
+    }, 800); // 0.8秒長押し
+}
+
+function cancelLongPress() {
+    if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+    }
+}
+
+// タッチイベントの設定
+document.addEventListener('touchend', cancelLongPress);
+document.addEventListener('touchmove', cancelLongPress);// Force deployment update 2025年 7月16日 水曜日 14時01分48秒 JST

@@ -81,3 +81,8 @@
 - この PROJECT.md を main に追加する
 - PRテンプレートを `.github/PULL_REQUEST_TEMPLATE.md` に用意する
 - 最優先: `field-scroll-final.html` の改善PRを作る
+
+---
+
+## 🧪 ローカル動作確認
+- CLI セットアップテスト: 2025-10-13 19:37:07

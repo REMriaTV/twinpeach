@@ -1,88 +1,42 @@
-# TwinPeach 開発ノート (PROJECT.md)
+# Codex CLI ガイドライン
 
-この文書は **TwinPeach プロジェクト**の開発・運営に関する「正」となる情報源です。  
-全員がこのページを参照することで、抜けや矛盾のない形で進行できるようにします。
+## リポジトリ概要
+- パス: /Users/ootsukaumihei/twinpeach
+- 主要ブランチ: main（GitHub Pages 公開用）。作業用ブランチはタスクごとに作成する
+- 内容: HTML/CSS/JS ベースの静的サイト。`assets/` 以下に画像等の素材
 
----
+## Codex CLI セットアップ確認
+- `codex --version` で CLI バージョンを確認（現在 0.38.0）
+- 認証情報: `~/.codex/auth.json`（API キー等が入るので取り扱い注意）
+- 設定ファイル: `~/.codex/config.toml`。`model = "gpt-5-codex"` とし、当リポジトリへの `trust_level = "trusted"` エントリを維持する
+- CLI から `codex whoami` を実行してサインイン状態を確認（サンドボックス環境では失敗する場合あり）
 
-## 🎯 プロジェクトの目的
-- 桃次郎／狼煙屋の世界をウェブ空間に表現する
-- GitHub Pages を使った公開サイト
-- 将来 Firebase などのバックエンドと接続して発展させる
-- 「いつでもどこでも（スマホ中心でも）」開発を進められる仕組みを作る
+## 作業フロー（ローカル）
+- セッション開始: リポジトリ直下で `codex ask` または `codex plan` を実行し、指示は日本語で OK
+- 変更作成: `codex` に修正を依頼 → 生成された差分をプレビューし `codex apply` で反映
+- テスト / プレビュー: 静的サイトのため `python3 -m http.server 4173` 等で手元プレビュー可能（必要に応じてブラウザで確認）
+- コミット: `git status` で変更確認 → `git commit -m "feat: ..."` 形式で短く内容を記述（日本語でも可）
+- プッシュ: `git push origin <branch>`。GitHub Pages 反映は main にマージ後（数分かかることあり）
 
----
+## GitHub 連携
+- リモート: `github-remriatv:REMriaTV/twinpeach.git`（SSH 設定が必要）
+- PR 作成: ブランチをプッシュ後、GitHub で PR → レビュー → main へマージ
+- デプロイ: main ブランチ更新で GitHub Pages が自動反映。反映確認は https://remriatv.github.io/twinpeach/ （DNS 変更済なら独自ドメイン）
 
-## 🌐 公開URL一覧
-- メイン: https://remriatv.github.io/twinpeach/
-- 主要ページ
-  - `field-scroll-final.html` : 横スクロールUI
-  - `stone-map-v6.html` : 石マップ
-  - `river-login-hiuchiishi.html` : 狼煙ログイン導線
-  - `about-noroshiya.html` : 世界観紹介
-- その他、開発中の test ページや characters ページなど
+## 運用メモ
+- 大きめの UI 変更や新規ページ追加時は `README.md` に概要を追記
+- `index.html` のアニメーションやインタラクションは複数のタイマー・イベントを利用しているため、改修時はブラウザで挙動確認する
+- 必要に応じて `assets/` の画像最適化（WebP 化など）を検討
 
----
+## トラブルシューティング
+- CLI が API に接続できない場合: ネットワーク規制、API キー失効、モデル指定ミスを確認
+- GitHub への push で権限エラー: SSH 鍵設定（`~/.ssh/config` 内 `github-remriatv` エントリ）を見直す
+- GitHub Pages の反映が遅い場合: キャッシュクリアのためブラウザをリロード、または数分待機
 
-## 🛠 技術スタック
-- HTML / CSS / JavaScript
-- GitHub Pages（デプロイ）
-- データ保存: LocalStorage（現状）、Firebase（将来予定）
-
----
-
-## 🔄 開発方式
-- **GitHub連携が本線**
-  - 変更は必ず Pull Request 経由
-  - main ブランチに直接コミットしない
-- **Codex CLI 常駐は補助**
-  - ローカルPCやCodespacesでの検証用
-  - 実行ログや結果をPROJECT.mdに反映する
-
----
-
-## 📐 運用ルール
-- コミットメッセージは短く明確に（例: `fix: scroll bug on field-scroll-final`）
-- 小粒のPRを基本にする（大規模変更は分割）
-- 非公開データ（APIキー、秘密URLなど）はリポジトリに含めない
-- 「決まったこと」は必ず PROJECT.md に追記する
-
----
-
-## 📝 優先タスク
-1. `field-scroll-final.html` の安定化
-2. `stone-map-v6.html` のUX改善
-3. `river-login-hiuchiishi.html` の導線調整
-4. characters ページの整備
-
----
-
-## ✅ 品質基準
-- **スマホ優先**で閲覧可能
-- リンク切れゼロを維持
-- Lighthouseでモバイル80点以上を目安に改善
-
----
-
-## 🚫 禁止事項
-- 秘密情報（APIキー、パスワード等）のコミット
-- 危険なコマンドや破壊的操作をPRに含めること
-
----
-
-## 📋 タスク管理の流れ
-- 新しいアイデアや課題 → Issue 化
-- 実装 → PR 作成
-- 決定事項やルール → PROJECT.md に追記
-
----
-
-## 🔜 次の一手
-- この PROJECT.md を main に追加する
-- PRテンプレートを `.github/PULL_REQUEST_TEMPLATE.md` に用意する
-- 最優先: `field-scroll-final.html` の改善PRを作る
-
----
-
-## 🧪 ローカル動作確認
-- CLI セットアップテスト: 2025-10-13 19:37:07
+## iPhone からの利用ワークフロー案
+- 常時稼働させる Mac / サーバー側で `tmux` を起動し、Codex CLI をその中で利用するとセッションを保持できる
+- iPhone からは `Blink Shell` や `Termius` などの SSH クライアントアプリで上記端末に接続。公開鍵認証を設定し、`tmux attach -t twinpeach` 等で既存セッションに入る
+- SSH 接続後の操作はデスクトップと同じ：`codex ask` で相談 → 差分を確認 → `git status` / `git commit` / `git push`
+- ChatGPT アプリは設計相談やプロンプトの下書きに活用し、完成した指示をコピーして Codex CLI に貼り付けると運用がスムーズ
+- GitHub でのレビューやマージは、必要に応じて GitHub モバイルアプリや Safari から実行
+- 緊急時は GitHub ブラウザエディタを直接使うというバックアップ手段も用意しておく

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codex CLI テストページ</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            font-family: 'Hiragino Sans', 'Helvetica Neue', Arial, sans-serif;
+            background: radial-gradient(circle at 20% 20%, #ffb7c3, rgba(0,0,0,0.85)),
+                        radial-gradient(circle at 80% 30%, #ffd6a5, rgba(0,0,0,0.85)),
+                        #0f0f0f;
+            color: #fff;
+        }
+
+        main {
+            max-width: 640px;
+            padding: 3rem 2.5rem;
+            border-radius: 24px;
+            background: rgba(20, 17, 29, 0.76);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            letter-spacing: 0.12em;
+            margin-bottom: 1.5rem;
+        }
+
+        p {
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #ff8ba7, #ffb3c6);
+            color: #1b0a17;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .pill svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        footer {
+            margin-top: 2.5rem;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Codex CLI 実験場</h1>
+        <p>
+            このページは Codex CLI を使って Twin Peach リポジトリに追加されたテスト用スペースです。<br>
+            ここでは作業手順の検証やデプロイ前の確認を目的とした軽量な要素の実験を行います。
+        </p>
+        <div class="pill">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Codex が加筆しました
+        </div>
+        <footer>最終更新: 2025-07-05 / 担当: Codex CLI テスト</footer>
+    </main>
+</body>
+</html>
